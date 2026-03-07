@@ -1,0 +1,194 @@
+import type { CollectionConfig } from 'payload'
+
+export const Products: CollectionConfig = {
+  slug: 'products',
+  admin: {
+    useAsTitle: 'title',
+    defaultColumns: ['title', 'price', 'category', 'status'],
+    group: 'Каталог',
+  },
+  access: {
+    read: () => true,
+  },
+  fields: [
+    {
+      name: 'title',
+      type: 'text',
+      required: true,
+      label: 'Название',
+    },
+    {
+      name: 'slug',
+      type: 'text',
+      required: true,
+      unique: true,
+      label: 'Slug',
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'shortDescription',
+      type: 'textarea',
+      label: 'Краткое описание',
+    },
+    {
+      name: 'description',
+      type: 'richText',
+      label: 'Описание',
+    },
+    {
+      name: 'price',
+      type: 'number',
+      required: true,
+      min: 0,
+      label: 'Цена (₽)',
+    },
+    {
+      name: 'oldPrice',
+      type: 'number',
+      min: 0,
+      label: 'Старая цена (₽)',
+    },
+    {
+      name: 'sku',
+      type: 'text',
+      unique: true,
+      label: 'Артикул (SKU)',
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'images',
+      type: 'array',
+      label: 'Изображения',
+      minRows: 1,
+      fields: [
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+        },
+      ],
+    },
+    {
+      name: 'category',
+      type: 'relationship',
+      relationTo: 'categories',
+      label: 'Категория',
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'variants',
+      type: 'array',
+      label: 'Варианты',
+      fields: [
+        {
+          name: 'name',
+          type: 'text',
+          required: true,
+          label: 'Название варианта',
+        },
+        {
+          name: 'price',
+          type: 'number',
+          required: true,
+          min: 0,
+          label: 'Цена (₽)',
+        },
+        {
+          name: 'sku',
+          type: 'text',
+          label: 'Артикул',
+        },
+      ],
+    },
+    {
+      name: 'composition',
+      type: 'richText',
+      label: 'Состав',
+    },
+    {
+      name: 'usage',
+      type: 'richText',
+      label: 'Способ применения',
+    },
+    {
+      name: 'weight',
+      type: 'number',
+      min: 0,
+      label: 'Вес (г)',
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'inStock',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'В наличии',
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'featured',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'На главной',
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'status',
+      type: 'select',
+      defaultValue: 'active',
+      label: 'Статус',
+      options: [
+        { label: 'Активен', value: 'active' },
+        { label: 'Скрыт', value: 'hidden' },
+        { label: 'В архиве', value: 'archived' },
+      ],
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'amoCrmId',
+      type: 'number',
+      label: 'ID в amoCRM',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'seo',
+      type: 'group',
+      label: 'SEO',
+      fields: [
+        {
+          name: 'title',
+          type: 'text',
+          label: 'Meta Title',
+        },
+        {
+          name: 'description',
+          type: 'textarea',
+          label: 'Meta Description',
+        },
+        {
+          name: 'ogImage',
+          type: 'upload',
+          relationTo: 'media',
+          label: 'OG Image',
+        },
+      ],
+    },
+  ],
+}
