@@ -7,7 +7,7 @@ export const AIAssistantFeatureClient = createClientFeature({
   plugins: [
     {
       Component: AIAssistantPlugin,
-      position: 'belowContainer',
+      position: 'normal',
     },
   ],
 })
