@@ -58,6 +58,10 @@ export function GlassBottle() {
       {/* Glass body with refraction */}
       <div className="glass-bottle__glass" />
 
+      {/* Lime-green liquid in bottom half */}
+      <div className="glass-bottle__liquid" />
+      <div className="glass-bottle__liquid-surface" />
+
       {/* Specular highlights */}
       <div className="glass-bottle__spec-left" />
       <div className="glass-bottle__spec-right" />

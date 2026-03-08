@@ -638,6 +638,56 @@ button {
   }
 }
 
+/* Lime-green liquid — bottom half */
+.glass-bottle__liquid {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  bottom: 0;
+  clip-path: polygon(
+    /* Body left at 50% */
+    18% 0%,
+    18% 72%,
+    /* Base taper */
+    20% 80%, 22% 88%,
+    /* Bottom */
+    24% 94%, 76% 94%,
+    /* Base taper right */
+    78% 88%, 80% 80%,
+    /* Body right */
+    82% 72%, 82% 0%
+  );
+  background: linear-gradient(
+    180deg,
+    rgba(140, 255, 100, 0.12) 0%,
+    rgba(100, 230, 60, 0.18) 30%,
+    rgba(80, 210, 40, 0.25) 60%,
+    rgba(60, 190, 30, 0.30) 100%
+  );
+  pointer-events: none;
+}
+
+/* Liquid meniscus — curved surface line */
+.glass-bottle__liquid-surface {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  top: 50%;
+  height: 8px;
+  transform: translateY(-50%);
+  background: radial-gradient(
+    ellipse 100% 100% at 50% 50%,
+    rgba(160, 255, 140, 0.35) 0%,
+    rgba(120, 240, 90, 0.2) 40%,
+    rgba(100, 220, 70, 0.1) 70%,
+    transparent 100%
+  );
+  border-top: 1px solid rgba(160, 255, 140, 0.25);
+  pointer-events: none;
+  filter: blur(1px);
+}
+
 /* Left specular edge — bright caustic */
 .glass-bottle__spec-left {
   background: linear-gradient(
