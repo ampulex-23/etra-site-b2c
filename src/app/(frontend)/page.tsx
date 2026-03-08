@@ -2,10 +2,7 @@ import React from 'react'
 import { ThemeProvider } from './themes/ThemeProvider'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
-import { SectionScience } from './components/SectionScience'
-import { SectionFlavors } from './components/SectionFlavors'
-import { SectionJoin } from './components/SectionJoin'
-import { Footer } from './components/Footer'
+import { CyberVoid } from './components/CyberVoid'
 
 export default function HomePage() {
   return (
@@ -13,11 +10,8 @@ export default function HomePage() {
       <Header />
       <main>
         <Hero />
-        <SectionScience />
-        <SectionFlavors />
-        <SectionJoin />
+        <CyberVoid />
       </main>
-      <Footer />
     </ThemeProvider>
   )
 }

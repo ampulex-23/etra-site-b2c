@@ -572,6 +572,23 @@ button {
 }
 
 /* ============================================
+   CYBER VOID — empty scroll space with geometry
+   ============================================ */
+.cyber-void {
+  position: relative;
+  height: 60vh;
+  background: var(--color-bg-primary);
+  overflow: hidden;
+}
+
+.cyber-void__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================
    RESPONSIVE
    ============================================ */
 @media (max-width: 1024px) {

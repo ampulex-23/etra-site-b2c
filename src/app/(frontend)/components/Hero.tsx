@@ -14,7 +14,7 @@ export function Hero() {
           priority
           quality={85}
           sizes="100vw"
-          style={{ objectFit: 'cover', objectPosition: 'center' }}
+          style={{ objectFit: 'cover', objectPosition: 'center top' }}
         />
         <div className="hero__overlay" />
       </div>
