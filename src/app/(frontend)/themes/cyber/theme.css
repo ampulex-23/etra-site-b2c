@@ -1,0 +1,91 @@
+.theme-cyber {
+  /* === Base palette === */
+  --color-bg-primary: #0a0e1a;
+  --color-bg-secondary: #111827;
+  --color-bg-card: rgba(17, 24, 39, 0.7);
+  --color-bg-card-hover: rgba(30, 41, 59, 0.8);
+  --color-bg-glass: rgba(15, 23, 42, 0.6);
+  --color-bg-input: rgba(15, 23, 42, 0.8);
+
+  /* === Text === */
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+
+  /* === Accent === */
+  --color-accent: #38bdf8;
+  --color-accent-hover: #7dd3fc;
+  --color-accent-glow: rgba(56, 189, 248, 0.3);
+  --color-accent-secondary: #818cf8;
+  --color-accent-tertiary: #c084fc;
+
+  /* === Borders === */
+  --color-border: rgba(56, 189, 248, 0.15);
+  --color-border-hover: rgba(56, 189, 248, 0.35);
+  --color-border-card: rgba(56, 189, 248, 0.12);
+
+  /* === Gradients === */
+  --gradient-hero: linear-gradient(180deg, transparent 0%, rgba(10, 14, 26, 0.4) 50%, #0a0e1a 100%);
+  --gradient-card: linear-gradient(135deg, rgba(56, 189, 248, 0.05) 0%, rgba(129, 140, 248, 0.05) 100%);
+  --gradient-accent: linear-gradient(135deg, #38bdf8, #818cf8);
+  --gradient-section: linear-gradient(180deg, #0a0e1a 0%, #111827 100%);
+
+  /* === Shadows === */
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3), 0 0 1px rgba(56, 189, 248, 0.1);
+  --shadow-card-hover: 0 8px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(56, 189, 248, 0.15);
+  --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.2);
+  --shadow-btn: 0 4px 16px rgba(56, 189, 248, 0.3);
+
+  /* === Spacing === */
+  --section-padding: 100px 0;
+  --container-max: 1200px;
+  --container-padding: 0 24px;
+
+  /* === Border radius === */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-pill: 100px;
+
+  /* === Typography === */
+  --font-display: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* === Transitions === */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+}
+
+/* === Cyber-specific effects === */
+.theme-cyber .glow-line {
+  position: absolute;
+  height: 1px;
+  background: var(--gradient-accent);
+  opacity: 0.4;
+  filter: blur(1px);
+}
+
+.theme-cyber .glass-panel {
+  background: var(--color-bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.theme-cyber .neon-border {
+  border: 1px solid var(--color-border);
+  box-shadow: inset 0 0 30px rgba(56, 189, 248, 0.03);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.theme-cyber .neon-border:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: inset 0 0 30px rgba(56, 189, 248, 0.06), var(--shadow-glow);
+}

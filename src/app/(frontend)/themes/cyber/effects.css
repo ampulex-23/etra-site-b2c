@@ -1,0 +1,108 @@
+/* === Cyber theme animated effects === */
+
+/* Scanline overlay */
+.theme-cyber .cyber-scanline::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(56, 189, 248, 0.015) 2px,
+    rgba(56, 189, 248, 0.015) 4px
+  );
+  z-index: 1;
+}
+
+/* Floating particles placeholder — will be replaced with canvas/shader */
+.theme-cyber .cyber-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Pulsing glow on accent elements */
+@keyframes cyber-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.theme-cyber .cyber-pulse {
+  animation: cyber-pulse 3s ease-in-out infinite;
+}
+
+/* Subtle float animation */
+@keyframes cyber-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.theme-cyber .cyber-float {
+  animation: cyber-float 6s ease-in-out infinite;
+}
+
+/* Slide in from bottom */
+@keyframes cyber-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.theme-cyber .cyber-slide-up {
+  animation: cyber-slide-up 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Glow text effect */
+.theme-cyber .glow-text {
+  text-shadow: 0 0 20px var(--color-accent-glow), 0 0 40px rgba(56, 189, 248, 0.1);
+}
+
+/* Grid background pattern */
+.theme-cyber .cyber-grid-bg {
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Gradient border trick */
+.theme-cyber .gradient-border {
+  position: relative;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-md);
+}
+
+.theme-cyber .gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: var(--gradient-accent);
+  opacity: 0.15;
+  z-index: -1;
+  transition: opacity var(--transition-base);
+}
+
+.theme-cyber .gradient-border:hover::before {
+  opacity: 0.3;
+}
+
+/* Button shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.theme-cyber .btn-shimmer {
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+}

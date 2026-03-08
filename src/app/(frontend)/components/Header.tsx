@@ -1,0 +1,72 @@
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+
+const navLinks = [
+  { href: '#science', label: 'Наука' },
+  { href: '#flavors', label: 'Вкусы' },
+  { href: '#about', label: 'О нас' },
+  { href: '#shop', label: 'Магазин' },
+]
+
+export function Header() {
+  const [scrolled, setScrolled] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  return (
+    <header className={`site-header ${scrolled ? 'site-header--scrolled' : ''}`}>
+      <div className="site-header__inner">
+        <Link href="/" className="site-header__logo">
+          <Image src="/images/logo.png" alt="ЭТРА" width={80} height={32} priority />
+        </Link>
+
+        <nav className={`site-header__nav ${menuOpen ? 'site-header__nav--open' : ''}`}>
+          {navLinks.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="site-header__link"
+              onClick={() => setMenuOpen(false)}
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="site-header__actions">
+          <button className="site-header__icon-btn" aria-label="Аккаунт">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </button>
+          <button className="site-header__icon-btn" aria-label="Корзина">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 0 1-8 0" />
+            </svg>
+          </button>
+        </div>
+
+        <button
+          className={`site-header__burger ${menuOpen ? 'site-header__burger--open' : ''}`}
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Меню"
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+      </div>
+    </header>
+  )
+}
