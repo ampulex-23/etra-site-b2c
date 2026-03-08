@@ -1,6 +1,7 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { s3Storage } from '@payloadcms/storage-s3'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { AIAssistantFeature } from './features/ai-assistant/feature.server'
 import fs from 'fs'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -39,7 +40,9 @@ export default buildConfig({
     Posts,
     PromoCodes,
   ],
-  editor: lexicalEditor(),
+  editor: lexicalEditor({
+    features: ({ defaultFeatures }) => [...defaultFeatures, AIAssistantFeature()],
+  }),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
