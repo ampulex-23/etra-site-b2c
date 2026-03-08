@@ -2,10 +2,14 @@ import type { CollectionConfig } from 'payload'
 
 export const Orders: CollectionConfig = {
   slug: 'orders',
+  labels: {
+    singular: 'Заказ',
+    plural: 'Заказы',
+  },
   admin: {
     useAsTitle: 'orderNumber',
     defaultColumns: ['orderNumber', 'customer', 'total', 'status', 'createdAt'],
-    group: 'Магазин',
+    group: '🛒 Магазин',
   },
   access: {
     read: ({ req: { user } }) => {

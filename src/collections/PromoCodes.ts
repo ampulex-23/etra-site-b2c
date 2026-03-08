@@ -2,10 +2,14 @@ import type { CollectionConfig } from 'payload'
 
 export const PromoCodes: CollectionConfig = {
   slug: 'promo-codes',
+  labels: {
+    singular: 'Промокод',
+    plural: 'Промокоды',
+  },
   admin: {
     useAsTitle: 'code',
     defaultColumns: ['code', 'discountType', 'discountValue', 'active'],
-    group: 'Каталог',
+    group: '📦 Каталог',
   },
   fields: [
     {

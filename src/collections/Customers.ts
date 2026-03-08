@@ -3,10 +3,14 @@ import type { CollectionConfig } from 'payload'
 export const Customers: CollectionConfig = {
   slug: 'customers',
   auth: true,
+  labels: {
+    singular: 'Клиент',
+    plural: 'Клиенты',
+  },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'email', 'phone', 'role'],
-    group: 'Магазин',
+    group: '🛒 Магазин',
   },
   access: {
     read: ({ req: { user } }) => {

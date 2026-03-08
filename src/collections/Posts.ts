@@ -2,10 +2,14 @@ import type { CollectionConfig } from 'payload'
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
+  labels: {
+    singular: 'Статья',
+    plural: 'Статьи',
+  },
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'category', 'status', 'publishedAt'],
-    group: 'Контент',
+    group: '📝 Контент',
   },
   access: {
     read: () => true,
