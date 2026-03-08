@@ -572,10 +572,12 @@ button {
 }
 
 /* ============================================
-   GLASS BOTTLE — canvas-based refraction
+   GLASS BOTTLE — SVG filter refraction
    ============================================ */
 .glass-bottle {
   position: fixed;
+  width: 160px;
+  height: 440px;
   z-index: 50;
   touch-action: none;
   user-select: none;
@@ -585,6 +587,111 @@ button {
 
 .glass-bottle:active {
   cursor: grabbing;
+}
+
+/* Bottle silhouette clip — applied to all layers */
+.glass-bottle__glass,
+.glass-bottle__spec-left,
+.glass-bottle__spec-right,
+.glass-bottle__spec-top,
+.glass-bottle__rim {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(
+    /* Cap */
+    42% 0%, 58% 0%, 58% 3.5%,
+    /* Neck ring */
+    62% 3.5%, 62% 5.5%, 38% 5.5%, 38% 3.5%,
+    /* Thin neck */
+    40% 5.5%, 40% 14%,
+    /* Shoulder taper */
+    32% 18%, 22% 23%,
+    /* Body left */
+    18% 26%, 18% 86%,
+    /* Base taper */
+    20% 90%, 22% 94%,
+    /* Bottom */
+    24% 97%, 76% 97%,
+    /* Base taper right */
+    78% 94%, 80% 90%,
+    /* Body right */
+    82% 86%, 82% 26%,
+    /* Shoulder taper right */
+    78% 23%, 68% 18%,
+    /* Thin neck right */
+    60% 14%, 60% 5.5%
+  );
+  pointer-events: none;
+}
+
+/* Main glass layer — refraction + blur */
+.glass-bottle__glass {
+  background: rgba(180, 220, 255, 0.06);
+  backdrop-filter: blur(6px) brightness(1.08) saturate(1.2);
+  -webkit-backdrop-filter: blur(6px) brightness(1.08) saturate(1.2);
+}
+
+/* Chrome-only: add SVG displacement refraction */
+@supports not (hanging-punctuation: first) {
+  .glass-bottle__glass {
+    backdrop-filter: url(#bottleGlassFilter) blur(3px) brightness(1.08) saturate(1.2);
+  }
+}
+
+/* Left specular edge — bright caustic */
+.glass-bottle__spec-left {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(200, 230, 255, 0.2) 6%,
+    rgba(255, 255, 255, 0.06) 14%,
+    transparent 24%
+  );
+  mix-blend-mode: screen;
+}
+
+/* Right specular edge — softer caustic */
+.glass-bottle__spec-right {
+  background: linear-gradient(
+    270deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(200, 230, 255, 0.1) 6%,
+    rgba(255, 255, 255, 0.03) 14%,
+    transparent 24%
+  );
+  mix-blend-mode: screen;
+}
+
+/* Top glare — bright highlight on shoulder */
+.glass-bottle__spec-top {
+  background: radial-gradient(
+    ellipse 50% 20% at 38% 16%,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(200, 230, 255, 0.2) 30%,
+    transparent 70%
+  );
+  mix-blend-mode: screen;
+}
+
+/* Rim light — thin bright edge outline */
+.glass-bottle__rim {
+  background: transparent;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.2),
+    inset -1px 0 0 rgba(255, 255, 255, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+    inset 3px 0 12px rgba(180, 220, 255, 0.08),
+    inset -3px 0 12px rgba(180, 220, 255, 0.05),
+    0 0 40px rgba(56, 189, 248, 0.08),
+    0 0 80px rgba(56, 189, 248, 0.04);
+}
+
+@media (max-width: 768px) {
+  .glass-bottle {
+    width: 120px;
+    height: 330px;
+  }
 }
 
 /* ============================================

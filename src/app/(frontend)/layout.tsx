@@ -14,6 +14,23 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="ru">
       <body>
+        {/* SVG Displacement Filter for glass bottle refraction */}
+        <svg style={{ display: 'none' }} xmlns="http://www.w3.org/2000/svg">
+          <filter id="bottleGlassFilter" colorInterpolationFilters="sRGB">
+            <feImage
+              href="/images/bottle-displacement.png"
+              result="dispMap"
+              preserveAspectRatio="none"
+            />
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="dispMap"
+              scale="35"
+              xChannelSelector="R"
+              yChannelSelector="G"
+            />
+          </filter>
+        </svg>
         {children}
       </body>
     </html>
