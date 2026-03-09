@@ -2,8 +2,8 @@
 
 import React, { useEffect, useRef, useCallback } from 'react'
 
-const W = 180
-const H = 460
+const W = 320
+const H = 160
 
 export function GlassBottle() {
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -11,7 +11,7 @@ export function GlassBottle() {
   const dragRef = useRef({ dragging: false, offsetX: 0, offsetY: 0 })
 
   useEffect(() => {
-    const startX = Math.round(window.innerWidth / 2 + 120 - W / 2)
+    const startX = Math.round(window.innerWidth / 2 - W / 2)
     const startY = Math.round(window.innerHeight / 2 - H / 2)
     posRef.current = { x: startX, y: startY }
     if (wrapRef.current) {
@@ -49,26 +49,17 @@ export function GlassBottle() {
   return (
     <div
       ref={wrapRef}
-      className="glass-bottle"
+      className="glass-pill"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      {/* Refraction layer */}
-      <div className="glass-bottle__glass" />
+      {/* Back wall — concave displacement (light bends outward) */}
+      <div className="glass-pill__back" />
 
-      {/* Liquid fill — bottom half */}
-      <div className="glass-bottle__liquid" />
-      <div className="glass-bottle__liquid-meniscus" />
-
-      {/* Specular highlights */}
-      <div className="glass-bottle__highlight-left" />
-      <div className="glass-bottle__highlight-right" />
-      <div className="glass-bottle__highlight-top" />
-
-      {/* Edge glow */}
-      <div className="glass-bottle__rim" />
+      {/* Front wall — convex displacement (light bends inward) */}
+      <div className="glass-pill__front" />
     </div>
   )
 }
