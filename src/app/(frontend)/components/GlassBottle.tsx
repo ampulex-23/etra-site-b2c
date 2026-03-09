@@ -2,8 +2,8 @@
 
 import React, { useEffect, useRef, useCallback } from 'react'
 
-const W = 160
-const H = 440
+const W = 180
+const H = 460
 
 export function GlassBottle() {
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -55,19 +55,19 @@ export function GlassBottle() {
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      {/* Glass body with refraction */}
+      {/* Refraction layer */}
       <div className="glass-bottle__glass" />
 
-      {/* Lime-green liquid in bottom half */}
+      {/* Liquid fill — bottom half */}
       <div className="glass-bottle__liquid" />
-      <div className="glass-bottle__liquid-surface" />
+      <div className="glass-bottle__liquid-meniscus" />
 
       {/* Specular highlights */}
-      <div className="glass-bottle__spec-left" />
-      <div className="glass-bottle__spec-right" />
-      <div className="glass-bottle__spec-top" />
+      <div className="glass-bottle__highlight-left" />
+      <div className="glass-bottle__highlight-right" />
+      <div className="glass-bottle__highlight-top" />
 
-      {/* Edge rim light */}
+      {/* Edge glow */}
       <div className="glass-bottle__rim" />
     </div>
   )
