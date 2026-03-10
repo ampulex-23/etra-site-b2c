@@ -11,6 +11,7 @@ import {
 } from '@payloadcms/richtext-lexical/lexical'
 import { $createHeadingNode } from '@payloadcms/richtext-lexical/lexical/rich-text'
 import { $createListNode, $createListItemNode } from '@payloadcms/richtext-lexical/lexical/list'
+import { $createHorizontalRuleNode } from '@payloadcms/richtext-lexical/client'
 import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -32,6 +33,12 @@ function parseMarkdownToLexical(root: ReturnType<typeof $getRoot>, markdown: str
     const line = lines[i]
 
     if (!line.trim()) {
+      i++
+      continue
+    }
+
+    if (/^---+$/.test(line.trim()) || /^\*\*\*+$/.test(line.trim()) || /^___+$/.test(line.trim())) {
+      root.append($createHorizontalRuleNode())
       i++
       continue
     }

@@ -76,6 +76,9 @@ export interface Config {
     customers: Customer;
     posts: Post;
     'promo-codes': PromoCode;
+    deliveries: Delivery;
+    payments: Payment;
+    recipes: Recipe;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -91,6 +94,9 @@ export interface Config {
     customers: CustomersSelect<false> | CustomersSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     'promo-codes': PromoCodesSelect<false> | PromoCodesSelect<true>;
+    deliveries: DeliveriesSelect<false> | DeliveriesSelect<true>;
+    payments: PaymentsSelect<false> | PaymentsSelect<true>;
+    recipes: RecipesSelect<false> | RecipesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -100,8 +106,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    settings: Setting;
+  };
+  globalsSelect: {
+    settings: SettingsSelect<false> | SettingsSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -463,6 +473,162 @@ export interface Post {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deliveries".
+ */
+export interface Delivery {
+  id: number;
+  order: number | Order;
+  method: 'pickup' | 'cdek' | 'russian_post';
+  status?: ('pending' | 'handed_over' | 'in_transit' | 'arrived_at_pickup' | 'delivered' | 'returned') | null;
+  /**
+   * Трек-номер СДЭК или почтовый идентификатор
+   */
+  trackingNumber?: string | null;
+  cdekOrderUuid?: string | null;
+  recipient: {
+    name: string;
+    phone: string;
+    email?: string | null;
+  };
+  address?: {
+    city?: string | null;
+    street?: string | null;
+    apartment?: string | null;
+    zip?: string | null;
+  };
+  pickupPoint?: {
+    code?: string | null;
+    name?: string | null;
+    address?: string | null;
+  };
+  weight?: number | null;
+  cost?: number | null;
+  estimatedDeliveryDate?: string | null;
+  deliveredAt?: string | null;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payments".
+ */
+export interface Payment {
+  id: number;
+  order: number | Order;
+  method: 'gateway' | 'cash' | 'card_transfer' | 'invoice';
+  gateway?: ('none' | 'yokassa' | 'tinkoff' | 'cloudpayments') | null;
+  status?: ('pending' | 'paid' | 'failed' | 'cancelled' | 'refunded') | null;
+  amount: number;
+  /**
+   * Внешний идентификатор платежа от шлюза
+   */
+  transactionId?: string | null;
+  /**
+   * Raw JSON ответ от платёжного шлюза
+   */
+  gatewayResponse?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  paidAt?: string | null;
+  refundedAt?: string | null;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recipes".
+ */
+export interface Recipe {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt?: string | null;
+  coverImage?: (number | null) | Media;
+  difficulty?: ('easy' | 'medium' | 'hard') | null;
+  prepTime?: number | null;
+  /**
+   * Например: 3-5 дней, 2 недели
+   */
+  fermentationTime?: string | null;
+  servings?: number | null;
+  ingredients?:
+    | {
+        name: string;
+        /**
+         * Например: 500 мл, 2 ст.л., 1 пакет
+         */
+        amount?: string | null;
+        optional?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  steps?:
+    | {
+        step: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        };
+        image?: (number | null) | Media;
+        tip?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Закваски и другие продукты ЭТРА для этого рецепта
+   */
+  relatedProducts?: (number | Product)[] | null;
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  status?: ('draft' | 'published') | null;
+  publishedAt?: string | null;
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+    ogImage?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -516,6 +682,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'promo-codes';
         value: number | PromoCode;
+      } | null)
+    | ({
+        relationTo: 'deliveries';
+        value: number | Delivery;
+      } | null)
+    | ({
+        relationTo: 'payments';
+        value: number | Payment;
+      } | null)
+    | ({
+        relationTo: 'recipes';
+        value: number | Recipe;
       } | null);
   globalSlug?: string | null;
   user:
@@ -834,6 +1012,113 @@ export interface PromoCodesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deliveries_select".
+ */
+export interface DeliveriesSelect<T extends boolean = true> {
+  order?: T;
+  method?: T;
+  status?: T;
+  trackingNumber?: T;
+  cdekOrderUuid?: T;
+  recipient?:
+    | T
+    | {
+        name?: T;
+        phone?: T;
+        email?: T;
+      };
+  address?:
+    | T
+    | {
+        city?: T;
+        street?: T;
+        apartment?: T;
+        zip?: T;
+      };
+  pickupPoint?:
+    | T
+    | {
+        code?: T;
+        name?: T;
+        address?: T;
+      };
+  weight?: T;
+  cost?: T;
+  estimatedDeliveryDate?: T;
+  deliveredAt?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payments_select".
+ */
+export interface PaymentsSelect<T extends boolean = true> {
+  order?: T;
+  method?: T;
+  gateway?: T;
+  status?: T;
+  amount?: T;
+  transactionId?: T;
+  gatewayResponse?: T;
+  paidAt?: T;
+  refundedAt?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recipes_select".
+ */
+export interface RecipesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  excerpt?: T;
+  coverImage?: T;
+  difficulty?: T;
+  prepTime?: T;
+  fermentationTime?: T;
+  servings?: T;
+  ingredients?:
+    | T
+    | {
+        name?: T;
+        amount?: T;
+        optional?: T;
+        id?: T;
+      };
+  steps?:
+    | T
+    | {
+        step?: T;
+        image?: T;
+        tip?: T;
+        id?: T;
+      };
+  content?: T;
+  relatedProducts?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  status?: T;
+  publishedAt?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        ogImage?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -871,6 +1156,130 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settings".
+ */
+export interface Setting {
+  id: number;
+  /**
+   * URL API-эндпоинта (совместимого с OpenRouter/OpenAI)
+   */
+  aiApiUrl?: string | null;
+  /**
+   * Секретный ключ для доступа к API
+   */
+  aiApiKey?: string | null;
+  /**
+   * Например: openai/gpt-4.1-mini, anthropic/claude-3.5-sonnet, google/gemini-2.0-flash
+   */
+  aiTextModel?: string | null;
+  /**
+   * Например: openai/dall-e-3, stability/sdxl
+   */
+  aiImageModel?: string | null;
+  /**
+   * Креативность генерации (0 = точно, 2 = максимально креативно)
+   */
+  aiTemperature?: number | null;
+  /**
+   * Максимальная длина ответа в токенах
+   */
+  aiMaxTokens?: number | null;
+  deliveryPickupEnabled?: boolean | null;
+  deliveryPickupAddress?: string | null;
+  cdekEnabled?: boolean | null;
+  /**
+   * Идентификатор клиента из ЛК СДЭК
+   */
+  cdekAccount?: string | null;
+  /**
+   * Секретный ключ из ЛК СДЭК
+   */
+  cdekSecurePassword?: string | null;
+  cdekTestMode?: boolean | null;
+  /**
+   * Код города в системе СДЭК (44 = Москва)
+   */
+  cdekSenderCity?: string | null;
+  /**
+   * 139 = посылка дверь-ПВЗ, 138 = посылка дверь-дверь
+   */
+  cdekTariffCode?: number | null;
+  russianPostEnabled?: boolean | null;
+  /**
+   * Токен API Почты России (otpravka.pochta.ru)
+   */
+  russianPostToken?: string | null;
+  russianPostLogin?: string | null;
+  russianPostPassword?: string | null;
+  /**
+   * Почтовый индекс точки отправки
+   */
+  russianPostSenderIndex?: string | null;
+  /**
+   * Собственные точки самовывоза
+   */
+  pickupPoints?:
+    | {
+        name: string;
+        address: string;
+        city?: string | null;
+        phone?: string | null;
+        /**
+         * Например: Пн-Пт 10:00-20:00, Сб 10:00-18:00
+         */
+        workingHours?: string | null;
+        lat?: number | null;
+        lng?: number | null;
+        active?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settings_select".
+ */
+export interface SettingsSelect<T extends boolean = true> {
+  aiApiUrl?: T;
+  aiApiKey?: T;
+  aiTextModel?: T;
+  aiImageModel?: T;
+  aiTemperature?: T;
+  aiMaxTokens?: T;
+  deliveryPickupEnabled?: T;
+  deliveryPickupAddress?: T;
+  cdekEnabled?: T;
+  cdekAccount?: T;
+  cdekSecurePassword?: T;
+  cdekTestMode?: T;
+  cdekSenderCity?: T;
+  cdekTariffCode?: T;
+  russianPostEnabled?: T;
+  russianPostToken?: T;
+  russianPostLogin?: T;
+  russianPostPassword?: T;
+  russianPostSenderIndex?: T;
+  pickupPoints?:
+    | T
+    | {
+        name?: T;
+        address?: T;
+        city?: T;
+        phone?: T;
+        workingHours?: T;
+        lat?: T;
+        lng?: T;
+        active?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

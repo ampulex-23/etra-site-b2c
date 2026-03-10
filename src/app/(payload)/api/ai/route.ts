@@ -1,14 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-const POLZA_API_URL = 'https://api.polza.ai/v1/chat/completions'
-const POLZA_API_KEY = process.env.POLZA_API_KEY || ''
+import { getPayload } from 'payload'
+import config from '@payload-config'
 
 export async function POST(req: NextRequest) {
   try {
     const { prompt, content, mode } = await req.json()
 
-    if (!POLZA_API_KEY) {
-      return NextResponse.json({ error: 'POLZA_API_KEY not configured' }, { status: 500 })
+    const payload = await getPayload({ config })
+    const settings = await (payload as any).findGlobal({ slug: 'settings' }).catch(() => null)
+
+    const apiUrl = (settings as any)?.aiApiUrl || process.env.POLZA_API_URL || 'https://api.polza.ai/v1/chat/completions'
+    const apiKey = (settings as any)?.aiApiKey || process.env.POLZA_API_KEY || ''
+    const model = (settings as any)?.aiTextModel || 'openai/gpt-4.1-mini'
+    const temperature = (settings as any)?.aiTemperature ?? 0.7
+    const maxTokens = (settings as any)?.aiMaxTokens ?? 2000
+
+    if (!apiKey) {
+      return NextResponse.json({ error: 'API ключ не настроен. Перейдите в Настройки → ИИ Агент.' }, { status: 500 })
     }
 
     let systemMessage = ''
@@ -67,20 +75,20 @@ export async function POST(req: NextRequest) {
         userMessage = prompt ? `${prompt}\n\n${content || ''}` : content || ''
     }
 
-    const response = await fetch(POLZA_API_URL, {
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${POLZA_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'openai/gpt-4.1-mini',
+        model,
         messages: [
           { role: 'system', content: systemMessage },
           { role: 'user', content: userMessage },
         ],
-        temperature: 0.7,
-        max_tokens: 2000,
+        temperature,
+        max_tokens: maxTokens,
       }),
     })
 

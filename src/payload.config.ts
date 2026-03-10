@@ -16,11 +16,16 @@ import { Orders } from './collections/Orders'
 import { Customers } from './collections/Customers'
 import { Posts } from './collections/Posts'
 import { PromoCodes } from './collections/PromoCodes'
+import { Deliveries } from './collections/Deliveries'
+import { Payments } from './collections/Payments'
+import { Recipes } from './collections/Recipes'
+import { Settings } from './globals/Settings'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
+  serverURL: process.env.NEXT_PUBLIC_SITE_URL || '',
   admin: {
     user: Users.slug,
     importMap: {
@@ -39,6 +44,12 @@ export default buildConfig({
     Customers,
     Posts,
     PromoCodes,
+    Deliveries,
+    Payments,
+    Recipes,
+  ],
+  globals: [
+    Settings,
   ],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [...defaultFeatures, AIAssistantFeature()],

@@ -1,0 +1,14 @@
+/* ============================================
+   Sidebar nav: indent sub-items, not chevrons
+   ============================================ */
+.nav-group__content {
+  padding-left: 12px;
+}
+
+.nav-group__toggle {
+  padding-left: 0 !important;
+}
+
+.nav-group__indicator {
+  margin-left: 0;
+}
