@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     const { prompt, content, mode } = await req.json()
 
     const payload = await getPayload({ config })
-    const settings = await (payload as any).findGlobal({ slug: 'settings' }).catch(() => null)
+    const settings = await (payload as any).findGlobal({ slug: 'ai-settings' }).catch(() => null)
 
     const apiUrl = (settings as any)?.aiApiUrl || process.env.POLZA_API_URL || 'https://api.polza.ai/v1/chat/completions'
     const apiKey = (settings as any)?.aiApiKey || process.env.POLZA_API_KEY || ''

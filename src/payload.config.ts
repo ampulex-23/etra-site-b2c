@@ -19,7 +19,8 @@ import { PromoCodes } from './collections/PromoCodes'
 import { Deliveries } from './collections/Deliveries'
 import { Payments } from './collections/Payments'
 import { Recipes } from './collections/Recipes'
-import { Settings } from './globals/Settings'
+import { AISettings } from './globals/AISettings'
+import { DeliverySettings } from './globals/DeliverySettings'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -49,7 +50,8 @@ export default buildConfig({
     Recipes,
   ],
   globals: [
-    Settings,
+    AISettings,
+    DeliverySettings,
   ],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [...defaultFeatures, AIAssistantFeature()],

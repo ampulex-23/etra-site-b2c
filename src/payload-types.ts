@@ -107,10 +107,12 @@ export interface Config {
   };
   fallbackLocale: null;
   globals: {
-    settings: Setting;
+    'ai-settings': AiSetting;
+    'delivery-settings': DeliverySetting;
   };
   globalsSelect: {
-    settings: SettingsSelect<false> | SettingsSelect<true>;
+    'ai-settings': AiSettingsSelect<false> | AiSettingsSelect<true>;
+    'delivery-settings': DeliverySettingsSelect<false> | DeliverySettingsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -1159,9 +1161,9 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "settings".
+ * via the `definition` "ai-settings".
  */
-export interface Setting {
+export interface AiSetting {
   id: number;
   /**
    * URL API-эндпоинта (совместимого с OpenRouter/OpenAI)
@@ -1187,6 +1189,15 @@ export interface Setting {
    * Максимальная длина ответа в токенах
    */
   aiMaxTokens?: number | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "delivery-settings".
+ */
+export interface DeliverySetting {
+  id: number;
   deliveryPickupEnabled?: boolean | null;
   deliveryPickupAddress?: string | null;
   cdekEnabled?: boolean | null;
@@ -1242,15 +1253,24 @@ export interface Setting {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "settings_select".
+ * via the `definition` "ai-settings_select".
  */
-export interface SettingsSelect<T extends boolean = true> {
+export interface AiSettingsSelect<T extends boolean = true> {
   aiApiUrl?: T;
   aiApiKey?: T;
   aiTextModel?: T;
   aiImageModel?: T;
   aiTemperature?: T;
   aiMaxTokens?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "delivery-settings_select".
+ */
+export interface DeliverySettingsSelect<T extends boolean = true> {
   deliveryPickupEnabled?: T;
   deliveryPickupAddress?: T;
   cdekEnabled?: T;
