@@ -10,6 +10,10 @@ const nextConfig = {
         hostname: 's3.twcstorage.ru',
       },
       {
+        protocol: 'https',
+        hostname: '*.twc1.net',
+      },
+      {
         protocol: 'http',
         hostname: 'localhost',
       },
