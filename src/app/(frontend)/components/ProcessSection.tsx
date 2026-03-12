@@ -2,48 +2,61 @@
 
 import React from 'react'
 
-const steps = [
+interface ProcessStep {
+  title: string
+  description: string
+}
+
+interface ProcessSectionProps {
+  label?: string
+  title?: string
+  desc?: string
+  steps?: ProcessStep[]
+}
+
+const defaultSteps: ProcessStep[] = [
   {
-    num: '01',
-    title: 'Source',
-    desc: 'Wild cultures and organic ingredients sourced from trusted farms.',
+    title: 'Отбор',
+    description: 'Дикие культуры и органические ингредиенты от проверенных фермерских хозяйств.',
   },
   {
-    num: '02',
-    title: 'Ferment',
-    desc: '21-day controlled fermentation preserves living enzymes and probiotics.',
+    title: 'Ферментация',
+    description: '21-дневная контролируемая ферментация сохраняет живые ферменты и пробиотики.',
   },
   {
-    num: '03',
-    title: 'Test',
-    desc: 'Every batch is lab-verified for enzyme activity, CFU count, and safety.',
+    title: 'Контроль',
+    description: 'Каждая партия проверяется в лаборатории на активность ферментов, КОЕ и безопасность.',
   },
   {
-    num: '04',
-    title: 'Deliver',
-    desc: 'Cold-chain logistics ensure live cultures reach you at peak potency.',
+    title: 'Доставка',
+    description: 'Холодовая цепочка логистики гарантирует, что живые культуры попадут к вам на пике активности.',
   },
 ]
 
-export function ProcessSection() {
+export function ProcessSection({
+  label = 'Как это работает',
+  title = 'От культуры до бутылки',
+  desc = 'Наш четырёхэтапный процесс гарантирует, что каждая бутылка содержит живые ферменты максимальной активности.',
+  steps,
+}: ProcessSectionProps) {
+  const items = steps && steps.length > 0 ? steps : defaultSteps
+
   return (
     <section className="section section-process" id="process">
       <div className="container">
         <div className="section-process__header reveal">
-          <div className="section__label">How It Works</div>
-          <h2 className="section__title">From Culture to Bottle</h2>
-          <p className="section__desc">
-            Our four-step process ensures every bottle contains living enzymes at maximum potency.
-          </p>
+          <div className="section__label">{label}</div>
+          <h2 className="section__title">{title}</h2>
+          <p className="section__desc">{desc}</p>
         </div>
 
         <div className="section-process__steps">
           <div className="section-process__line" />
-          {steps.map((s, i) => (
+          {items.map((s, i) => (
             <div key={i} className={`process-step reveal reveal-delay-${i + 1}`}>
-              <div className="process-step__number">{s.num}</div>
+              <div className="process-step__number">{String(i + 1).padStart(2, '0')}</div>
               <h3 className="process-step__title">{s.title}</h3>
-              <p className="process-step__desc">{s.desc}</p>
+              <p className="process-step__desc">{s.description}</p>
             </div>
           ))}
         </div>

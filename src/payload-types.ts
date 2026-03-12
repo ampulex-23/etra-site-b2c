@@ -109,10 +109,12 @@ export interface Config {
   globals: {
     'ai-settings': AiSetting;
     'delivery-settings': DeliverySetting;
+    'landing-settings': LandingSetting;
   };
   globalsSelect: {
     'ai-settings': AiSettingsSelect<false> | AiSettingsSelect<true>;
     'delivery-settings': DeliverySettingsSelect<false> | DeliverySettingsSelect<true>;
+    'landing-settings': LandingSettingsSelect<false> | LandingSettingsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -1253,6 +1255,87 @@ export interface DeliverySetting {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "landing-settings".
+ */
+export interface LandingSetting {
+  id: number;
+  heroTitle?: string | null;
+  heroSubtitle?: string | null;
+  heroCta?: string | null;
+  heroCtaLink?: string | null;
+  heroSecondaryCtaText?: string | null;
+  heroSecondaryCtaLink?: string | null;
+  /**
+   * Если не задано, используется /images/hero-bg.jpg
+   */
+  heroBgImage?: (number | null) | Media;
+  stats?:
+    | {
+        number: string;
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  scienceLabel?: string | null;
+  scienceTitle?: string | null;
+  scienceDesc?: string | null;
+  scienceImage?: (number | null) | Media;
+  scienceFeatures?:
+    | {
+        icon?: string | null;
+        title: string;
+        description: string;
+        id?: string | null;
+      }[]
+    | null;
+  catalogLabel?: string | null;
+  catalogTitle?: string | null;
+  catalogDesc?: string | null;
+  /**
+   * Если включено, отображаются товары с галочкой «На главной»
+   */
+  catalogShowFeatured?: boolean | null;
+  catalogMaxItems?: number | null;
+  processLabel?: string | null;
+  processTitle?: string | null;
+  processDesc?: string | null;
+  processSteps?:
+    | {
+        title: string;
+        description: string;
+        id?: string | null;
+      }[]
+    | null;
+  testimonialsLabel?: string | null;
+  testimonialsTitle?: string | null;
+  testimonials?:
+    | {
+        text: string;
+        name: string;
+        role?: string | null;
+        avatar?: (number | null) | Media;
+        rating?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  joinTitle?: string | null;
+  joinDesc?: string | null;
+  joinButtonText?: string | null;
+  footerDesc?: string | null;
+  footerEmail?: string | null;
+  footerPhone?: string | null;
+  socialLinks?:
+    | {
+        platform: 'telegram' | 'vk' | 'instagram' | 'youtube' | 'whatsapp';
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ai-settings_select".
  */
 export interface AiSettingsSelect<T extends boolean = true> {
@@ -1295,6 +1378,81 @@ export interface DeliverySettingsSelect<T extends boolean = true> {
         lat?: T;
         lng?: T;
         active?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "landing-settings_select".
+ */
+export interface LandingSettingsSelect<T extends boolean = true> {
+  heroTitle?: T;
+  heroSubtitle?: T;
+  heroCta?: T;
+  heroCtaLink?: T;
+  heroSecondaryCtaText?: T;
+  heroSecondaryCtaLink?: T;
+  heroBgImage?: T;
+  stats?:
+    | T
+    | {
+        number?: T;
+        label?: T;
+        id?: T;
+      };
+  scienceLabel?: T;
+  scienceTitle?: T;
+  scienceDesc?: T;
+  scienceImage?: T;
+  scienceFeatures?:
+    | T
+    | {
+        icon?: T;
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  catalogLabel?: T;
+  catalogTitle?: T;
+  catalogDesc?: T;
+  catalogShowFeatured?: T;
+  catalogMaxItems?: T;
+  processLabel?: T;
+  processTitle?: T;
+  processDesc?: T;
+  processSteps?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  testimonialsLabel?: T;
+  testimonialsTitle?: T;
+  testimonials?:
+    | T
+    | {
+        text?: T;
+        name?: T;
+        role?: T;
+        avatar?: T;
+        rating?: T;
+        id?: T;
+      };
+  joinTitle?: T;
+  joinDesc?: T;
+  joinButtonText?: T;
+  footerDesc?: T;
+  footerEmail?: T;
+  footerPhone?: T;
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
         id?: T;
       };
   updatedAt?: T;

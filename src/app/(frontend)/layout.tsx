@@ -4,8 +4,8 @@ import './themes/cyber/effects.css'
 import './components/components.css'
 
 export const metadata = {
-  title: 'ETRA Project — The Enzyme Revolution',
-  description: 'Next-generation enzyme-based probiotic beverages. Science meets taste in every bottle.',
+  title: 'ЭТРА Project — Ферментированные напитки нового поколения',
+  description: 'Живые ферменты и пробиотики в каждой бутылке. Натуральная ферментация, лабораторный контроль качества.',
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {

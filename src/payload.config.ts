@@ -21,6 +21,7 @@ import { Payments } from './collections/Payments'
 import { Recipes } from './collections/Recipes'
 import { AISettings } from './globals/AISettings'
 import { DeliverySettings } from './globals/DeliverySettings'
+import { LandingSettings } from './globals/LandingSettings'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -52,6 +53,7 @@ export default buildConfig({
   globals: [
     AISettings,
     DeliverySettings,
+    LandingSettings,
   ],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [...defaultFeatures, AIAssistantFeature()],

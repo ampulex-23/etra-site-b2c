@@ -9,6 +9,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 's3.twcstorage.ru',
       },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
     ],
   },
   webpack: (webpackConfig) => {
