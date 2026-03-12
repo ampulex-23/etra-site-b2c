@@ -131,6 +131,42 @@ export const Products: CollectionConfig = {
       },
     },
     {
+      name: 'isBundle',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Это набор (комплект)',
+      admin: {
+        position: 'sidebar',
+        description: 'Набор автоматически раскладывается на базовые товары при списании',
+      },
+    },
+    {
+      name: 'bundleItems',
+      type: 'array',
+      label: 'Состав набора',
+      admin: {
+        description: 'Базовые товары, из которых состоит набор',
+        condition: (data) => data?.isBundle === true,
+      },
+      fields: [
+        {
+          name: 'product',
+          type: 'relationship',
+          relationTo: 'products',
+          required: true,
+          label: 'Товар',
+        },
+        {
+          name: 'quantity',
+          type: 'number',
+          required: true,
+          min: 1,
+          defaultValue: 1,
+          label: 'Количество в наборе',
+        },
+      ],
+    },
+    {
       name: 'inStock',
       type: 'checkbox',
       defaultValue: true,

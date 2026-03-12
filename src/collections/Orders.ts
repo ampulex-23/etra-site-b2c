@@ -1,10 +1,14 @@
 import type { CollectionConfig } from 'payload'
+import { orderAfterChange } from '../hooks/orderAfterChange'
 
 export const Orders: CollectionConfig = {
   slug: 'orders',
   labels: {
     singular: 'Заказ',
     plural: 'Заказы',
+  },
+  hooks: {
+    afterChange: [orderAfterChange],
   },
   admin: {
     useAsTitle: 'orderNumber',

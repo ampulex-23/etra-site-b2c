@@ -19,6 +19,10 @@ import { PromoCodes } from './collections/PromoCodes'
 import { Deliveries } from './collections/Deliveries'
 import { Payments } from './collections/Payments'
 import { Recipes } from './collections/Recipes'
+import { Warehouses } from './collections/Warehouses'
+import { StockMovements } from './collections/StockMovements'
+import { StockLevels } from './collections/StockLevels'
+import { Inventories } from './collections/Inventories'
 import { AISettings } from './globals/AISettings'
 import { DeliverySettings } from './globals/DeliverySettings'
 import { LandingSettings } from './globals/LandingSettings'
@@ -49,6 +53,10 @@ export default buildConfig({
     Deliveries,
     Payments,
     Recipes,
+    Warehouses,
+    StockMovements,
+    StockLevels,
+    Inventories,
   ],
   globals: [
     AISettings,

@@ -79,6 +79,10 @@ export interface Config {
     deliveries: Delivery;
     payments: Payment;
     recipes: Recipe;
+    warehouses: Warehouse;
+    'stock-movements': StockMovement;
+    'stock-levels': StockLevel;
+    inventories: Inventory;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -97,6 +101,10 @@ export interface Config {
     deliveries: DeliveriesSelect<false> | DeliveriesSelect<true>;
     payments: PaymentsSelect<false> | PaymentsSelect<true>;
     recipes: RecipesSelect<false> | RecipesSelect<true>;
+    warehouses: WarehousesSelect<false> | WarehousesSelect<true>;
+    'stock-movements': StockMovementsSelect<false> | StockMovementsSelect<true>;
+    'stock-levels': StockLevelsSelect<false> | StockLevelsSelect<true>;
+    inventories: InventoriesSelect<false> | InventoriesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -307,6 +315,20 @@ export interface Product {
     [k: string]: unknown;
   } | null;
   weight?: number | null;
+  /**
+   * Набор автоматически раскладывается на базовые товары при списании
+   */
+  isBundle?: boolean | null;
+  /**
+   * Базовые товары, из которых состоит набор
+   */
+  bundleItems?:
+    | {
+        product: number | Product;
+        quantity: number;
+        id?: string | null;
+      }[]
+    | null;
   inStock?: boolean | null;
   featured?: boolean | null;
   status?: ('active' | 'hidden' | 'archived') | null;
@@ -633,6 +655,152 @@ export interface Recipe {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "warehouses".
+ */
+export interface Warehouse {
+  id: number;
+  /**
+   * Например: Склад производства, Склад СДЭК
+   */
+  name: string;
+  type: 'production' | 'logistics' | 'retail';
+  /**
+   * Сотрудник, ответственный за склад
+   */
+  responsible?: (number | null) | User;
+  address?: string | null;
+  active?: boolean | null;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Журнал всех операций: производство, перемещение, отправка, списание
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock-movements".
+ */
+export interface StockMovement {
+  id: number;
+  operationType:
+    | 'produced'
+    | 'sent_to_logistics'
+    | 'received_at_logistics'
+    | 'shipped_to_customers'
+    | 'retail_shipment'
+    | 'employee_issue'
+    | 'write_off'
+    | 'return_to_stock'
+    | 'inventory_adjustment';
+  /**
+   * Базовый товар (не набор). Наборы раскладываются автоматически.
+   */
+  product: number | Product;
+  quantity: number;
+  /**
+   * Склад, на котором выполняется операция
+   */
+  warehouse: number | Warehouse;
+  /**
+   * Только для перемещений — куда отправляется товар
+   */
+  targetWarehouse?: (number | null) | Warehouse;
+  status?: ('completed' | 'in_transit' | 'cancelled') | null;
+  operator?: (number | null) | User;
+  /**
+   * Если операция связана с конкретным заказом
+   */
+  order?: (number | null) | Order;
+  /**
+   * Если товар был автоматически разложен из набора
+   */
+  bundle?: (number | null) | Product;
+  /**
+   * Например: Гранат, ярмарка и т.д.
+   */
+  retailPoint?: string | null;
+  employeeName?: string | null;
+  /**
+   * Причина списания, примечание к операции
+   */
+  reason?: string | null;
+  date: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Текущие остатки товаров по складам
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock-levels".
+ */
+export interface StockLevel {
+  id: number;
+  product: number | Product;
+  warehouse: number | Warehouse;
+  /**
+   * Автоматически рассчитывается из журнала движений
+   */
+  calculated: number;
+  /**
+   * Заполняется вручную при инвентаризации
+   */
+  actual?: number | null;
+  /**
+   * Товар, зарезервированный под заказы
+   */
+  reserved?: number | null;
+  /**
+   * Товар в пути между складами
+   */
+  inTransit?: number | null;
+  /**
+   * calculated - reserved - inTransit
+   */
+  available?: number | null;
+  lastInventoryDate?: string | null;
+  /**
+   * actual - calculated (заполняется при инвентаризации)
+   */
+  discrepancy?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Фиксация фактических остатков и расхождений
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventories".
+ */
+export interface Inventory {
+  id: number;
+  warehouse: number | Warehouse;
+  date: string;
+  status?: ('draft' | 'in_progress' | 'completed' | 'cancelled') | null;
+  conductor?: (number | null) | User;
+  items: {
+    product: number | Product;
+    /**
+     * Из системы на момент инвентаризации
+     */
+    calculatedQty: number;
+    /**
+     * Посчитанное количество
+     */
+    actualQty: number;
+    /**
+     * actual - calculated
+     */
+    discrepancy?: number | null;
+    note?: string | null;
+    id?: string | null;
+  }[];
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -698,6 +866,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'recipes';
         value: number | Recipe;
+      } | null)
+    | ({
+        relationTo: 'warehouses';
+        value: number | Warehouse;
+      } | null)
+    | ({
+        relationTo: 'stock-movements';
+        value: number | StockMovement;
+      } | null)
+    | ({
+        relationTo: 'stock-levels';
+        value: number | StockLevel;
+      } | null)
+    | ({
+        relationTo: 'inventories';
+        value: number | Inventory;
       } | null);
   globalSlug?: string | null;
   user:
@@ -857,6 +1041,14 @@ export interface ProductsSelect<T extends boolean = true> {
   composition?: T;
   usage?: T;
   weight?: T;
+  isBundle?: T;
+  bundleItems?:
+    | T
+    | {
+        product?: T;
+        quantity?: T;
+        id?: T;
+      };
   inStock?: T;
   featured?: T;
   status?: T;
@@ -1118,6 +1310,81 @@ export interface RecipesSelect<T extends boolean = true> {
         description?: T;
         ogImage?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "warehouses_select".
+ */
+export interface WarehousesSelect<T extends boolean = true> {
+  name?: T;
+  type?: T;
+  responsible?: T;
+  address?: T;
+  active?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock-movements_select".
+ */
+export interface StockMovementsSelect<T extends boolean = true> {
+  operationType?: T;
+  product?: T;
+  quantity?: T;
+  warehouse?: T;
+  targetWarehouse?: T;
+  status?: T;
+  operator?: T;
+  order?: T;
+  bundle?: T;
+  retailPoint?: T;
+  employeeName?: T;
+  reason?: T;
+  date?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock-levels_select".
+ */
+export interface StockLevelsSelect<T extends boolean = true> {
+  product?: T;
+  warehouse?: T;
+  calculated?: T;
+  actual?: T;
+  reserved?: T;
+  inTransit?: T;
+  available?: T;
+  lastInventoryDate?: T;
+  discrepancy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventories_select".
+ */
+export interface InventoriesSelect<T extends boolean = true> {
+  warehouse?: T;
+  date?: T;
+  status?: T;
+  conductor?: T;
+  items?:
+    | T
+    | {
+        product?: T;
+        calculatedQty?: T;
+        actualQty?: T;
+        discrepancy?: T;
+        note?: T;
+        id?: T;
+      };
+  notes?: T;
   updatedAt?: T;
   createdAt?: T;
 }
