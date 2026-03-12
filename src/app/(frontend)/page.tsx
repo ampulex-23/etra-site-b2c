@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import React from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
