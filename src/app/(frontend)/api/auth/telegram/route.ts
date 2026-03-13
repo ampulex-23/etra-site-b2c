@@ -60,10 +60,10 @@ export async function POST(req: NextRequest) {
     const telegramId = String(body.id)
     const telegramName = [body.first_name, body.last_name].filter(Boolean).join(' ')
 
-    // Find existing customer by telegramId
+    // Find existing customer by telegram.chatId
     const existing = await payload.find({
       collection: 'customers',
-      where: { telegramId: { equals: telegramId } },
+      where: { 'telegram.chatId': { equals: telegramId } },
       limit: 1,
     })
 
@@ -71,14 +71,20 @@ export async function POST(req: NextRequest) {
 
     if (existing.docs.length > 0) {
       customer = existing.docs[0] as unknown as Record<string, unknown>
-      // Update username if changed
-      if (body.username && customer.telegramUsername !== body.username) {
-        await payload.update({
-          collection: 'customers',
-          id: customer.id as string,
-          data: { telegramUsername: body.username } as any,
-        })
-      }
+      // Update telegram profile data
+      await payload.update({
+        collection: 'customers',
+        id: customer.id as string,
+        data: {
+          telegram: {
+            chatId: telegramId,
+            username: body.username || '',
+            firstName: body.first_name || '',
+            lastName: body.last_name || '',
+            photoUrl: body.photo_url || '',
+          },
+        } as any,
+      })
     } else {
       // Create new customer
       const tempEmail = `tg_${telegramId}@telegram.user`
@@ -90,8 +96,14 @@ export async function POST(req: NextRequest) {
           email: tempEmail,
           password: tempPassword,
           name: telegramName,
-          telegramId,
-          telegramUsername: body.username || '',
+          source: 'site',
+          telegram: {
+            chatId: telegramId,
+            username: body.username || '',
+            firstName: body.first_name || '',
+            lastName: body.last_name || '',
+            photoUrl: body.photo_url || '',
+          },
         } as any,
       }) as unknown as Record<string, unknown>
     }

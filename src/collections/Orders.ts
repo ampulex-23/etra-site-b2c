@@ -187,6 +187,37 @@ export const Orders: CollectionConfig = {
       admin: { position: 'sidebar' },
     },
     {
+      name: 'source',
+      type: 'select',
+      defaultValue: 'site',
+      label: 'Источник',
+      options: [
+        { label: 'Сайт', value: 'site' },
+        { label: 'Telegram-бот', value: 'telegram_bot' },
+        { label: 'Импорт', value: 'import' },
+      ],
+      admin: { position: 'sidebar' },
+    },
+    {
+      name: 'puzzleBotOrderId',
+      type: 'text',
+      label: 'ID заказа в PuzzleBot',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Внутренний ID заказа из PuzzleBot',
+      },
+    },
+    {
+      name: 'importedAt',
+      type: 'date',
+      label: 'Дата импорта',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
       name: 'amoCrmDealId',
       type: 'number',
       label: 'ID сделки в amoCRM',
