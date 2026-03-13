@@ -118,11 +118,13 @@ export interface Config {
     'ai-settings': AiSetting;
     'delivery-settings': DeliverySetting;
     'landing-settings': LandingSetting;
+    'shop-settings': ShopSetting;
   };
   globalsSelect: {
     'ai-settings': AiSettingsSelect<false> | AiSettingsSelect<true>;
     'delivery-settings': DeliverySettingsSelect<false> | DeliverySettingsSelect<true>;
     'landing-settings': LandingSettingsSelect<false> | LandingSettingsSelect<true>;
+    'shop-settings': ShopSettingsSelect<false> | ShopSettingsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -416,6 +418,8 @@ export interface Customer {
   amoCrmContactId?: number | null;
   bonusBalance?: number | null;
   favorites?: (number | Product)[] | null;
+  telegramId?: string | null;
+  telegramUsername?: string | null;
   emailVerified?: boolean | null;
   updatedAt: string;
   createdAt: string;
@@ -1141,6 +1145,8 @@ export interface CustomersSelect<T extends boolean = true> {
   amoCrmContactId?: T;
   bonusBalance?: T;
   favorites?: T;
+  telegramId?: T;
+  telegramUsername?: T;
   emailVerified?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1603,6 +1609,32 @@ export interface LandingSetting {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shop-settings".
+ */
+export interface ShopSetting {
+  id: number;
+  /**
+   * Токен бота из @BotFather для авторизации клиентов через Telegram Login Widget
+   */
+  telegramBotToken?: string | null;
+  /**
+   * Имя бота для Telegram Login Widget, например: etra_auth_bot
+   */
+  telegramBotUsername?: string | null;
+  paymentEnabled?: boolean | null;
+  paymentProvider?: ('yokassa' | 'tinkoff') | null;
+  paymentApiKey?: string | null;
+  paymentShopId?: string | null;
+  minOrderAmount?: number | null;
+  /**
+   * 0 = бесплатная доставка отключена
+   */
+  freeDeliveryThreshold?: number | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ai-settings_select".
  */
 export interface AiSettingsSelect<T extends boolean = true> {
@@ -1722,6 +1754,23 @@ export interface LandingSettingsSelect<T extends boolean = true> {
         url?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shop-settings_select".
+ */
+export interface ShopSettingsSelect<T extends boolean = true> {
+  telegramBotToken?: T;
+  telegramBotUsername?: T;
+  paymentEnabled?: T;
+  paymentProvider?: T;
+  paymentApiKey?: T;
+  paymentShopId?: T;
+  minOrderAmount?: T;
+  freeDeliveryThreshold?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

@@ -8,6 +8,7 @@ export const DeliverySettings: GlobalConfig = {
   },
   access: {
     read: ({ req: { user } }) => Boolean(user),
+    update: ({ req: { user } }) => Boolean(user),
   },
   fields: [
     {
