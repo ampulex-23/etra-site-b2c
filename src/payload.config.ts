@@ -26,6 +26,7 @@ import { Inventories } from './collections/Inventories'
 import { AISettings } from './globals/AISettings'
 import { DeliverySettings } from './globals/DeliverySettings'
 import { LandingSettings } from './globals/LandingSettings'
+import { ShopSettings } from './globals/ShopSettings'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -62,6 +63,7 @@ export default buildConfig({
     AISettings,
     DeliverySettings,
     LandingSettings,
+    ShopSettings,
   ],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [...defaultFeatures, AIAssistantFeature()],

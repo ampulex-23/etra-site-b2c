@@ -1,0 +1,158 @@
+'use client'
+
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react'
+
+export interface CustomerUser {
+  id: string
+  email: string
+  name?: string
+  phone?: string
+  telegramId?: string
+}
+
+interface AuthContextValue {
+  customer: CustomerUser | null
+  token: string | null
+  loading: boolean
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
+  register: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>
+  loginWithTelegram: (telegramData: Record<string, unknown>) => Promise<{ success: boolean; error?: string }>
+  logout: () => void
+  refreshUser: () => Promise<void>
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null)
+
+const TOKEN_KEY = 'etra-customer-token'
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [customer, setCustomer] = useState<CustomerUser | null>(null)
+  const [token, setToken] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const saveToken = (t: string | null) => {
+    setToken(t)
+    if (t) localStorage.setItem(TOKEN_KEY, t)
+    else localStorage.removeItem(TOKEN_KEY)
+  }
+
+  const fetchMe = useCallback(async (jwt: string) => {
+    try {
+      const res = await fetch('/api/customers/me', {
+        headers: { Authorization: `JWT ${jwt}` },
+      })
+      if (!res.ok) throw new Error('unauthorized')
+      const data = await res.json()
+      setCustomer({
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.name,
+        phone: data.user.phone,
+        telegramId: data.user.telegramId,
+      })
+      return true
+    } catch {
+      saveToken(null)
+      setCustomer(null)
+      return false
+    }
+  }, [])
+
+  useEffect(() => {
+    const stored = localStorage.getItem(TOKEN_KEY)
+    if (stored) {
+      setToken(stored)
+      fetchMe(stored).finally(() => setLoading(false))
+    } else {
+      setLoading(false)
+    }
+  }, [fetchMe])
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      try {
+        const res = await fetch('/api/customers/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        })
+        const data = await res.json()
+        if (!res.ok) return { success: false, error: data.errors?.[0]?.message || 'Неверный email или пароль' }
+        saveToken(data.token)
+        setCustomer({
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.name,
+          phone: data.user.phone,
+          telegramId: data.user.telegramId,
+        })
+        return { success: true }
+      } catch {
+        return { success: false, error: 'Ошибка сети' }
+      }
+    },
+    [],
+  )
+
+  const register = useCallback(
+    async (email: string, password: string, name: string) => {
+      try {
+        const res = await fetch('/api/customers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, name }),
+        })
+        const data = await res.json()
+        if (!res.ok) return { success: false, error: data.errors?.[0]?.message || 'Ошибка регистрации' }
+        // auto-login after registration
+        return login(email, password)
+      } catch {
+        return { success: false, error: 'Ошибка сети' }
+      }
+    },
+    [login],
+  )
+
+  const loginWithTelegram = useCallback(
+    async (telegramData: Record<string, unknown>) => {
+      try {
+        const res = await fetch('/api/auth/telegram', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(telegramData),
+        })
+        const data = await res.json()
+        if (!res.ok) return { success: false, error: data.error || 'Ошибка авторизации через Telegram' }
+        saveToken(data.token)
+        setCustomer(data.user)
+        return { success: true }
+      } catch {
+        return { success: false, error: 'Ошибка сети' }
+      }
+    },
+    [],
+  )
+
+  const logout = useCallback(() => {
+    saveToken(null)
+    setCustomer(null)
+  }, [])
+
+  const refreshUser = useCallback(async () => {
+    if (token) await fetchMe(token)
+  }, [token, fetchMe])
+
+  return (
+    <AuthContext.Provider
+      value={{ customer, token, loading, login, register, loginWithTelegram, logout, refreshUser }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider')
+  return ctx
+}

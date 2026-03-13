@@ -107,6 +107,19 @@ export const Customers: CollectionConfig = {
       label: 'Избранное',
     },
     {
+      name: 'telegramId',
+      type: 'text',
+      unique: true,
+      label: 'Telegram ID',
+      admin: { position: 'sidebar', readOnly: true },
+    },
+    {
+      name: 'telegramUsername',
+      type: 'text',
+      label: 'Telegram Username',
+      admin: { position: 'sidebar', readOnly: true },
+    },
+    {
       name: 'emailVerified',
       type: 'checkbox',
       defaultValue: false,
