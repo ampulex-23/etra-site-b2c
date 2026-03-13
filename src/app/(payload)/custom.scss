@@ -1,14 +1,352 @@
 /* ============================================
-   Sidebar nav: indent sub-items, not chevrons
+   ЭТРА Admin — Modern UI Overrides
    ============================================ */
-.nav-group__content {
-  padding-left: 12px;
+
+/* --- CSS Variables --- */
+:root {
+  --etra-accent: #6366f1;
+  --etra-accent-hover: #4f46e5;
+  --etra-accent-subtle: rgba(99, 102, 241, 0.08);
+  --etra-radius: 10px;
+  --etra-radius-sm: 6px;
+  --etra-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --etra-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --etra-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- Global Typography --- */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Sidebar --- */
+.nav {
+  padding: 8px !important;
 }
 
 .nav-group__toggle {
-  padding-left: 0 !important;
+  padding: 6px 8px !important;
+  border-radius: var(--etra-radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  transition: opacity var(--etra-transition);
+}
+
+.nav-group__toggle:hover {
+  opacity: 0.8;
+  background: transparent !important;
+}
+
+.nav-group__content {
+  padding-left: 4px;
+  margin-bottom: 8px;
 }
 
 .nav-group__indicator {
   margin-left: 0;
+}
+
+.nav__link {
+  padding: 7px 12px !important;
+  border-radius: var(--etra-radius-sm) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  transition: all var(--etra-transition) !important;
+  margin: 1px 0;
+}
+
+.nav__link:hover {
+  background: var(--etra-accent-subtle) !important;
+}
+
+.nav__link.active {
+  background: var(--etra-accent-subtle) !important;
+  color: var(--etra-accent) !important;
+  font-weight: 600 !important;
+}
+
+.nav__link.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  border-radius: 0 3px 3px 0;
+  background: var(--etra-accent);
+}
+
+/* --- Header / App Bar --- */
+.app-header {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--theme-elevation-150) !important;
+}
+
+/* --- Collection List / Dashboard Cards --- */
+.collection-list__wrap,
+.dashboard__card-list {
+  gap: 16px !important;
+}
+
+.card {
+  border-radius: var(--etra-radius) !important;
+  border: 1px solid var(--theme-elevation-150) !important;
+  box-shadow: var(--etra-shadow-sm) !important;
+  transition: all var(--etra-transition) !important;
+  overflow: hidden;
+}
+
+.card:hover {
+  box-shadow: var(--etra-shadow-md) !important;
+  border-color: var(--theme-elevation-200) !important;
+  transform: translateY(-1px);
+}
+
+/* --- Table --- */
+.table {
+  border-radius: var(--etra-radius) !important;
+  overflow: hidden;
+  border: 1px solid var(--theme-elevation-150) !important;
+}
+
+.table .row {
+  transition: background var(--etra-transition);
+}
+
+.table .row:hover {
+  background: var(--etra-accent-subtle) !important;
+}
+
+.table .row .cell:first-child {
+  font-weight: 600;
+}
+
+.row-1 .cell {
+  font-size: 13px;
+}
+
+/* --- Buttons --- */
+.btn {
+  border-radius: var(--etra-radius-sm) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em;
+  transition: all var(--etra-transition) !important;
+}
+
+.btn--style-primary {
+  background: var(--etra-accent) !important;
+  border-color: var(--etra-accent) !important;
+}
+
+.btn--style-primary:hover {
+  background: var(--etra-accent-hover) !important;
+  border-color: var(--etra-accent-hover) !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3) !important;
+}
+
+.btn--style-secondary {
+  border-radius: var(--etra-radius-sm) !important;
+}
+
+.btn--size-small {
+  border-radius: var(--etra-radius-sm) !important;
+}
+
+/* --- Form Fields --- */
+.field-type {
+  margin-bottom: 20px;
+}
+
+.field-type input,
+.field-type textarea,
+.field-type select,
+.field-type .rs__control {
+  border-radius: var(--etra-radius-sm) !important;
+  transition: border-color var(--etra-transition), box-shadow var(--etra-transition) !important;
+}
+
+.field-type input:focus,
+.field-type textarea:focus,
+.field-type .rs__control--is-focused {
+  border-color: var(--etra-accent) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12) !important;
+}
+
+.field-type .field-label,
+.field-type label {
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: 0.01em;
+}
+
+/* --- Group fields --- */
+.group-field__wrap {
+  border-radius: var(--etra-radius) !important;
+  border: 1px solid var(--theme-elevation-150) !important;
+  padding: 20px !important;
+}
+
+/* --- Array fields --- */
+.array-field__draggable-rows {
+  border-radius: var(--etra-radius) !important;
+  overflow: hidden;
+}
+
+/* --- Tabs --- */
+.tabs-field__tabs {
+  gap: 0 !important;
+}
+
+.tabs-field__tab-button {
+  border-radius: var(--etra-radius-sm) var(--etra-radius-sm) 0 0 !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  transition: all var(--etra-transition) !important;
+}
+
+.tabs-field__tab-button--active {
+  background: var(--etra-accent-subtle) !important;
+  color: var(--etra-accent) !important;
+}
+
+/* --- Document Header --- */
+.doc-header {
+  padding-bottom: 20px;
+}
+
+.doc-header__title h1 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* --- Pill / Badge --- */
+.pill {
+  border-radius: 20px !important;
+  font-weight: 600 !important;
+  font-size: 11.5px !important;
+  padding: 3px 10px !important;
+}
+
+/* --- Upload / Media preview --- */
+.upload__image {
+  border-radius: var(--etra-radius) !important;
+  overflow: hidden;
+}
+
+.file-field__previewSizes {
+  border-radius: var(--etra-radius) !important;
+}
+
+/* --- Relationship field --- */
+.relationship--single-value__text {
+  font-weight: 500;
+}
+
+/* --- Toast notifications --- */
+.Toastify__toast {
+  border-radius: var(--etra-radius) !important;
+  box-shadow: var(--etra-shadow-md) !important;
+  font-weight: 500;
+}
+
+/* --- Modal --- */
+.drawer__content,
+.modal__content {
+  border-radius: var(--etra-radius) !important;
+}
+
+/* --- Scrollbar subtle styling --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--theme-elevation-200);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-elevation-300);
+}
+
+/* --- Account page --- */
+.account__header {
+  margin-bottom: 24px;
+}
+
+/* --- Dashboard welcome --- */
+.dashboard__wrap {
+  padding: 24px !important;
+}
+
+/* --- List controls --- */
+.list-controls {
+  border-radius: var(--etra-radius) !important;
+  border: 1px solid var(--theme-elevation-150) !important;
+  padding: 12px 16px !important;
+}
+
+/* --- Pagination --- */
+.paginator .paginator__page {
+  border-radius: var(--etra-radius-sm) !important;
+  font-weight: 600;
+}
+
+.paginator .paginator__page.paginator__page--is-current {
+  background: var(--etra-accent) !important;
+  color: white !important;
+}
+
+/* --- Step nav (breadcrumbs) --- */
+.step-nav__link {
+  font-weight: 500;
+}
+
+/* --- Collapsible fields --- */
+.collapsible__toggle-wrap {
+  border-radius: var(--etra-radius-sm) !important;
+  transition: background var(--etra-transition);
+}
+
+.collapsible__toggle-wrap:hover {
+  background: var(--etra-accent-subtle);
+}
+
+/* --- Rich text editor --- */
+.rich-text .lexical-content {
+  border-radius: var(--etra-radius) !important;
+}
+
+/* --- Sidebar document fields --- */
+.render-fields .sidebar-field {
+  margin-bottom: 16px;
+}
+
+/* --- Empty state --- */
+.no-results {
+  border-radius: var(--etra-radius) !important;
+  padding: 40px !important;
+  text-align: center;
+}
+
+/* --- Responsive tweaks --- */
+@media (max-width: 768px) {
+  .nav {
+    padding: 4px !important;
+  }
+
+  .dashboard__wrap {
+    padding: 16px !important;
+  }
 }

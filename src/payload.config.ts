@@ -2,6 +2,7 @@ import { postgresAdapter } from '@payloadcms/db-postgres'
 import { s3Storage } from '@payloadcms/storage-s3'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { AIAssistantFeature } from './features/ai-assistant/feature.server'
+import { ru } from '@payloadcms/translations/languages/ru'
 import fs from 'fs'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -33,6 +34,10 @@ const dirname = path.dirname(filename)
 
 export default buildConfig({
   serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || process.env.NEXT_PUBLIC_SITE_URL || '',
+  i18n: {
+    supportedLanguages: { ru },
+    fallbackLanguage: 'ru',
+  },
   admin: {
     user: Users.slug,
     importMap: {
