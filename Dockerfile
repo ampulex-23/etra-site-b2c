@@ -68,8 +68,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Migration script for DB schema sync at startup
 COPY --from=builder --chown=nextjs:nodejs /app/push-schema.mjs ./push-schema.mjs
 
-# Copy pg with all transitive deps from builder (clean npm install, no conflicts)
-COPY --from=builder --chown=nextjs:nodejs /app/pg-deps/node_modules ./node_modules
+# Copy pg with all transitive deps into separate dir (avoids conflict with standalone node_modules)
+COPY --from=builder --chown=nextjs:nodejs /app/pg-deps/node_modules ./pg-deps/node_modules
 
 USER nextjs
 
@@ -77,5 +77,5 @@ EXPOSE 3000
 
 ENV PORT 3000
 
-# Push DB schema (Payload push:true) then start Next.js server
-CMD node push-schema.mjs && HOSTNAME="0.0.0.0" node server.js
+# Run migration with NODE_PATH pointing to pg-deps, then start server
+CMD NODE_PATH=/app/pg-deps/node_modules node push-schema.mjs && HOSTNAME="0.0.0.0" node server.js
