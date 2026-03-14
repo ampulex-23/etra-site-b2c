@@ -7,7 +7,7 @@ export const Users: CollectionConfig = {
     plural: 'Пользователи',
   },
   admin: {
-    useAsTitle: 'name',
+    useAsTitle: 'email',
     defaultColumns: ['name', 'email', 'role', 'active'],
     group: '⚙️ Система',
   },
@@ -16,7 +16,8 @@ export const Users: CollectionConfig = {
     read: ({ req: { user } }) => Boolean(user),
     create: ({ req: { user } }) => {
       if (!user) return false
-      return (user as any).role === 'admin'
+      const role = (user as any).role
+      return role === 'admin' || !role
     },
     update: ({ req: { user } }) => {
       if (!user) return false
@@ -32,7 +33,6 @@ export const Users: CollectionConfig = {
     {
       name: 'name',
       type: 'text',
-      required: true,
       label: 'Имя',
     },
     {
