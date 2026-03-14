@@ -50,6 +50,9 @@ ENV NODE_ENV production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Install pg for runtime migration script
+RUN npm install pg --no-save
+
 # Remove this line if you do not have this folder
 COPY --from=builder /app/public ./public
 
@@ -62,14 +65,8 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy full node_modules + source for Payload schema push at startup
-# Must come AFTER standalone copy to overlay the tree-shaken node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/src ./src
-COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
-COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
+# Migration script for DB schema sync at startup
 COPY --from=builder --chown=nextjs:nodejs /app/push-schema.mjs ./push-schema.mjs
-COPY --from=builder --chown=nextjs:nodejs /app/push-schema-worker.ts ./push-schema-worker.ts
 
 USER nextjs
 
