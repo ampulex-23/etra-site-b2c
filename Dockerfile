@@ -39,6 +39,9 @@ RUN \
   else echo "Lockfile not found." && exit 1; \
   fi
 
+# Pre-install pg with all transitive deps into a clean directory for runner
+RUN mkdir -p /app/pg-deps && cd /app/pg-deps && npm init -y > /dev/null 2>&1 && npm install pg --no-save
+
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
@@ -65,8 +68,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Migration script for DB schema sync at startup
 COPY --from=builder --chown=nextjs:nodejs /app/push-schema.mjs ./push-schema.mjs
 
-# Install pg AFTER standalone copy to avoid node_modules conflict
-RUN npm install pg --no-save
+# Copy pg with all transitive deps from builder (clean npm install, no conflicts)
+COPY --from=builder --chown=nextjs:nodejs /app/pg-deps/node_modules ./node_modules
 
 USER nextjs
 
