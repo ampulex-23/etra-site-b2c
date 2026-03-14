@@ -50,9 +50,6 @@ ENV NODE_ENV production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Install pg for runtime migration script
-RUN npm install pg --no-save
-
 # Remove this line if you do not have this folder
 COPY --from=builder /app/public ./public
 
@@ -67,6 +64,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Migration script for DB schema sync at startup
 COPY --from=builder --chown=nextjs:nodejs /app/push-schema.mjs ./push-schema.mjs
+
+# Install pg AFTER standalone copy to avoid node_modules conflict
+RUN npm install pg --no-save
 
 USER nextjs
 
