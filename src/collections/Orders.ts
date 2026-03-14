@@ -21,6 +21,16 @@ export const Orders: CollectionConfig = {
       if (user.collection === 'users') return true
       return { customer: { equals: user.id } }
     },
+    create: ({ req: { user } }) => Boolean(user),
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      if (user.collection === 'users') return true
+      return { customer: { equals: user.id } }
+    },
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      return user.collection === 'users'
+    },
   },
   fields: [
     {

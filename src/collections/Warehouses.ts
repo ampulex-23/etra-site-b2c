@@ -13,6 +13,12 @@ export const Warehouses: CollectionConfig = {
   },
   access: {
     read: ({ req: { user } }) => Boolean(user),
+    create: ({ req: { user } }) => Boolean(user),
+    update: ({ req: { user } }) => Boolean(user),
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      return user.collection === 'users'
+    },
   },
   fields: [
     {

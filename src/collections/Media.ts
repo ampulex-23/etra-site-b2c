@@ -11,8 +11,23 @@ export const Media: CollectionConfig = {
   },
   access: {
     read: () => true,
+    create: ({ req: { user } }) => Boolean(user),
+    update: ({ req: { user } }) => Boolean(user),
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      return user.collection === 'users'
+    },
   },
   fields: [
+    {
+      name: 'aiAssistant',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/admin/MediaAIAssistant#MediaAIAssistant',
+        },
+      },
+    },
     {
       name: 'alt',
       type: 'text',
