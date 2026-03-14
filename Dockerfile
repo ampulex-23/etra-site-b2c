@@ -50,6 +50,9 @@ ENV NODE_ENV production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Install pg for runtime migration
+RUN npm install pg --no-save
+
 # Remove this line if you do not have this folder
 COPY --from=builder /app/public ./public
 
@@ -61,6 +64,7 @@ RUN chown nextjs:nodejs .next
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/migrate.mjs ./migrate.mjs
 
 USER nextjs
 
@@ -70,4 +74,4 @@ ENV PORT 3000
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
-CMD HOSTNAME="0.0.0.0" node server.js
+CMD node migrate.mjs && HOSTNAME="0.0.0.0" node server.js
