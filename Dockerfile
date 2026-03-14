@@ -50,9 +50,6 @@ ENV NODE_ENV production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Install pg for runtime migration
-RUN npm install pg --no-save
-
 # Remove this line if you do not have this folder
 COPY --from=builder /app/public ./public
 
@@ -64,7 +61,15 @@ RUN chown nextjs:nodejs .next
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/migrate.mjs ./migrate.mjs
+
+# Copy full node_modules + source for Payload schema push at startup
+# Must come AFTER standalone copy to overlay the tree-shaken node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/src ./src
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
+COPY --from=builder --chown=nextjs:nodejs /app/push-schema.mjs ./push-schema.mjs
+COPY --from=builder --chown=nextjs:nodejs /app/push-schema-worker.ts ./push-schema-worker.ts
 
 USER nextjs
 
@@ -72,6 +77,5 @@ EXPOSE 3000
 
 ENV PORT 3000
 
-# server.js is created by next build from the standalone output
-# https://nextjs.org/docs/pages/api-reference/next-config-js/output
-CMD node migrate.mjs && HOSTNAME="0.0.0.0" node server.js
+# Push DB schema (Payload push:true) then start Next.js server
+CMD node push-schema.mjs && HOSTNAME="0.0.0.0" node server.js
