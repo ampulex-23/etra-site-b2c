@@ -118,6 +118,19 @@ try {
     ])
   }
 
+  // ---- APPEARANCE_SETTINGS (Payload internal global) ----
+  if (!(await tableExists('appearance_settings'))) {
+    await pool.query(`
+      CREATE TABLE "appearance_settings" (
+        "id" serial PRIMARY KEY,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('INSERT INTO "appearance_settings" ("id") VALUES (1)')
+    console.log('[migrate] Created appearance_settings table')
+  }
+
   console.log('[migrate] Done')
 } catch (err) {
   console.error('[migrate] Error:', err.message)
