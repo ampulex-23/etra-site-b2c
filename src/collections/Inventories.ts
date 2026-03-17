@@ -9,7 +9,7 @@ export const Inventories: CollectionConfig = {
   admin: {
     useAsTitle: 'warehouse',
     defaultColumns: ['warehouse', 'status', 'conductor', 'date', 'createdAt'],
-    group: '🏭 Склад',
+    group: 'Склад',
     description: 'Фиксация фактических остатков и расхождений',
   },
   access: {

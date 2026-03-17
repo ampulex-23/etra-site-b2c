@@ -4,7 +4,7 @@ export const AISettings: GlobalConfig = {
   slug: 'ai-settings',
   label: 'ИИ Агент',
   admin: {
-    group: '⚙️ Настройки',
+    group: 'Настройки',
   },
   access: {
     read: ({ req: { user } }) => Boolean(user),

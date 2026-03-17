@@ -9,7 +9,7 @@ export const Warehouses: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'type', 'responsible', 'active'],
-    group: '🏭 Склад',
+    group: 'Склад',
   },
   access: {
     read: ({ req: { user } }) => Boolean(user),

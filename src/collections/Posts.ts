@@ -9,7 +9,7 @@ export const Posts: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'category', 'status', 'publishedAt'],
-    group: '📝 Контент',
+    group: 'Контент',
   },
   access: {
     read: () => true,

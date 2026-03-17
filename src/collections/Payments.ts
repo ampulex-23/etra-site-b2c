@@ -9,7 +9,7 @@ export const Payments: CollectionConfig = {
   admin: {
     useAsTitle: 'transactionId',
     defaultColumns: ['order', 'method', 'amount', 'status', 'createdAt'],
-    group: '🛒 Магазин',
+    group: 'Магазин',
   },
   access: {
     read: ({ req: { user } }) => Boolean(user),

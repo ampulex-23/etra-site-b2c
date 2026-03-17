@@ -9,7 +9,7 @@ export const PromoCodes: CollectionConfig = {
   admin: {
     useAsTitle: 'code',
     defaultColumns: ['code', 'discountType', 'discountValue', 'active'],
-    group: '📦 Каталог',
+    group: 'Каталог',
   },
   fields: [
     {

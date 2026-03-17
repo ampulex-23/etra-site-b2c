@@ -9,7 +9,7 @@ export const StockLevels: CollectionConfig = {
   admin: {
     useAsTitle: 'product',
     defaultColumns: ['product', 'warehouse', 'calculated', 'actual', 'reserved', 'updatedAt'],
-    group: '🏭 Склад',
+    group: 'Склад',
     description: 'Текущие остатки товаров по складам',
   },
   access: {

@@ -10,7 +10,7 @@ export const Customers: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'email', 'phone', 'role'],
-    group: '🛒 Магазин',
+    group: 'Магазин',
   },
   access: {
     admin: ({ req: { user } }) => {

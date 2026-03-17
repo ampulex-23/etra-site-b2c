@@ -2,6 +2,9 @@
    ЭТРА Admin — Modern UI Overrides
    ============================================ */
 
+/* --- Google Font --- */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
 /* --- CSS Variables --- */
 :root {
   --etra-accent: #6366f1;
@@ -11,62 +14,82 @@
   --etra-radius-sm: 6px;
   --etra-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
   --etra-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --etra-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --etra-transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 /* --- Global Typography --- */
 body {
+  font-family: var(--font-body) !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* --- Sidebar --- */
 .nav {
-  padding: 8px !important;
+  padding: 6px !important;
+}
+
+.nav-group {
+  margin-bottom: 2px !important;
 }
 
 .nav-group__toggle {
-  padding: 6px 8px !important;
+  padding: 5px 8px !important;
   border-radius: var(--etra-radius-sm);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  opacity: 0.5;
-  transition: opacity var(--etra-transition);
+  color: var(--theme-elevation-900) !important;
+  opacity: 1 !important;
+  transition: background var(--etra-transition);
 }
 
 .nav-group__toggle:hover {
-  opacity: 0.8;
-  background: transparent !important;
+  background: var(--theme-elevation-100) !important;
 }
 
 .nav-group__content {
-  padding-left: 4px;
-  margin-bottom: 8px;
+  padding-left: 2px;
+  margin-bottom: 4px;
 }
 
 .nav-group__indicator {
   margin-left: 0;
 }
 
+/* --- Sidebar links --- */
+.nav a,
+.nav a:link,
+.nav a:visited,
+.nav a:hover,
+.nav a:active,
+.nav__link,
+.nav__link:hover {
+  text-decoration: none !important;
+}
+
 .nav__link {
-  padding: 7px 12px !important;
+  padding: 4px 10px !important;
   border-radius: var(--etra-radius-sm) !important;
-  font-size: 13.5px !important;
+  font-size: 12.5px !important;
   font-weight: 500 !important;
   transition: all var(--etra-transition) !important;
-  margin: 1px 0;
+  margin: 0 !important;
+  line-height: 1.5 !important;
 }
 
 .nav__link:hover {
-  background: var(--etra-accent-subtle) !important;
+  background: var(--theme-elevation-100) !important;
+  text-decoration: none !important;
 }
 
 .nav__link.active {
   background: var(--etra-accent-subtle) !important;
   color: var(--etra-accent) !important;
   font-weight: 600 !important;
+  text-decoration: none !important;
 }
 
 .nav__link.active::before {

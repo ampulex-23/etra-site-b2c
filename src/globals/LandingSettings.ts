@@ -4,7 +4,7 @@ export const LandingSettings: GlobalConfig = {
   slug: 'landing-settings',
   label: 'Лендинг',
   admin: {
-    group: '🎨 Сайт',
+    group: 'Сайт',
   },
   access: {
     read: () => true,

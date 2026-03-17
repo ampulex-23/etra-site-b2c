@@ -9,7 +9,7 @@ export const Products: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'price', 'category', 'status'],
-    group: '📦 Каталог',
+    group: 'Каталог',
   },
   access: {
     read: () => true,

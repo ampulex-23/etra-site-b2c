@@ -9,7 +9,7 @@ export const Recipes: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'difficulty', 'prepTime', 'status', 'publishedAt'],
-    group: '📝 Контент',
+    group: 'Контент',
   },
   access: {
     read: () => true,

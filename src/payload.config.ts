@@ -55,6 +55,16 @@ export default buildConfig({
     },
     meta: {
       titleSuffix: ' | ЭТРА',
+      icons: [{ url: '/images/logo.png' }],
+      openGraph: {
+        images: [{ url: '/images/logo.png' }],
+      },
+    },
+    components: {
+      graphics: {
+        Logo: '@/components/admin/Logo',
+        Icon: '@/components/admin/Icon',
+      },
     },
   },
   collections: [

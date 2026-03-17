@@ -8,7 +8,7 @@ export const Categories: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'title',
-    group: '📦 Каталог',
+    group: 'Каталог',
   },
   access: {
     read: () => true,

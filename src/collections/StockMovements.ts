@@ -13,7 +13,7 @@ export const StockMovements: CollectionConfig = {
   admin: {
     useAsTitle: 'operationType',
     defaultColumns: ['operationType', 'product', 'quantity', 'warehouse', 'operator', 'createdAt'],
-    group: '🏭 Склад',
+    group: 'Склад',
     description: 'Журнал всех операций: производство, перемещение, отправка, списание',
   },
   access: {

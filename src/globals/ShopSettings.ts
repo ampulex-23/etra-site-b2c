@@ -4,7 +4,7 @@ export const ShopSettings: GlobalConfig = {
   slug: 'shop-settings',
   label: 'Магазин',
   admin: {
-    group: '⚙️ Настройки',
+    group: 'Настройки',
   },
   access: {
     read: ({ req: { user } }) => Boolean(user),

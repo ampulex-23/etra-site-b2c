@@ -13,7 +13,7 @@ export const Orders: CollectionConfig = {
   admin: {
     useAsTitle: 'orderNumber',
     defaultColumns: ['orderNumber', 'customer', 'total', 'status', 'createdAt'],
-    group: '🛒 Магазин',
+    group: 'Магазин',
   },
   access: {
     read: ({ req: { user } }) => {

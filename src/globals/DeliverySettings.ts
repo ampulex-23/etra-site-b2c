@@ -4,7 +4,7 @@ export const DeliverySettings: GlobalConfig = {
   slug: 'delivery-settings',
   label: 'Доставка',
   admin: {
-    group: '⚙️ Настройки',
+    group: 'Настройки',
   },
   access: {
     read: ({ req: { user } }) => Boolean(user),
