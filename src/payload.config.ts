@@ -33,7 +33,17 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
-  serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || process.env.NEXT_PUBLIC_SITE_URL || '',
+  serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',
+  cors: [
+    process.env.NEXT_PUBLIC_SERVER_URL || '',
+    'https://etraproject.ru',
+    'http://localhost:3000',
+  ].filter(Boolean),
+  csrf: [
+    process.env.NEXT_PUBLIC_SERVER_URL || '',
+    'https://etraproject.ru',
+    'http://localhost:3000',
+  ].filter(Boolean),
   i18n: {
     supportedLanguages: { ru },
     fallbackLanguage: 'ru',

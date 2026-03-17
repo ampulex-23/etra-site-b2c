@@ -30,6 +30,9 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
+ARG NEXT_PUBLIC_SERVER_URL=https://etraproject.ru
+ENV NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
+
 RUN mkdir -p /app/public
 
 RUN \
@@ -47,6 +50,7 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
+ENV NEXT_PUBLIC_SERVER_URL=https://etraproject.ru
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
