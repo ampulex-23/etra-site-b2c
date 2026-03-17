@@ -19,6 +19,9 @@
   --font-serif: 'IBM Plex Sans';
 }
 
+.collapsible {
+  border-radius: 0 !important;
+}
 /* --- Global Typography --- */
 body {
   font-family: var(--font-body) !important;
