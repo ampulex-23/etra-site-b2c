@@ -96,25 +96,32 @@ export async function POST(req: NextRequest) {
       status: 'active',
     }, log)
 
+    const utroId = await ensureProduct(payload, 'utro-antiparazitarnyy', {
+      title: 'Утро Антипаразитарный',
+      shortDescription: 'Напиток утреннего цикла — антипаразитарное очищение на основе свёклы, полыни и чеснока',
+      price: 900,
+      category: 3,
+      inStock: true,
+      status: 'active',
+    }, log)
+
     // Find existing base products
     log.push('--- Step 1b: Find existing products ---')
 
-    const rieslingId = await findProductBySlug(payload, 'risling') ||
+    const rieslingId = await findProductBySlug(payload, 'enzimnyy-napitok-risling') ||
                        await findProductByTitle(payload, 'Энзимный напиток Рислинг')
     const detskiyId = await findProductBySlug(payload, 'enzimnyy-napitok-detskiy') ||
                       await findProductByTitle(payload, 'Энзимный напиток Детский')
-    const khmelId = await findProductBySlug(payload, 'khmel') ||
+    const khmelId = await findProductBySlug(payload, 'enzimnyy-napitok-khmel') ||
                     await findProductByTitle(payload, 'Энзимный напиток Хмель')
     const superKvasId = await findProductBySlug(payload, 'super-kvas') ||
-                        await findProductByTitle(payload, 'Энзимный напиток Супер Квас')
+                        await findProductByTitle(payload, 'Супер Квас')
     const elovyyId = await findProductBySlug(payload, 'enzimnyy-napitok-elovyy') ||
                      await findProductByTitle(payload, 'Энзимный напиток Еловый')
-    const rozlingId = await findProductBySlug(payload, 'rozling') ||
+    const rozlingId = await findProductBySlug(payload, 'enzimnyy-napitok-rozling') ||
                       await findProductByTitle(payload, 'Энзимный напиток Розлинг')
     const energetikId = await findProductBySlug(payload, 'poleznyy-energetik') ||
-                        await findProductByTitle(payload, 'Энзимный напиток Полезный Энергетик')
-    const utroId = await findProductBySlug(payload, 'utro-antiparazitarnyy') ||
-                   await findProductByTitle(payload, 'Энзимный напиток Утро Антипаразитарный')
+                        await findProductByTitle(payload, 'Полезный энергетик')
     const bifidumId = await findProductBySlug(payload, 'bifidumfanata') ||
                       await findProductByTitle(payload, 'БифидумФАНАТА')
     const parazitoffId = await findProductBySlug(payload, 'sukhaya-fermentirovannaya-rastitel-naya-smes-antiparazitarne-prebiotiki-parazitoff') ||
@@ -226,9 +233,13 @@ export async function POST(req: NextRequest) {
       const bundleId = bundleProduct.docs[0].id
       const existingItems = bundleProduct.docs[0].bundleItems || []
 
-      if (existingItems.length > 0) {
-        log.push(`  SKIP: ${def.slug} (id:${bundleId}) already has ${existingItems.length} bundle items`)
+      if (existingItems.length >= def.items.length) {
+        log.push(`  SKIP: ${def.slug} (id:${bundleId}) already has ${existingItems.length} bundle items (expected ${def.items.length})`)
         continue
+      }
+
+      if (existingItems.length > 0) {
+        log.push(`  UPDATE: ${def.slug} (id:${bundleId}) has ${existingItems.length} items, expected ${def.items.length} — replacing`)
       }
 
       const bundleItems: { product: number; quantity: number }[] = []
