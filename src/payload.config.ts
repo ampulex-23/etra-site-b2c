@@ -65,6 +65,7 @@ export default buildConfig({
         Logo: '@/components/admin/Logo',
         Icon: '@/components/admin/Icon',
       },
+      afterNavLinks: ['@/components/admin/NavIcons'],
     },
   },
   collections: [

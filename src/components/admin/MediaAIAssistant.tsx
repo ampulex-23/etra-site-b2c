@@ -20,6 +20,22 @@ const s: Record<string, React.CSSProperties> = {
     fontWeight: 700,
     color: '#5b21b6',
   },
+  icon: {
+    fontFamily: 'Material Symbols Outlined',
+    fontSize: '18px',
+    fontWeight: 400,
+    fontStyle: 'normal',
+    lineHeight: 1,
+    verticalAlign: 'middle',
+  },
+  iconSm: {
+    fontFamily: 'Material Symbols Outlined',
+    fontSize: '16px',
+    fontWeight: 400,
+    fontStyle: 'normal',
+    lineHeight: 1,
+    verticalAlign: 'middle',
+  },
   section: {
     marginBottom: '10px',
   },
@@ -215,7 +231,7 @@ export const MediaAIAssistant: React.FC = () => {
       {/* Shimmer animation */}
       <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
 
-      <div style={s.header}>🤖 AI Ассистент для изображений</div>
+      <div style={s.header}><span style={s.icon}>smart_toy</span> AI Ассистент для изображений</div>
 
       {/* Text analysis section */}
       <div style={s.section}>
@@ -227,7 +243,7 @@ export const MediaAIAssistant: React.FC = () => {
             disabled={isLoading || !isUploaded}
             onClick={() => handleAction('generate_alt')}
           >
-            {loading === 'generate_alt' ? '⏳' : '🏷️'} Alt-текст
+            <span style={s.iconSm}>{loading === 'generate_alt' ? 'hourglass_empty' : 'label'}</span> Alt-текст
           </button>
           <button
             type="button"
@@ -235,7 +251,7 @@ export const MediaAIAssistant: React.FC = () => {
             disabled={isLoading || !isUploaded}
             onClick={() => handleAction('generate_caption')}
           >
-            {loading === 'generate_caption' ? '⏳' : '💬'} Подпись
+            <span style={s.iconSm}>{loading === 'generate_caption' ? 'hourglass_empty' : 'chat_bubble'}</span> Подпись
           </button>
           <button
             type="button"
@@ -243,7 +259,7 @@ export const MediaAIAssistant: React.FC = () => {
             disabled={isLoading || !isUploaded}
             onClick={() => handleAction('describe_image')}
           >
-            {loading === 'describe_image' ? '⏳' : '📝'} Описание
+            <span style={s.iconSm}>{loading === 'describe_image' ? 'hourglass_empty' : 'description'}</span> Описание
           </button>
         </div>
       </div>
@@ -258,7 +274,7 @@ export const MediaAIAssistant: React.FC = () => {
             disabled={isLoading || !isUploaded}
             onClick={() => togglePanel('edit')}
           >
-            ✏️ Редактировать
+            <span style={s.iconSm}>edit</span> Редактировать
           </button>
           <button
             type="button"
@@ -266,7 +282,7 @@ export const MediaAIAssistant: React.FC = () => {
             disabled={isLoading || !isUploaded}
             onClick={() => handleAction('remove_bg')}
           >
-            {loading === 'remove_bg' ? '⏳' : '🔲'} Убрать фон
+            <span style={s.iconSm}>{loading === 'remove_bg' ? 'hourglass_empty' : 'crop_free'}</span> Убрать фон
           </button>
           <button
             type="button"
@@ -274,7 +290,7 @@ export const MediaAIAssistant: React.FC = () => {
             disabled={isLoading || !isUploaded}
             onClick={() => handleAction('enhance')}
           >
-            {loading === 'enhance' ? '⏳' : '✨'} Улучшить
+            <span style={s.iconSm}>{loading === 'enhance' ? 'hourglass_empty' : 'auto_awesome'}</span> Улучшить
           </button>
           <button
             type="button"
@@ -282,7 +298,7 @@ export const MediaAIAssistant: React.FC = () => {
             disabled={isLoading}
             onClick={() => togglePanel('generate')}
           >
-            🎨 Генерация
+            <span style={s.iconSm}>palette</span> Генерация
           </button>
         </div>
       </div>
@@ -306,7 +322,7 @@ export const MediaAIAssistant: React.FC = () => {
             disabled={isLoading || !editPrompt.trim()}
             onClick={() => handleAction('edit_image')}
           >
-            {loading === 'edit_image' ? '⏳ ...' : '✏️'}
+            <span style={s.iconSm}>{loading === 'edit_image' ? 'hourglass_empty' : 'edit'}</span>
           </button>
         </div>
       )}
@@ -330,14 +346,14 @@ export const MediaAIAssistant: React.FC = () => {
             disabled={isLoading || !editPrompt.trim()}
             onClick={() => handleAction('generate_image')}
           >
-            {loading === 'generate_image' ? '⏳ ...' : '🚀'}
+            <span style={s.iconSm}>{loading === 'generate_image' ? 'hourglass_empty' : 'rocket_launch'}</span>
           </button>
         </div>
       )}
 
       {!isUploaded && (
         <div style={{ marginTop: '8px', fontSize: '11px', color: '#6b7280' }}>
-          💡 Загрузите изображение, чтобы использовать анализ и редактирование
+          <span style={s.iconSm}>lightbulb</span> Загрузите изображение, чтобы использовать анализ и редактирование
         </div>
       )}
 
@@ -349,16 +365,16 @@ export const MediaAIAssistant: React.FC = () => {
       )}
 
       {/* Error */}
-      {error && <div style={s.errorBox}>❌ {error}</div>}
+      {error && <div style={s.errorBox}><span style={s.iconSm}>error</span> {error}</div>}
 
       {/* Result */}
       {result && (
         <div style={s.resultBox}>
           <div style={s.label}>
-            {result.type === 'alt' && '🏷️ Alt-текст:'}
-            {result.type === 'caption' && '💬 Подпись:'}
-            {result.type === 'description' && '📝 Описание:'}
-            {result.type === 'image' && '🎨 Результат:'}
+            {result.type === 'alt' && <><span style={s.iconSm}>label</span> Alt-текст:</>}
+            {result.type === 'caption' && <><span style={s.iconSm}>chat_bubble</span> Подпись:</>}
+            {result.type === 'description' && <><span style={s.iconSm}>description</span> Описание:</>}
+            {result.type === 'image' && <><span style={s.iconSm}>palette</span> Результат:</>}
           </div>
 
           {result.type === 'image' && result.imageUrl ? (
@@ -386,7 +402,7 @@ export const MediaAIAssistant: React.FC = () => {
                   setResult(null)
                 }}
               >
-                ✅ Применить как Alt
+                <span style={s.iconSm}>check_circle</span> Применить как Alt
               </button>
             )}
 
@@ -399,7 +415,7 @@ export const MediaAIAssistant: React.FC = () => {
                   setResult(null)
                 }}
               >
-                ✅ Применить как подпись
+                <span style={s.iconSm}>check_circle</span> Применить как подпись
               </button>
             )}
 
@@ -411,7 +427,7 @@ export const MediaAIAssistant: React.FC = () => {
                 rel="noopener noreferrer"
                 style={{ ...s.applyBtn, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
               >
-                ⬇️ Скачать
+                <span style={s.iconSm}>download</span> Скачать
               </a>
             )}
 
@@ -420,7 +436,7 @@ export const MediaAIAssistant: React.FC = () => {
               style={{ ...s.applyBtn, background: '#6b7280' }}
               onClick={() => navigator.clipboard.writeText(result.imageUrl || result.text)}
             >
-              📋 Копировать
+              <span style={s.iconSm}>content_copy</span> Копировать
             </button>
           </div>
         </div>
