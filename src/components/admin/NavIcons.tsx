@@ -24,9 +24,9 @@ const NavIcons: React.FC = () => {
           const span = document.createElement('span')
           span.className = 'material-symbols-outlined'
           span.textContent = iconName
-          span.style.fontSize = '16px'
+          span.style.fontSize = '18px'
           span.style.verticalAlign = 'middle'
-          span.style.marginRight = '4px'
+          span.style.marginRight = '0px'
           span.style.opacity = '0.7'
           toggle.prepend(span)
         }
