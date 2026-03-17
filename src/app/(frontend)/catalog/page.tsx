@@ -20,6 +20,7 @@ interface ProductData {
   oldPrice?: number
   featured?: boolean
   inStock?: boolean
+  isBundle?: boolean
   category?: { id: string; title: string; slug: string } | string
   images?: { image: { url?: string } | string }[]
 }
@@ -59,6 +60,7 @@ export default async function CatalogPage() {
       oldPrice: p.oldPrice || undefined,
       featured: p.featured || false,
       inStock: p.inStock !== false,
+      isBundle: p.isBundle || false,
       category: cat?.title || '',
       categorySlug: cat?.slug || '',
       imageUrl,

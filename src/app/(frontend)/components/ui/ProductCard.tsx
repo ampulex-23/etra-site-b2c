@@ -16,6 +16,7 @@ export interface ProductCardData {
   imageUrl?: string | null
   featured?: boolean
   inStock?: boolean
+  isBundle?: boolean
   category?: string
 }
 
@@ -55,6 +56,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
             {discount > 0 && <Badge variant="danger">-{discount}%</Badge>}
             {product.featured && <Badge variant="accent">Хит</Badge>}
             {product.inStock === false && <Badge variant="warning">Нет в наличии</Badge>}
+            {product.isBundle && <Badge variant="info">Набор</Badge>}
           </div>
         </div>
       </Link>

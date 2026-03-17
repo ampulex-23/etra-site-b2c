@@ -3,7 +3,7 @@
 import React from 'react'
 
 export interface BadgeProps {
-  variant?: 'default' | 'success' | 'warning' | 'danger' | 'accent'
+  variant?: 'default' | 'success' | 'warning' | 'danger' | 'accent' | 'info'
   size?: 'sm' | 'md'
   children: React.ReactNode
   className?: string

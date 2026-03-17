@@ -118,6 +118,41 @@ try {
     ])
   }
 
+  // ---- PRODUCTS: ensure bundle columns ----
+  if (await tableExists('products')) {
+    await addColumnsIfMissing('products', [
+      { name: 'is_bundle', definition: 'boolean DEFAULT false' },
+    ])
+  }
+
+  // ---- PRODUCTS_BUNDLE_ITEMS (Payload array table for bundleItems) ----
+  if (!(await tableExists('products_bundle_items'))) {
+    await pool.query(`
+      CREATE TABLE "products_bundle_items" (
+        "_order" integer NOT NULL,
+        "_parent_id" integer NOT NULL,
+        "id" varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        "product_id" integer,
+        "quantity" numeric DEFAULT 1
+      )
+    `)
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE "products_bundle_items"
+          ADD CONSTRAINT "products_bundle_items_parent_id_fk"
+          FOREIGN KEY ("_parent_id") REFERENCES "products"("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$
+    `)
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS "products_bundle_items_order_idx" ON "products_bundle_items" ("_order")
+    `)
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS "products_bundle_items_parent_id_idx" ON "products_bundle_items" ("_parent_id")
+    `)
+    console.log('[migrate] Created products_bundle_items table')
+  }
+
   // ---- APPEARANCE_SETTINGS (Payload internal global) ----
   if (!(await tableExists('appearance_settings'))) {
     await pool.query(`

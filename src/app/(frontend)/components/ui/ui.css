@@ -208,6 +208,10 @@
   background: rgba(56, 189, 248, 0.15);
   color: var(--color-accent);
 }
+.ui-badge--info {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+}
 
 /* === Modal === */
 .ui-modal-overlay {

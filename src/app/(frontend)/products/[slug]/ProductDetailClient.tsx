@@ -22,6 +22,11 @@ interface ProductVariant {
   sku?: string
 }
 
+interface BundleItem {
+  product: { id: string; title: string; slug: string; price: number; images?: ProductImage[] } | null
+  quantity: number
+}
+
 interface Product {
   id: string
   title: string
@@ -42,6 +47,8 @@ interface Product {
   weight?: number
   sku?: string
   category: { title: string; slug: string } | null
+  isBundle?: boolean
+  bundleItems?: BundleItem[]
 }
 
 interface Props {
@@ -250,6 +257,14 @@ export function ProductDetailClient({ product }: Props) {
                     Применение
                   </button>
                 )}
+                {product.isBundle && product.bundleItems && product.bundleItems.length > 0 && (
+                  <button
+                    className={`ui-tab ${activeTab === 'bundle' ? 'ui-tab--active' : ''}`}
+                    onClick={() => setActiveTab('bundle')}
+                  >
+                    Состав набора
+                  </button>
+                )}
               </div>
               <div className="product-tab-content">
                 {activeTab === 'description' && (
@@ -268,6 +283,69 @@ export function ProductDetailClient({ product }: Props) {
                 {activeTab === 'usage' && (
                   <div>
                     <p style={{ color: 'var(--color-text-muted)' }}>Способ применения</p>
+                  </div>
+                )}
+                {activeTab === 'bundle' && product.bundleItems && (
+                  <div className="bundle-items">
+                    <p style={{ marginBottom: '16px', color: 'var(--color-text-secondary)', fontSize: '14px' }}>
+                      В этот набор входят:
+                    </p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {product.bundleItems.map((item, i) => (
+                        item.product && (
+                          <Link
+                            key={i}
+                            href={`/products/${item.product.slug}`}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              padding: '12px',
+                              background: 'var(--color-bg-secondary, #f9fafb)',
+                              borderRadius: '10px',
+                              textDecoration: 'none',
+                              color: 'inherit',
+                              transition: 'background 0.15s',
+                            }}
+                          >
+                            {item.product.images?.[0]?.url ? (
+                              <Image
+                                src={item.product.images[0].url}
+                                alt={item.product.title}
+                                width={48}
+                                height={48}
+                                style={{ borderRadius: '8px', objectFit: 'cover' }}
+                              />
+                            ) : (
+                              <div style={{
+                                width: 48, height: 48, borderRadius: '8px',
+                                background: 'var(--color-bg-tertiary, #e5e7eb)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: '18px',
+                              }}>
+                                📦
+                              </div>
+                            )}
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 600, fontSize: '14px' }}>{item.product.title}</div>
+                              <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                                {item.product.price?.toLocaleString('ru-RU')} ₽
+                              </div>
+                            </div>
+                            <div style={{
+                              background: 'var(--color-accent, #7c3aed)',
+                              color: '#fff',
+                              borderRadius: '6px',
+                              padding: '4px 10px',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                            }}>
+                              x{item.quantity}
+                            </div>
+                          </Link>
+                        )
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
