@@ -129,6 +129,9 @@ body {
 }
 
 /* --- Collection List / Dashboard Cards --- */
+.collection-list__wrap {
+  padding-top: 1em;
+}
 .collection-list__wrap,
 .dashboard__card-list {
   gap: 16px !important;
