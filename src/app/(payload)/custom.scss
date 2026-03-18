@@ -30,7 +30,11 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
+.template-default__nav-toggler-wrapper:not(:has(.hamburger__open-icon)) {
+  width: var(--nav-width);
+  justify-content: right;
+  padding-right: 1em;
+}
 /* --- Sidebar --- */
 .nav {
   padding: 6px !important;
