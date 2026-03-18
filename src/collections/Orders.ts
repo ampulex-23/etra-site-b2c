@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { orderAfterChange } from '../hooks/orderAfterChange'
+import { orderBeforeChange } from '../hooks/orderBeforeChange'
 
 export const Orders: CollectionConfig = {
   slug: 'orders',
@@ -8,6 +9,7 @@ export const Orders: CollectionConfig = {
     plural: 'Заказы',
   },
   hooks: {
+    beforeChange: [orderBeforeChange],
     afterChange: [orderAfterChange],
   },
   admin: {
@@ -79,14 +81,25 @@ export const Orders: CollectionConfig = {
           required: true,
           min: 0,
           label: 'Цена за шт.',
+          admin: { readOnly: true, description: 'Заполняется автоматически из товара/варианта' },
         },
       ],
+    },
+    {
+      name: 'orderItemCalc',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/admin/OrderItemFields',
+        },
+      },
     },
     {
       name: 'subtotal',
       type: 'number',
       min: 0,
       label: 'Сумма товаров',
+      admin: { readOnly: true, description: 'Считается автоматически' },
     },
     {
       name: 'discount',
@@ -108,6 +121,7 @@ export const Orders: CollectionConfig = {
       required: true,
       min: 0,
       label: 'Итого (₽)',
+      admin: { readOnly: true, description: 'Считается автоматически: сумма товаров − скидка + доставка' },
     },
     {
       name: 'status',
