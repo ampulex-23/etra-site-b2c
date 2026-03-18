@@ -1,10 +1,16 @@
 import type { CollectionConfig } from 'payload'
+import { inventoryBeforeChange } from '../hooks/inventoryBeforeChange'
+import { inventoryAfterChange } from '../hooks/inventoryAfterChange'
 
 export const Inventories: CollectionConfig = {
   slug: 'inventories',
   labels: {
     singular: 'Инвентаризация',
     plural: 'Инвентаризации',
+  },
+  hooks: {
+    beforeChange: [inventoryBeforeChange],
+    afterChange: [inventoryAfterChange],
   },
   admin: {
     useAsTitle: 'warehouse',

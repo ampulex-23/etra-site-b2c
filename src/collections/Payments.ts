@@ -1,10 +1,14 @@
 import type { CollectionConfig } from 'payload'
+import { paymentAfterChange } from '../hooks/paymentAfterChange'
 
 export const Payments: CollectionConfig = {
   slug: 'payments',
   labels: {
     singular: 'Платёж',
     plural: 'Платежи',
+  },
+  hooks: {
+    afterChange: [paymentAfterChange],
   },
   admin: {
     useAsTitle: 'transactionId',

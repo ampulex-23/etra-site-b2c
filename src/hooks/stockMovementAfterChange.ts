@@ -52,6 +52,9 @@ export const stockMovementAfterChange: CollectionAfterChangeHook = async ({
 
   await updateStockLevel(payload, productId, warehouseId, operationType, quantity, targetWarehouseId, doc.status, req)
 
+  // Sync Products.inStock
+  await syncProductInStock(payload, productId, req)
+
   return doc
 }
 
@@ -210,5 +213,30 @@ async function ensureTargetTransitReduced(
       },
       req,
     })
+  }
+}
+
+async function syncProductInStock(payload: any, productId: string, req: any) {
+  try {
+    const stockLevels = await payload.find({
+      collection: 'stock-levels',
+      where: { product: { equals: productId } },
+      limit: 100,
+      req,
+    })
+
+    const totalAvailable = stockLevels.docs.reduce(
+      (sum: number, sl: any) => sum + (sl.available || 0),
+      0,
+    )
+
+    await payload.update({
+      collection: 'products',
+      id: productId,
+      data: { inStock: totalAvailable > 0 },
+      req,
+    })
+  } catch (err) {
+    console.error(`[stockMovementAfterChange] Error syncing inStock for product ${productId}:`, err)
   }
 }

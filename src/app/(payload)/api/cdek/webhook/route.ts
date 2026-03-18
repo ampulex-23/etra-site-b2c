@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     }
 
     const delivery = deliveries.docs[0]
-    const newStatus = CDEK_STATUS_MAP[statusCode] || delivery.status
+    const newStatus: string = CDEK_STATUS_MAP[statusCode as string] || (delivery.status as string) || 'pending'
 
     const updateData: Record<string, unknown> = { status: newStatus }
 
@@ -81,17 +81,43 @@ export async function POST(req: NextRequest) {
       data: updateData,
     })
 
-    // Also update order status if delivered
-    if (statusCode === 'DELIVERED' && delivery.order) {
+    // Sync Order status based on delivery status
+    if (delivery.order) {
       const orderId = typeof delivery.order === 'object' ? delivery.order.id : delivery.order
-      try {
-        await payload.update({
-          collection: 'orders',
-          id: orderId,
-          data: { status: 'delivered' },
-        })
-      } catch (e) {
-        console.error('[CDEK webhook] Failed to update order status', e)
+      const ORDER_STATUS_MAP: Record<string, string> = {
+        'in_transit': 'shipped',
+        'arrived_at_pickup': 'shipped',
+        'delivered': 'delivered',
+        'returned': 'cancelled',
+      }
+      const orderStatus = newStatus ? ORDER_STATUS_MAP[newStatus] : undefined
+      if (orderStatus) {
+        try {
+          const order = await payload.findByID({ collection: 'orders', id: orderId, depth: 0 })
+          // Only advance status, never go backwards (except return)
+          const ORDER_PRIORITY: Record<string, number> = {
+            new: 0, processing: 1, shipped: 2, delivered: 3, completed: 4, cancelled: 5,
+          }
+          const currentStatus: string = (order?.status as string) || 'new'
+          const currentPriority = ORDER_PRIORITY[currentStatus] ?? 0
+          const newPriority = ORDER_PRIORITY[orderStatus] ?? 0
+          if (newPriority > currentPriority || orderStatus === 'cancelled') {
+            const orderUpdateData: Record<string, unknown> = { status: orderStatus }
+            if (orderStatus === 'shipped' && (delivery.trackingNumber || cdekNumber)) {
+              orderUpdateData['delivery'] = {
+                ...((order as any)?.delivery || {}),
+                trackingNumber: delivery.trackingNumber || String(cdekNumber),
+              }
+            }
+            await payload.update({
+              collection: 'orders',
+              id: orderId,
+              data: orderUpdateData as any,
+            })
+          }
+        } catch (e) {
+          console.error('[CDEK webhook] Failed to update order status', e)
+        }
       }
     }
 
