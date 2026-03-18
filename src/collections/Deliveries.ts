@@ -1,10 +1,14 @@
 import type { CollectionConfig } from 'payload'
+import { deliveryAfterChange } from '../hooks/deliveryAfterChange'
 
 export const Deliveries: CollectionConfig = {
   slug: 'deliveries',
   labels: {
     singular: 'Доставка',
     plural: 'Доставки',
+  },
+  hooks: {
+    afterChange: [deliveryAfterChange],
   },
   admin: {
     useAsTitle: 'trackingNumber',

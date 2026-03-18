@@ -82,6 +82,53 @@ export const DeliverySettings: GlobalConfig = {
             description: '139 = посылка дверь-ПВЗ, 138 = посылка дверь-дверь',
           },
         },
+        {
+          name: 'cdekSenderName',
+          type: 'text',
+          label: 'Имя отправителя',
+          defaultValue: 'ЭТРА',
+          admin: {
+            condition: (data) => data?.cdekEnabled,
+          },
+        },
+        {
+          name: 'cdekSenderPhone',
+          type: 'text',
+          label: 'Телефон отправителя',
+          admin: {
+            condition: (data) => data?.cdekEnabled,
+            description: 'Формат: +79991234567',
+          },
+        },
+        {
+          name: 'cdekSenderAddress',
+          type: 'text',
+          label: 'Адрес отправителя',
+          admin: {
+            condition: (data) => data?.cdekEnabled,
+            description: 'Улица, дом — для забора курьером',
+          },
+        },
+        {
+          name: 'cdekDefaultWeight',
+          type: 'number',
+          label: 'Вес по умолчанию (г)',
+          defaultValue: 500,
+          admin: {
+            condition: (data) => data?.cdekEnabled,
+            description: 'Вес товара если не указан в карточке',
+          },
+        },
+        {
+          name: 'cdekWebhookUrl',
+          type: 'text',
+          label: 'URL вебхука',
+          admin: {
+            condition: (data) => data?.cdekEnabled,
+            readOnly: true,
+            description: 'Автоматически: /api/cdek/webhook. Зарегистрируйте в ЛК СДЭК или через API.',
+          },
+        },
       ],
     },
     {
