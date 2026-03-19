@@ -44,7 +44,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
             <feDisplacementMap
               in="SourceGraphic"
               in2="map"
-              scale="60"
+              scale="150"
               xChannelSelector="R"
               yChannelSelector="G"
             />
@@ -58,7 +58,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
             <feDisplacementMap
               in="SourceGraphic"
               in2="map"
-              scale="40"
+              scale="100"
               xChannelSelector="R"
               yChannelSelector="G"
             />
