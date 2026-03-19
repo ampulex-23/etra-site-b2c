@@ -9,8 +9,8 @@
   --c-bg-deep: #040e0a;
   --c-surface: rgba(10, 40, 28, 0.55);
   --c-surface-hover: rgba(14, 56, 38, 0.65);
-  --c-glass: rgba(16, 60, 42, 0.45);
-  --c-glass-strong: rgba(16, 60, 42, 0.62);
+  --c-glass: rgba(45, 94, 83, 0.42);
+  --c-glass-strong: rgba(45, 94, 83, 0.55);
   --c-glass-border: rgba(80, 200, 160, 0.13);
   --c-glass-border-strong: rgba(80, 200, 160, 0.25);
   --c-primary: #3beca0;
@@ -54,36 +54,19 @@ img { max-width: 100%; display: block; }
 /* ── SVG Glass filter definition ── */
 .pwa-filters { position: absolute; width: 0; height: 0; overflow: hidden; }
 
-/* ── Glass via ::before  ──
-   ::before gets backdrop-filter (blurs what's behind) + filter (SVG displacement).
-   The browser composites backdrop-filter first, then filter wraps the
-   entire pseudo-element rendering — so displacement distorts the blurred backdrop.
-   Content sits above via z-index. */
-
-/* Base glass — shared by .glass and .glass-strong */
+/* ── Glass — backdrop-filter: url(#glass-card) (Chrome SVG displacement) ── */
 .glass, .glass-strong {
   position: relative;
   border: 1px solid var(--c-glass-border);
   border-radius: var(--r-md);
   overflow: hidden;
-}
-.glass::before, .glass-strong::before {
-  content: ''; position: absolute; inset: 0; z-index: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  backdrop-filter: blur(24px) saturate(1.5);
-  -webkit-backdrop-filter: blur(24px) saturate(1.5);
   background: var(--c-glass);
-  filter: url(#glass-card);
+  backdrop-filter: url(#glass-card);
+  -webkit-backdrop-filter: url(#glass-card);
 }
-.glass-strong::before {
-  backdrop-filter: blur(32px) saturate(1.7);
-  -webkit-backdrop-filter: blur(32px) saturate(1.7);
+.glass-strong {
   background: var(--c-glass-strong);
   border-color: var(--c-glass-border-strong);
-}
-.glass > *, .glass-strong > * {
-  position: relative; z-index: 1;
 }
 
 /* ── App Shell ── */
@@ -198,13 +181,9 @@ textarea.inp { resize: vertical; min-height: 80px; }
   border-radius: var(--r-md); overflow: hidden; transition: transform 0.2s;
   border: 1px solid var(--c-glass-border-strong);
   box-shadow: 0 4px 24px rgba(0,0,0,0.3);
-}
-.product-card::before {
-  content: ''; position: absolute; inset: 0; z-index: 0;
-  border-radius: inherit; pointer-events: none;
-  backdrop-filter: blur(24px) saturate(1.5); -webkit-backdrop-filter: blur(24px) saturate(1.5);
   background: var(--c-glass-strong);
-  filter: url(#glass-card);
+  backdrop-filter: url(#glass-card);
+  -webkit-backdrop-filter: url(#glass-card);
 }
 .product-card:active { transform: scale(0.98); }
 .product-card__img { width: 100%; aspect-ratio: 1; object-fit: cover; background: rgba(0,0,0,0.2); }
@@ -230,15 +209,10 @@ textarea.inp { resize: vertical; min-height: 80px; }
   border: 1px solid var(--c-glass-border);
   border-radius: var(--r-md); overflow: hidden;
   box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-}
-.cart-item::before {
-  content: ''; position: absolute; inset: 0; z-index: 0;
-  border-radius: inherit; pointer-events: none;
-  backdrop-filter: blur(24px) saturate(1.5); -webkit-backdrop-filter: blur(24px) saturate(1.5);
   background: var(--c-glass);
-  filter: url(#glass-card);
+  backdrop-filter: url(#glass-card);
+  -webkit-backdrop-filter: url(#glass-card);
 }
-.cart-item > * { position: relative; z-index: 1; }
 .cart-item__img { width: 72px; height: 72px; border-radius: var(--r-sm); object-fit: cover; flex-shrink: 0; background: rgba(0,0,0,0.2); }
 .cart-item__body { flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
 .cart-item__title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -264,15 +238,10 @@ textarea.inp { resize: vertical; min-height: 80px; }
   padding: 20px; border-radius: var(--r-md); position: relative; overflow: hidden;
   border: 1px solid var(--c-glass-border-strong);
   box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-}
-.summary::before {
-  content: ''; position: absolute; inset: 0; z-index: 0;
-  border-radius: inherit; pointer-events: none;
-  backdrop-filter: blur(28px) saturate(1.6); -webkit-backdrop-filter: blur(28px) saturate(1.6);
   background: var(--c-glass-strong);
-  filter: url(#glass-card);
+  backdrop-filter: url(#glass-card);
+  -webkit-backdrop-filter: url(#glass-card);
 }
-.summary > * { position: relative; z-index: 1; }
 .summary__row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; }
 .summary__row--total { font-size: 18px; font-weight: 700; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--c-glass-border); margin-bottom: 0; }
 .summary__label { color: var(--c-text-sec); }
@@ -311,15 +280,10 @@ textarea.inp { resize: vertical; min-height: 80px; }
   display: flex; align-items: center; gap: 12px; padding: 14px; position: relative; overflow: hidden;
   border-radius: var(--r-sm); border: 1.5px solid var(--c-glass-border);
   transition: all 0.2s; margin-bottom: 8px;
-}
-.del-option::before {
-  content: ''; position: absolute; inset: 0; z-index: 0;
-  border-radius: inherit; pointer-events: none;
-  backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4);
   background: var(--c-glass);
-  filter: url(#glass-card);
+  backdrop-filter: url(#glass-card);
+  -webkit-backdrop-filter: url(#glass-card);
 }
-.del-option > * { position: relative; z-index: 1; }
 .del-option--active { border-color: var(--c-primary); background: rgba(59,236,160,0.08); }
 .del-option__radio {
   width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--c-glass-border-strong);
@@ -351,15 +315,10 @@ textarea.inp { resize: vertical; min-height: 80px; }
   border-radius: var(--r-md);
   box-shadow: 0 2px 16px rgba(0,0,0,0.2);
   margin-bottom: 16px;
-}
-.account-header::before {
-  content: ''; position: absolute; inset: 0; z-index: 0;
-  border-radius: inherit; pointer-events: none;
-  backdrop-filter: blur(24px) saturate(1.5); -webkit-backdrop-filter: blur(24px) saturate(1.5);
   background: var(--c-glass);
-  filter: url(#glass-card);
+  backdrop-filter: url(#glass-card);
+  -webkit-backdrop-filter: url(#glass-card);
 }
-.account-header > * { position: relative; z-index: 1; }
 .account-avatar {
   width: 48px; height: 48px; border-radius: var(--r-full);
   background: linear-gradient(135deg, var(--c-primary), var(--c-accent));
@@ -374,15 +333,10 @@ textarea.inp { resize: vertical; min-height: 80px; }
   border: 1px solid var(--c-glass-border);
   box-shadow: 0 2px 12px rgba(0,0,0,0.2);
   margin-bottom: 10px;
-}
-.order-card::before {
-  content: ''; position: absolute; inset: 0; z-index: 0;
-  border-radius: inherit; pointer-events: none;
-  backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
   background: var(--c-glass);
-  filter: url(#glass-card);
+  backdrop-filter: url(#glass-card);
+  -webkit-backdrop-filter: url(#glass-card);
 }
-.order-card > * { position: relative; z-index: 1; }
 .order-card__head { display: flex; justify-content: space-between; margin-bottom: 8px; }
 .order-card__num { font-size: 14px; font-weight: 600; }
 .order-card__status { font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: var(--r-full); }
@@ -447,17 +401,11 @@ textarea.inp { resize: vertical; min-height: 80px; }
   position: relative; overflow: hidden;
   transition: all 0.2s;
   white-space: nowrap; flex-shrink: 0;
-}
-.pill-toggle__item::before {
-  content: ''; position: absolute; inset: 0; z-index: 0;
-  border-radius: inherit; pointer-events: none;
-  backdrop-filter: blur(16px) saturate(1.4); -webkit-backdrop-filter: blur(16px) saturate(1.4);
   background: var(--c-glass);
-  filter: url(#glass-pill);
+  backdrop-filter: url(#glass-pill);
+  -webkit-backdrop-filter: url(#glass-pill);
 }
-.pill-toggle__item > * { position: relative; z-index: 1; }
-.pill-toggle__item--active { background: var(--c-primary); color: var(--c-text-inv); border-color: var(--c-primary); box-shadow: 0 2px 8px rgba(59,236,160,0.3); }
-.pill-toggle__item--active::before { display: none; }
+.pill-toggle__item--active { background: var(--c-primary); color: var(--c-text-inv); border-color: var(--c-primary); box-shadow: 0 2px 8px rgba(59,236,160,0.3); backdrop-filter: none; -webkit-backdrop-filter: none; }
 
 /* Subtle animation for page transitions */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }

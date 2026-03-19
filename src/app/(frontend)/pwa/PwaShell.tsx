@@ -27,16 +27,16 @@ export function PwaShell({ children }: { children: React.ReactNode }) {
       {/* Static background */}
       <div className="pwa-bg" />
 
-      {/* SVG displacement-only filters — backdrop-filter handles blur separately */}
+      {/* SVG displacement filters — used via backdrop-filter: url(#id) (Chrome) */}
       <svg className="pwa-filters" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <filter id="glass-card" x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
             <feImage href={PILL_CONVEX_URI} result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
-            <feDisplacementMap in="SourceGraphic" in2="map" scale="18" xChannelSelector="R" yChannelSelector="G" />
+            <feDisplacementMap in="SourceGraphic" in2="map" scale="60" xChannelSelector="R" yChannelSelector="G" />
           </filter>
-          <filter id="glass-pill" x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
+          <filter id="glass-pill" x="-15%" y="-15%" width="130%" height="130%" colorInterpolationFilters="sRGB">
             <feImage href={PILL_CONVEX_URI} result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
-            <feDisplacementMap in="SourceGraphic" in2="map" scale="12" xChannelSelector="R" yChannelSelector="G" />
+            <feDisplacementMap in="SourceGraphic" in2="map" scale="40" xChannelSelector="R" yChannelSelector="G" />
           </filter>
         </defs>
       </svg>
