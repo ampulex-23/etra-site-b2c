@@ -39,6 +39,7 @@ export function CartScreen() {
       <div className="stack mb-16">
         {items.map((item) => (
           <div key={`${item.productId}-${item.variantName || ''}`} className="cart-item">
+            <div className="glass-backdrop-card" />
             <div style={{ position: 'relative', width: 72, height: 72, borderRadius: 'var(--r-sm)', overflow: 'hidden', flexShrink: 0 }}>
               {item.imageUrl ? (
                 <Image src={item.imageUrl} alt={item.title} fill sizes="72px" style={{ objectFit: 'cover' }} />
@@ -85,6 +86,7 @@ export function CartScreen() {
 
       {/* Summary */}
       <div className="summary mb-16">
+        <div className="glass-backdrop-card" />
         <div className="summary__row">
           <span className="summary__label">Товары ({totalItems})</span>
           <span>{totalPrice.toLocaleString('ru-RU')} ₽</span>

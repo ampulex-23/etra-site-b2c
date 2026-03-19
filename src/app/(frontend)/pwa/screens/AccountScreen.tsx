@@ -87,6 +87,7 @@ export function AccountScreen() {
     <div className="pwa-screen animate-in">
       {/* Profile header */}
       <div className="account-header">
+        <div className="glass-backdrop-card" />
         <div className="account-avatar">{initials}</div>
         <div>
           <div className="account-info__name">{customer.name || 'Покупатель'}</div>
@@ -120,6 +121,7 @@ export function AccountScreen() {
               .join(', ')
             return (
               <div key={order.id} className="order-card">
+                <div className="glass-backdrop-card" />
                 <div className="order-card__head">
                   <span className="order-card__num">#{order.orderNumber}</span>
                   <span className={`order-card__status ${st.cls}`}>{st.label}</span>

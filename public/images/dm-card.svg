@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300">
+  <defs>
+    <filter id="blur">
+      <feGaussianBlur stdDeviation="14" />
+    </filter>
+    <radialGradient id="rg" cx="50%" cy="45%" rx="48%" ry="46%">
+      <stop offset="0%" stop-color="rgb(185,205,178)" />
+      <stop offset="25%" stop-color="rgb(165,188,170)" />
+      <stop offset="55%" stop-color="rgb(145,158,152)" />
+      <stop offset="80%" stop-color="rgb(128,128,128)" />
+      <stop offset="100%" stop-color="rgb(112,118,122)" />
+    </radialGradient>
+    <linearGradient id="topHL" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgb(165,225,185)" stop-opacity="0.65" />
+      <stop offset="100%" stop-color="transparent" />
+    </linearGradient>
+    <linearGradient id="botHL" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="transparent" />
+      <stop offset="100%" stop-color="rgb(175,115,158)" stop-opacity="0.45" />
+    </linearGradient>
+    <linearGradient id="leftHL" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="rgb(195,135,165)" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="transparent" />
+    </linearGradient>
+    <linearGradient id="rightHL" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="transparent" />
+      <stop offset="100%" stop-color="rgb(105,175,168)" stop-opacity="0.45" />
+    </linearGradient>
+  </defs>
+  <!-- Neutral gray base -->
+  <rect width="200" height="300" fill="rgb(128,128,128)" />
+  <!-- Main convex body — rounded rect -->
+  <rect x="8" y="8" width="184" height="284" rx="20" fill="url(#rg)" filter="url(#blur)" />
+  <!-- Edge highlights for chromatic refraction -->
+  <rect x="8" y="8" width="184" height="100" rx="16" fill="url(#topHL)" filter="url(#blur)" />
+  <rect x="8" y="192" width="184" height="100" rx="16" fill="url(#botHL)" filter="url(#blur)" />
+  <rect x="8" y="8" width="60" height="284" rx="16" fill="url(#leftHL)" filter="url(#blur)" />
+  <rect x="132" y="8" width="60" height="284" rx="16" fill="url(#rightHL)" filter="url(#blur)" />
+</svg>

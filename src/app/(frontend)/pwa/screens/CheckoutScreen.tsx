@@ -200,6 +200,7 @@ export function CheckoutScreen() {
           </div>
 
           <button type="button" className={`del-option ${deliveryMethod === 'cdek' ? 'del-option--active' : ''}`} onClick={() => setDeliveryMethod('cdek')}>
+            <div className="glass-backdrop-card" />
             <div className="del-option__radio" />
             <div className="del-option__info">
               <div className="del-option__name">СДЭК</div>
@@ -211,6 +212,7 @@ export function CheckoutScreen() {
           </button>
 
           <button type="button" className={`del-option ${deliveryMethod === 'pickup' ? 'del-option--active' : ''}`} onClick={() => setDeliveryMethod('pickup')}>
+            <div className="glass-backdrop-card" />
             <div className="del-option__radio" />
             <div className="del-option__info">
               <div className="del-option__name">Самовывоз</div>
@@ -287,7 +289,8 @@ export function CheckoutScreen() {
 
         {/* Order summary */}
         <div className="summary mb-16">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
+          <div className="glass-backdrop-card" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14, position: 'relative', zIndex: 1 }}>
             {items.map((item) => (
               <div key={`${item.productId}-${item.variantName || ''}`} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <div style={{ width: 40, height: 40, borderRadius: 'var(--r-xs)', overflow: 'hidden', flexShrink: 0, position: 'relative', background: 'rgba(0,0,0,0.2)' }}>
