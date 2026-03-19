@@ -3,6 +3,7 @@ import './pwa.css'
 import { CartProvider } from './cart/CartProvider'
 import { AuthProvider } from './auth/AuthProvider'
 import { PwaShell } from './pwa/PwaShell'
+import { PILL_CONVEX_URI } from './pwa/displacementMap'
 
 export const metadata = {
   title: 'ЭТРА — Ферментированные напитки',
@@ -34,36 +35,11 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
       </head>
       <body>
-        <svg style={{ display: 'none' }} xmlns="http://www.w3.org/2000/svg">
-          <filter id="glass-card">
-            <feImage
-              href="/images/pill-convex.png"
-              result="map"
-              preserveAspectRatio="none"
-            />
-            <feDisplacementMap
-              in="SourceGraphic"
-              in2="map"
-              scale="150"
-              xChannelSelector="R"
-              yChannelSelector="G"
-            />
-          </filter>
-          <filter id="glass-pill">
-            <feImage
-              href="/images/pill-convex.png"
-              result="map"
-              preserveAspectRatio="none"
-            />
-            <feDisplacementMap
-              in="SourceGraphic"
-              in2="map"
-              scale="100"
-              xChannelSelector="R"
-              yChannelSelector="G"
-            />
-          </filter>
-        </svg>
+        <svg
+          style={{ display: 'none' }}
+          xmlns="http://www.w3.org/2000/svg"
+          dangerouslySetInnerHTML={{ __html: `<defs><filter id="glass-card" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB"><feImage href="${PILL_CONVEX_URI}" result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%"/><feDisplacementMap in="SourceGraphic" in2="map" scale="150" xChannelSelector="R" yChannelSelector="G"/></filter><filter id="glass-pill" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB"><feImage href="${PILL_CONVEX_URI}" result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%"/><feDisplacementMap in="SourceGraphic" in2="map" scale="100" xChannelSelector="R" yChannelSelector="G"/></filter></defs>` }}
+        />
         <AuthProvider>
           <CartProvider>
             <PwaShell>{children}</PwaShell>
