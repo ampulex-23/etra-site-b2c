@@ -69,8 +69,7 @@ function AuthScreenInner() {
   return (
     <div className="pwa-screen animate-in">
       <div style={{ maxWidth: 400, margin: '20px auto 0' }}>
-        <div className="glass auth-card" style={{ position: 'relative', overflow: 'hidden' }}>
-          <div className="glass-backdrop-card" />
+        <div className="glass auth-card">
           <div className="auth-card__tabs">
             <button
               className={`auth-card__tab ${tab === 'login' ? 'auth-card__tab--active' : ''}`}

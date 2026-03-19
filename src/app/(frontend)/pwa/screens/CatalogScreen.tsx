@@ -55,8 +55,7 @@ export function CatalogScreen({ products, categories }: Props) {
             className={`pill-toggle__item ${!activeCategory ? 'pill-toggle__item--active' : ''}`}
             onClick={() => setActiveCategory(null)}
           >
-            {!activeCategory ? null : <span className="glass-backdrop-pill" />}
-            <span>Все</span>
+            Все
           </button>
           {categories.map((c) => (
             <button
@@ -64,8 +63,7 @@ export function CatalogScreen({ products, categories }: Props) {
               className={`pill-toggle__item ${activeCategory === c.slug ? 'pill-toggle__item--active' : ''}`}
               onClick={() => setActiveCategory(c.slug)}
             >
-              {activeCategory !== c.slug && <span className="glass-backdrop-pill" />}
-              <span>{c.title}</span>
+              {c.title}
             </button>
           ))}
         </div>
@@ -75,7 +73,6 @@ export function CatalogScreen({ products, categories }: Props) {
       <div className="grid-2">
         {filtered.map((p) => (
           <div key={p.id} className="product-card">
-            <div className="glass-backdrop-card" />
             <Link href={`/products/${p.slug}`}>
               <div style={{ position: 'relative', width: '100%', aspectRatio: '1' }}>
                 {p.imageUrl ? (
