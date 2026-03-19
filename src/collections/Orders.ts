@@ -195,6 +195,11 @@ export const Orders: CollectionConfig = {
           name: 'address',
           type: 'textarea',
           label: 'Адрес',
+          admin: {
+            components: {
+              Field: '@/components/admin/AddressAutocomplete',
+            },
+          },
         },
         {
           name: 'trackingNumber',

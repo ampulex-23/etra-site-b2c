@@ -106,11 +106,21 @@ export const Deliveries: CollectionConfig = {
           name: 'city',
           type: 'text',
           label: 'Город',
+          admin: {
+            components: {
+              Field: '@/components/admin/AddressAutocomplete',
+            },
+          },
         },
         {
           name: 'street',
           type: 'text',
           label: 'Улица, дом',
+          admin: {
+            components: {
+              Field: '@/components/admin/AddressAutocomplete',
+            },
+          },
         },
         {
           name: 'apartment',

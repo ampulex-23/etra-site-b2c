@@ -68,5 +68,25 @@ export const Users: CollectionConfig = {
       type: 'text',
       label: 'Должность',
     },
+    {
+      name: 'inviteToken',
+      type: 'text',
+      admin: { hidden: true },
+    },
+    {
+      name: 'inviteExpires',
+      type: 'date',
+      admin: { hidden: true },
+    },
+    {
+      name: 'inviteActions',
+      type: 'ui',
+      admin: {
+        position: 'sidebar',
+        components: {
+          Field: '@/components/admin/InviteManagerButton',
+        },
+      },
+    },
   ],
 }

@@ -55,6 +55,11 @@ export const Warehouses: CollectionConfig = {
       name: 'address',
       type: 'textarea',
       label: 'Адрес',
+      admin: {
+        components: {
+          Field: '@/components/admin/AddressAutocomplete',
+        },
+      },
     },
     {
       name: 'active',

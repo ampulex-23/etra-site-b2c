@@ -178,6 +178,14 @@ export interface CustomerAuthOperations {
  */
 export interface User {
   id: number;
+  name?: string | null;
+  /**
+   * Администратор — полный доступ. Менеджер — заказы, клиенты, каталог. Кладовщик — склад. Контент — статьи, рецепты, лендинг.
+   */
+  role?: ('admin' | 'manager' | 'warehouse' | 'content') | null;
+  active?: boolean | null;
+  phone?: string | null;
+  position?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -370,12 +378,21 @@ export interface Order {
     product: number | Product;
     variantName?: string | null;
     quantity: number;
+    /**
+     * Заполняется автоматически из товара/варианта
+     */
     price: number;
     id?: string | null;
   }[];
+  /**
+   * Считается автоматически
+   */
   subtotal?: number | null;
   discount?: number | null;
   deliveryCost?: number | null;
+  /**
+   * Считается автоматически: сумма товаров − скидка + доставка
+   */
   total: number;
   status?: ('new' | 'processing' | 'shipped' | 'delivered' | 'completed' | 'cancelled') | null;
   payment?: {
@@ -390,6 +407,12 @@ export interface Order {
     trackingNumber?: string | null;
   };
   promoCode?: (number | null) | PromoCode;
+  source?: ('site' | 'telegram_bot' | 'import') | null;
+  /**
+   * Внутренний ID заказа из PuzzleBot
+   */
+  puzzleBotOrderId?: string | null;
+  importedAt?: string | null;
   amoCrmDealId?: number | null;
   notes?: string | null;
   updatedAt: string;
@@ -418,8 +441,23 @@ export interface Customer {
   amoCrmContactId?: number | null;
   bonusBalance?: number | null;
   favorites?: (number | Product)[] | null;
-  telegramId?: string | null;
-  telegramUsername?: string | null;
+  /**
+   * Данные из Telegram (заполняются автоматически при авторизации или импорте)
+   */
+  telegram?: {
+    chatId?: string | null;
+    username?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    phone?: string | null;
+    photoUrl?: string | null;
+  };
+  source?: ('site' | 'telegram_bot' | 'import' | 'amocrm') | null;
+  /**
+   * Внутренний ID пользователя из PuzzleBot
+   */
+  puzzleBotId?: string | null;
+  importedAt?: string | null;
   emailVerified?: boolean | null;
   updatedAt: string;
   createdAt: string;
@@ -944,6 +982,11 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
+  active?: T;
+  phone?: T;
+  position?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1118,6 +1161,9 @@ export interface OrdersSelect<T extends boolean = true> {
         trackingNumber?: T;
       };
   promoCode?: T;
+  source?: T;
+  puzzleBotOrderId?: T;
+  importedAt?: T;
   amoCrmDealId?: T;
   notes?: T;
   updatedAt?: T;
@@ -1145,8 +1191,19 @@ export interface CustomersSelect<T extends boolean = true> {
   amoCrmContactId?: T;
   bonusBalance?: T;
   favorites?: T;
-  telegramId?: T;
-  telegramUsername?: T;
+  telegram?:
+    | T
+    | {
+        chatId?: T;
+        username?: T;
+        firstName?: T;
+        lastName?: T;
+        phone?: T;
+        photoUrl?: T;
+      };
+  source?: T;
+  puzzleBotId?: T;
+  importedAt?: T;
   emailVerified?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1449,13 +1506,41 @@ export interface AiSetting {
    */
   aiApiKey?: string | null;
   /**
-   * Например: openai/gpt-4.1-mini, anthropic/claude-3.5-sonnet, google/gemini-2.0-flash
+   * Модель для генерации текстов (описания товаров, статьи, SEO)
    */
-  aiTextModel?: string | null;
+  aiTextModel?:
+    | (
+        | 'openai/gpt-4.1-mini'
+        | 'openai/gpt-4.1'
+        | 'openai/gpt-4o'
+        | 'openai/gpt-4o-mini'
+        | 'anthropic/claude-3.5-sonnet'
+        | 'anthropic/claude-3.5-haiku'
+        | 'google/gemini-2.0-flash'
+        | 'google/gemini-2.5-pro'
+        | 'deepseek/deepseek-chat-v3'
+        | 'meta-llama/llama-3.1-70b-instruct'
+      )
+    | null;
   /**
-   * Например: openai/dall-e-3, stability/sdxl
+   * Модель для генерации и редактирования изображений
    */
-  aiImageModel?: string | null;
+  aiImageModel?:
+    | (
+        | 'google/gemini-3-pro-image-preview'
+        | 'google/gemini-3.1-flash-image-preview'
+        | 'google/gemini-2.5-flash-image'
+        | 'openai/gpt-5-image'
+        | 'openai/gpt-5-image-mini'
+        | 'openai/gpt-image-1.5'
+        | 'bytedance/seedream-5-lite'
+        | 'bytedance/seedream-4.5'
+        | 'black-forest-labs/flux.2-pro'
+        | 'black-forest-labs/flux.2-flex'
+        | 'x-ai/grok-imagine-image'
+        | 'topaz/image-upscale'
+      )
+    | null;
   /**
    * Креативность генерации (0 = точно, 2 = максимально креативно)
    */
@@ -1493,6 +1578,23 @@ export interface DeliverySetting {
    * 139 = посылка дверь-ПВЗ, 138 = посылка дверь-дверь
    */
   cdekTariffCode?: number | null;
+  cdekSenderName?: string | null;
+  /**
+   * Формат: +79991234567
+   */
+  cdekSenderPhone?: string | null;
+  /**
+   * Улица, дом — для забора курьером
+   */
+  cdekSenderAddress?: string | null;
+  /**
+   * Вес товара если не указан в карточке
+   */
+  cdekDefaultWeight?: number | null;
+  /**
+   * Автоматически: /api/cdek/webhook. Зарегистрируйте в ЛК СДЭК или через API.
+   */
+  cdekWebhookUrl?: string | null;
   russianPostEnabled?: boolean | null;
   /**
    * Токен API Почты России (otpravka.pochta.ru)
@@ -1661,6 +1763,11 @@ export interface DeliverySettingsSelect<T extends boolean = true> {
   cdekTestMode?: T;
   cdekSenderCity?: T;
   cdekTariffCode?: T;
+  cdekSenderName?: T;
+  cdekSenderPhone?: T;
+  cdekSenderAddress?: T;
+  cdekDefaultWeight?: T;
+  cdekWebhookUrl?: T;
   russianPostEnabled?: T;
   russianPostToken?: T;
   russianPostLogin?: T;

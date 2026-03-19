@@ -77,6 +77,8 @@ try {
       { name: 'active', definition: 'boolean DEFAULT true' },
       { name: 'phone', definition: 'varchar' },
       { name: 'position', definition: 'varchar' },
+      { name: 'invite_token', definition: 'varchar' },
+      { name: 'invite_expires', definition: 'timestamp(3) with time zone' },
     ])
   }
 

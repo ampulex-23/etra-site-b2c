@@ -23,6 +23,9 @@ export const DeliverySettings: GlobalConfig = {
       label: 'Адрес самовывоза',
       admin: {
         condition: (data) => data?.deliveryPickupEnabled,
+        components: {
+          Field: '@/components/admin/AddressAutocomplete',
+        },
       },
     },
     {
@@ -107,6 +110,9 @@ export const DeliverySettings: GlobalConfig = {
           admin: {
             condition: (data) => data?.cdekEnabled,
             description: 'Улица, дом — для забора курьером',
+            components: {
+              Field: '@/components/admin/AddressAutocomplete',
+            },
           },
         },
         {
