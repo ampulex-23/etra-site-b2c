@@ -204,6 +204,28 @@ export const Orders: CollectionConfig = {
       ],
     },
     {
+      name: 'linkedDelivery',
+      type: 'relationship',
+      relationTo: 'deliveries',
+      label: 'Связанная доставка',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Создаётся автоматически при создании заказа',
+      },
+    },
+    {
+      name: 'linkedPayment',
+      type: 'relationship',
+      relationTo: 'payments',
+      label: 'Связанный платёж',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Создаётся автоматически при создании заказа',
+      },
+    },
+    {
       name: 'promoCode',
       type: 'relationship',
       relationTo: 'promo-codes',

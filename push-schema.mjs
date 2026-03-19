@@ -115,6 +115,8 @@ try {
       { name: 'puzzle_bot_order_id', definition: 'varchar' },
       { name: 'imported_at', definition: 'timestamp(3) with time zone' },
       { name: 'amo_crm_deal_id', definition: 'numeric' },
+      { name: 'linked_delivery_id', definition: 'integer' },
+      { name: 'linked_payment_id', definition: 'integer' },
     ])
   }
 

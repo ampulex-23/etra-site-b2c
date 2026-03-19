@@ -10,10 +10,23 @@ export const orderAfterChange: CollectionAfterChangeHook = async ({
   const newStatus: string = doc.status
   const oldStatus: string | undefined = previousDoc?.status
 
-  // --- On CREATE: auto-create Delivery record + reserve stock ---
+  // --- On CREATE: auto-create Delivery + Payment records, reserve stock ---
   if (operation === 'create') {
-    await createDeliveryRecord(payload, doc, req)
+    const deliveryId = await createDeliveryRecord(payload, doc, req)
+    const paymentId = await createPaymentRecord(payload, doc, req)
     await reserveStock(payload, doc, req)
+
+    // Link back to order
+    const linkData: Record<string, any> = {}
+    if (deliveryId) linkData.linkedDelivery = deliveryId
+    if (paymentId) linkData.linkedPayment = paymentId
+    if (Object.keys(linkData).length > 0) {
+      try {
+        await payload.update({ collection: 'orders', id: doc.id, data: linkData, req })
+      } catch (err) {
+        console.error('[orderAfterChange] Error linking delivery/payment:', err)
+      }
+    }
     return doc
   }
 
@@ -42,8 +55,8 @@ export const orderAfterChange: CollectionAfterChangeHook = async ({
   return doc
 }
 
-// --- Create Delivery record from order data ---
-async function createDeliveryRecord(payload: any, order: any, req: any) {
+// --- Create Delivery record from order data, return delivery ID ---
+async function createDeliveryRecord(payload: any, order: any, req: any): Promise<string | null> {
   try {
     const deliveryMethod = order.delivery?.method || 'pickup'
     const customer = typeof order.customer === 'object' ? order.customer : null
@@ -55,7 +68,7 @@ async function createDeliveryRecord(payload: any, order: any, req: any) {
       limit: 1,
       req,
     })
-    if (existing.docs.length > 0) return
+    if (existing.docs.length > 0) return existing.docs[0].id
 
     const deliveryData: Record<string, any> = {
       order: order.id,
@@ -77,13 +90,57 @@ async function createDeliveryRecord(payload: any, order: any, req: any) {
       }
     }
 
-    await payload.create({
+    const delivery = await payload.create({
       collection: 'deliveries',
       data: deliveryData,
       req,
     })
+    return delivery?.id || null
   } catch (err) {
     console.error('[orderAfterChange] Error creating delivery:', err)
+    return null
+  }
+}
+
+// --- Create Payment record from order data, return payment ID ---
+async function createPaymentRecord(payload: any, order: any, req: any): Promise<string | null> {
+  try {
+    // Check if a payment already exists for this order
+    const existing = await payload.find({
+      collection: 'payments',
+      where: { order: { equals: order.id } },
+      limit: 1,
+      req,
+    })
+    if (existing.docs.length > 0) return existing.docs[0].id
+
+    const paymentMethod = order.payment?.method
+    let method = 'cash'
+    let gateway = 'none'
+    if (paymentMethod === 'yokassa' || paymentMethod === 'tinkoff') {
+      method = 'gateway'
+      gateway = paymentMethod
+    } else if (paymentMethod === 'cash') {
+      method = 'cash'
+    }
+
+    const payment = await payload.create({
+      collection: 'payments',
+      data: {
+        order: order.id,
+        method,
+        gateway: method === 'gateway' ? gateway : undefined,
+        status: order.payment?.status || 'pending',
+        amount: order.total || 0,
+        transactionId: order.payment?.transactionId || undefined,
+        paidAt: order.payment?.paidAt || undefined,
+      },
+      req,
+    })
+    return payment?.id || null
+  } catch (err) {
+    console.error('[orderAfterChange] Error creating payment:', err)
+    return null
   }
 }
 
