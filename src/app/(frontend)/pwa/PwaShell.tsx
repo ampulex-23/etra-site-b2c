@@ -4,7 +4,6 @@ import React, { useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCart } from '../cart/CartProvider'
-import { PILL_CONVEX_URI } from './displacementMap'
 
 export function PwaShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -13,15 +12,6 @@ export function PwaShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {})
-    }
-
-    // Inject SVG filters directly into <body> to ensure correct SVG namespace
-    // and that backdrop-filter: url(#id) can find them
-    if (!document.getElementById('glass-card')) {
-      const div = document.createElement('div')
-      div.style.cssText = 'position:absolute;width:0;height:0;pointer-events:none'
-      div.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden"><defs><filter id="glass-card" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB"><feImage href="${PILL_CONVEX_URI}" result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%"/><feDisplacementMap in="SourceGraphic" in2="map" scale="60" xChannelSelector="R" yChannelSelector="G"/></filter><filter id="glass-pill" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB"><feImage href="${PILL_CONVEX_URI}" result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%"/><feDisplacementMap in="SourceGraphic" in2="map" scale="40" xChannelSelector="R" yChannelSelector="G"/></filter></defs></svg>`
-      document.body.prepend(div)
     }
   }, [])
 

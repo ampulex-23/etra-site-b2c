@@ -34,6 +34,36 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
       </head>
       <body>
+        <svg style={{ display: 'none' }} xmlns="http://www.w3.org/2000/svg">
+          <filter id="glass-card">
+            <feImage
+              href="/images/pill-convex.png"
+              result="map"
+              preserveAspectRatio="none"
+            />
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="map"
+              scale="60"
+              xChannelSelector="R"
+              yChannelSelector="G"
+            />
+          </filter>
+          <filter id="glass-pill">
+            <feImage
+              href="/images/pill-convex.png"
+              result="map"
+              preserveAspectRatio="none"
+            />
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="map"
+              scale="40"
+              xChannelSelector="R"
+              yChannelSelector="G"
+            />
+          </filter>
+        </svg>
         <AuthProvider>
           <CartProvider>
             <PwaShell>{children}</PwaShell>
