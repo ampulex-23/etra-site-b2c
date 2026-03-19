@@ -166,6 +166,265 @@ try {
     console.log('[migrate] Created appearance_settings table')
   }
 
+  // ---- DELIVERY_SETTINGS global ----
+  if (!(await tableExists('delivery_settings'))) {
+    await pool.query(`
+      CREATE TABLE "delivery_settings" (
+        "id" serial PRIMARY KEY,
+        "delivery_pickup_enabled" boolean DEFAULT true,
+        "delivery_pickup_address" varchar,
+        "cdek_enabled" boolean DEFAULT false,
+        "cdek_account" varchar,
+        "cdek_secure_password" varchar,
+        "cdek_test_mode" boolean DEFAULT true,
+        "cdek_sender_city" varchar DEFAULT '44',
+        "cdek_tariff_code" numeric DEFAULT 139,
+        "cdek_sender_name" varchar DEFAULT 'ЭТРА',
+        "cdek_sender_phone" varchar,
+        "cdek_sender_address" varchar,
+        "cdek_default_weight" numeric DEFAULT 500,
+        "cdek_webhook_url" varchar,
+        "russian_post_enabled" boolean DEFAULT false,
+        "russian_post_token" varchar,
+        "russian_post_login" varchar,
+        "russian_post_password" varchar,
+        "russian_post_sender_index" varchar,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('INSERT INTO "delivery_settings" ("id") VALUES (1)')
+    console.log('[migrate] Created delivery_settings table')
+  } else {
+    await addColumnsIfMissing('delivery_settings', [
+      { name: 'delivery_pickup_enabled', definition: 'boolean DEFAULT true' },
+      { name: 'delivery_pickup_address', definition: 'varchar' },
+      { name: 'cdek_enabled', definition: 'boolean DEFAULT false' },
+      { name: 'cdek_account', definition: 'varchar' },
+      { name: 'cdek_secure_password', definition: 'varchar' },
+      { name: 'cdek_test_mode', definition: 'boolean DEFAULT true' },
+      { name: 'cdek_sender_city', definition: "varchar DEFAULT '44'" },
+      { name: 'cdek_tariff_code', definition: 'numeric DEFAULT 139' },
+      { name: 'cdek_sender_name', definition: "varchar DEFAULT 'ЭТРА'" },
+      { name: 'cdek_sender_phone', definition: 'varchar' },
+      { name: 'cdek_sender_address', definition: 'varchar' },
+      { name: 'cdek_default_weight', definition: 'numeric DEFAULT 500' },
+      { name: 'cdek_webhook_url', definition: 'varchar' },
+      { name: 'russian_post_enabled', definition: 'boolean DEFAULT false' },
+      { name: 'russian_post_token', definition: 'varchar' },
+      { name: 'russian_post_login', definition: 'varchar' },
+      { name: 'russian_post_password', definition: 'varchar' },
+      { name: 'russian_post_sender_index', definition: 'varchar' },
+    ])
+  }
+
+  // ---- delivery_settings_pickup_points (array sub-table) ----
+  if (!(await tableExists('delivery_settings_pickup_points'))) {
+    await pool.query(`
+      CREATE TABLE "delivery_settings_pickup_points" (
+        "_order" integer NOT NULL,
+        "_parent_id" integer NOT NULL,
+        "id" varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        "name" varchar,
+        "address" varchar,
+        "city" varchar,
+        "phone" varchar,
+        "working_hours" varchar,
+        "lat" numeric,
+        "lng" numeric,
+        "active" boolean DEFAULT true
+      )
+    `)
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE "delivery_settings_pickup_points"
+          ADD CONSTRAINT "delivery_settings_pickup_points_parent_id_fk"
+          FOREIGN KEY ("_parent_id") REFERENCES "delivery_settings"("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "delivery_settings_pickup_points_order_idx" ON "delivery_settings_pickup_points" ("_order")')
+    await pool.query('CREATE INDEX IF NOT EXISTS "delivery_settings_pickup_points_parent_id_idx" ON "delivery_settings_pickup_points" ("_parent_id")')
+    console.log('[migrate] Created delivery_settings_pickup_points table')
+  }
+
+  // ---- AI_SETTINGS global ----
+  if (!(await tableExists('ai_settings'))) {
+    await pool.query(`
+      CREATE TABLE "ai_settings" (
+        "id" serial PRIMARY KEY,
+        "ai_api_url" varchar DEFAULT 'https://api.polza.ai/v1/chat/completions',
+        "ai_api_key" varchar,
+        "ai_text_model" varchar DEFAULT 'openai/gpt-4.1-mini',
+        "ai_image_model" varchar DEFAULT 'google/gemini-3-pro-image-preview',
+        "ai_temperature" numeric DEFAULT 0.7,
+        "ai_max_tokens" numeric DEFAULT 2000,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('INSERT INTO "ai_settings" ("id") VALUES (1)')
+    console.log('[migrate] Created ai_settings table')
+  } else {
+    await addColumnsIfMissing('ai_settings', [
+      { name: 'ai_api_url', definition: "varchar DEFAULT 'https://api.polza.ai/v1/chat/completions'" },
+      { name: 'ai_api_key', definition: 'varchar' },
+      { name: 'ai_text_model', definition: "varchar DEFAULT 'openai/gpt-4.1-mini'" },
+      { name: 'ai_image_model', definition: "varchar DEFAULT 'google/gemini-3-pro-image-preview'" },
+      { name: 'ai_temperature', definition: 'numeric DEFAULT 0.7' },
+      { name: 'ai_max_tokens', definition: 'numeric DEFAULT 2000' },
+    ])
+  }
+
+  // ---- SHOP_SETTINGS global ----
+  if (!(await tableExists('shop_settings'))) {
+    await pool.query(`
+      CREATE TABLE "shop_settings" (
+        "id" serial PRIMARY KEY,
+        "telegram_bot_token" varchar,
+        "telegram_bot_username" varchar,
+        "payment_enabled" boolean DEFAULT false,
+        "payment_provider" varchar,
+        "payment_api_key" varchar,
+        "payment_shop_id" varchar,
+        "min_order_amount" numeric DEFAULT 0,
+        "free_delivery_threshold" numeric DEFAULT 0,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('INSERT INTO "shop_settings" ("id") VALUES (1)')
+    console.log('[migrate] Created shop_settings table')
+  } else {
+    await addColumnsIfMissing('shop_settings', [
+      { name: 'telegram_bot_token', definition: 'varchar' },
+      { name: 'telegram_bot_username', definition: 'varchar' },
+      { name: 'payment_enabled', definition: 'boolean DEFAULT false' },
+      { name: 'payment_provider', definition: 'varchar' },
+      { name: 'payment_api_key', definition: 'varchar' },
+      { name: 'payment_shop_id', definition: 'varchar' },
+      { name: 'min_order_amount', definition: 'numeric DEFAULT 0' },
+      { name: 'free_delivery_threshold', definition: 'numeric DEFAULT 0' },
+    ])
+  }
+
+  // ---- LANDING_SETTINGS global ----
+  if (!(await tableExists('landing_settings'))) {
+    await pool.query(`
+      CREATE TABLE "landing_settings" (
+        "id" serial PRIMARY KEY,
+        "hero_title" varchar,
+        "hero_subtitle" varchar,
+        "hero_cta" varchar,
+        "hero_cta_link" varchar,
+        "hero_secondary_cta_text" varchar,
+        "hero_secondary_cta_link" varchar,
+        "hero_bg_image_id" integer,
+        "science_label" varchar,
+        "science_title" varchar,
+        "science_desc" varchar,
+        "science_image_id" integer,
+        "catalog_label" varchar,
+        "catalog_title" varchar,
+        "catalog_desc" varchar,
+        "catalog_show_featured" boolean DEFAULT true,
+        "catalog_max_items" numeric DEFAULT 6,
+        "process_label" varchar,
+        "process_title" varchar,
+        "process_desc" varchar,
+        "testimonials_label" varchar,
+        "testimonials_title" varchar,
+        "join_title" varchar,
+        "join_desc" varchar,
+        "join_button_text" varchar,
+        "footer_desc" varchar,
+        "footer_email" varchar,
+        "footer_phone" varchar,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('INSERT INTO "landing_settings" ("id") VALUES (1)')
+    console.log('[migrate] Created landing_settings table')
+  } else {
+    await addColumnsIfMissing('landing_settings', [
+      { name: 'hero_title', definition: 'varchar' },
+      { name: 'hero_subtitle', definition: 'varchar' },
+      { name: 'hero_cta', definition: 'varchar' },
+      { name: 'hero_cta_link', definition: 'varchar' },
+      { name: 'hero_secondary_cta_text', definition: 'varchar' },
+      { name: 'hero_secondary_cta_link', definition: 'varchar' },
+      { name: 'hero_bg_image_id', definition: 'integer' },
+      { name: 'science_label', definition: 'varchar' },
+      { name: 'science_title', definition: 'varchar' },
+      { name: 'science_desc', definition: 'varchar' },
+      { name: 'science_image_id', definition: 'integer' },
+      { name: 'catalog_label', definition: 'varchar' },
+      { name: 'catalog_title', definition: 'varchar' },
+      { name: 'catalog_desc', definition: 'varchar' },
+      { name: 'catalog_show_featured', definition: 'boolean DEFAULT true' },
+      { name: 'catalog_max_items', definition: 'numeric DEFAULT 6' },
+      { name: 'process_label', definition: 'varchar' },
+      { name: 'process_title', definition: 'varchar' },
+      { name: 'process_desc', definition: 'varchar' },
+      { name: 'testimonials_label', definition: 'varchar' },
+      { name: 'testimonials_title', definition: 'varchar' },
+      { name: 'join_title', definition: 'varchar' },
+      { name: 'join_desc', definition: 'varchar' },
+      { name: 'join_button_text', definition: 'varchar' },
+      { name: 'footer_desc', definition: 'varchar' },
+      { name: 'footer_email', definition: 'varchar' },
+      { name: 'footer_phone', definition: 'varchar' },
+    ])
+  }
+
+  // ---- landing_settings array sub-tables ----
+  const landingArrayTables = [
+    {
+      name: 'landing_settings_stats',
+      columns: '"number" varchar, "label" varchar',
+    },
+    {
+      name: 'landing_settings_science_features',
+      columns: '"icon" varchar, "title" varchar, "description" varchar',
+    },
+    {
+      name: 'landing_settings_process_steps',
+      columns: '"title" varchar, "description" varchar',
+    },
+    {
+      name: 'landing_settings_testimonials',
+      columns: '"text" varchar, "name" varchar, "role" varchar, "avatar_id" integer, "rating" numeric DEFAULT 5',
+    },
+    {
+      name: 'landing_settings_social_links',
+      columns: '"platform" varchar, "url" varchar',
+    },
+  ]
+  for (const t of landingArrayTables) {
+    if (!(await tableExists(t.name))) {
+      await pool.query(`
+        CREATE TABLE "${t.name}" (
+          "_order" integer NOT NULL,
+          "_parent_id" integer NOT NULL,
+          "id" varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+          ${t.columns}
+        )
+      `)
+      await pool.query(`
+        DO $$ BEGIN
+          ALTER TABLE "${t.name}"
+            ADD CONSTRAINT "${t.name}_parent_id_fk"
+            FOREIGN KEY ("_parent_id") REFERENCES "landing_settings"("id") ON DELETE CASCADE;
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$
+      `)
+      await pool.query(`CREATE INDEX IF NOT EXISTS "${t.name}_order_idx" ON "${t.name}" ("_order")`)
+      await pool.query(`CREATE INDEX IF NOT EXISTS "${t.name}_parent_id_idx" ON "${t.name}" ("_parent_id")`)
+      console.log(`[migrate] Created ${t.name} table`)
+    }
+  }
+
   console.log('[migrate] Done')
 } catch (err) {
   console.error('[migrate] Error:', err.message)
