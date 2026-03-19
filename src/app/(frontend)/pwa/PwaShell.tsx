@@ -26,10 +26,56 @@ export function PwaShell({ children }: { children: React.ReactNode }) {
       {/* Static background */}
       <div className="pwa-bg" />
 
-      {/* SVG filters for glassmorphism */}
-      <svg className="pwa-filters">
+      {/* SVG filters for glassmorphism with displacement maps */}
+      <svg className="pwa-filters" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <filter id="glass-noise">
+          {/* ── Displacement map for rounded-rect cards/containers ── */}
+          {/* Generates a soft lens-like distortion shaped as a rounded rectangle */}
+          <filter id="glass-card" x="-5%" y="-5%" width="110%" height="110%" colorInterpolationFilters="sRGB">
+            {/* Base shape: rounded rect gradient for displacement intensity */}
+            <feFlood floodColor="#808080" result="base" />
+            {/* Radial lens warp — center pushes outward, edges neutral */}
+            <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="srcBlur" />
+            {/* Noise texture for organic glass imperfections */}
+            <feTurbulence type="fractalNoise" baseFrequency="0.03 0.03" numOctaves="3" seed="1" stitchTiles="stitch" result="noise" />
+            {/* Fine grain for frosted texture */}
+            <feTurbulence type="fractalNoise" baseFrequency="0.4 0.35" numOctaves="2" seed="5" stitchTiles="stitch" result="grain" />
+            {/* Combine noise into displacement: large warp + fine grain */}
+            <feDisplacementMap in="srcBlur" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G" result="warped" />
+            {/* Subtle grain overlay for frosted look */}
+            <feColorMatrix type="saturate" values="0" in="grain" result="grainGray" />
+            <feBlend in="warped" in2="grainGray" mode="soft-light" result="frosted" />
+            <feComposite in="frosted" in2="SourceGraphic" operator="in" />
+          </filter>
+
+          {/* ── Displacement map for pill-shaped buttons ── */}
+          {/* Stronger warp for small pill shapes, more pronounced lens effect */}
+          <filter id="glass-pill" x="-8%" y="-15%" width="116%" height="130%" colorInterpolationFilters="sRGB">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="0.4" result="srcBlur" />
+            {/* Low-freq warp for pill lens curvature */}
+            <feTurbulence type="fractalNoise" baseFrequency="0.02 0.04" numOctaves="2" seed="3" stitchTiles="stitch" result="pillNoise" />
+            {/* Stronger displacement for small elements */}
+            <feDisplacementMap in="srcBlur" in2="pillNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="pillWarp" />
+            {/* Frosted grain */}
+            <feTurbulence type="fractalNoise" baseFrequency="0.5 0.4" numOctaves="2" seed="7" stitchTiles="stitch" result="pillGrain" />
+            <feColorMatrix type="saturate" values="0" in="pillGrain" result="pillGrainGray" />
+            <feBlend in="pillWarp" in2="pillGrainGray" mode="soft-light" result="pillFrosted" />
+            <feComposite in="pillFrosted" in2="SourceGraphic" operator="in" />
+          </filter>
+
+          {/* ── Strong glass for containers (summary, auth card, etc) ── */}
+          <filter id="glass-container" x="-3%" y="-3%" width="106%" height="106%" colorInterpolationFilters="sRGB">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="0.3" result="cBlur" />
+            <feTurbulence type="fractalNoise" baseFrequency="0.025 0.025" numOctaves="4" seed="2" stitchTiles="stitch" result="cNoise" />
+            <feDisplacementMap in="cBlur" in2="cNoise" scale="6" xChannelSelector="R" yChannelSelector="G" result="cWarp" />
+            <feTurbulence type="fractalNoise" baseFrequency="0.35 0.3" numOctaves="2" seed="9" stitchTiles="stitch" result="cGrain" />
+            <feColorMatrix type="saturate" values="0" in="cGrain" result="cGrainG" />
+            <feBlend in="cWarp" in2="cGrainG" mode="soft-light" result="cFrost" />
+            <feComposite in="cFrost" in2="SourceGraphic" operator="in" />
+          </filter>
+
+          {/* ── Noise-only overlay (for topbar/botnav) ── */}
+          <filter id="glass-noise" colorInterpolationFilters="sRGB">
             <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise" />
             <feColorMatrix type="saturate" values="0" in="noise" result="gray" />
             <feBlend in="SourceGraphic" in2="gray" mode="soft-light" result="blended" />
