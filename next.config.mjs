@@ -14,6 +14,14 @@ const nextConfig = {
         hostname: '*.twc1.net',
       },
       {
+        protocol: 'https',
+        hostname: 'etraproject.ru',
+      },
+      {
+        protocol: 'http',
+        hostname: 'etraproject.ru',
+      },
+      {
         protocol: 'http',
         hostname: 'localhost',
       },
