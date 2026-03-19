@@ -213,31 +213,33 @@ async function shipOrder(payload: any, order: any, req: any) {
     return
   }
 
-  const items: any[] = order.items || []
-  for (const item of items) {
-    const productId = typeof item.product === 'object' ? item.product.id : item.product
-    const quantity = item.quantity || 1
-    if (!productId) continue
+  const orderItems: any[] = order.items || []
+  const movementItems = orderItems
+    .map((item: any) => ({
+      product: typeof item.product === 'object' ? item.product.id : item.product,
+      quantity: item.quantity || 1,
+    }))
+    .filter((i: any) => i.product)
 
-    try {
-      await payload.create({
-        collection: 'stock-movements' as any,
-        data: {
-          operationType: 'shipped_to_customers',
-          product: productId,
-          quantity,
-          warehouse: warehouseId,
-          status: 'completed',
-          operator: req.user?.id || undefined,
-          order: order.id,
-          reason: `Заказ ${order.orderNumber} — отправлен клиенту`,
-          date: new Date().toISOString(),
-        },
-        req,
-      })
-    } catch (err) {
-      console.error(`[orderAfterChange] Error creating shipment movement for product ${productId}:`, err)
-    }
+  if (movementItems.length === 0) return
+
+  try {
+    await payload.create({
+      collection: 'stock-movements' as any,
+      data: {
+        operationType: 'shipped_to_customers',
+        items: movementItems,
+        warehouse: warehouseId,
+        status: 'completed',
+        operator: req.user?.id || undefined,
+        order: order.id,
+        reason: `Заказ ${order.orderNumber} — отправлен клиенту`,
+        date: new Date().toISOString(),
+      },
+      req,
+    })
+  } catch (err) {
+    console.error('[orderAfterChange] Error creating shipment movement:', err)
   }
 
   // Unreserve the stock that was just shipped

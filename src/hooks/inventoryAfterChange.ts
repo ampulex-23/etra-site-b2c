@@ -76,8 +76,7 @@ export const inventoryAfterChange: CollectionAfterChangeHook = async ({
           collection: 'stock-movements' as any,
           data: {
             operationType: 'inventory_adjustment',
-            product: productId,
-            quantity: Math.abs(discrepancy),
+            items: [{ product: productId, quantity: Math.abs(discrepancy) }],
             warehouse: warehouseId,
             status: 'completed',
             operator: doc.conductor

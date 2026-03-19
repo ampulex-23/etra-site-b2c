@@ -153,6 +153,69 @@ try {
     console.log('[migrate] Created products_bundle_items table')
   }
 
+  // ---- STOCK_MOVEMENTS: remove old product/quantity columns if items table exists ----
+  if (await tableExists('stock_movements')) {
+    // Drop old single-product columns if they exist (replaced by items array)
+    const smCols = await getColumns('stock_movements')
+    if (smCols.includes('product_id') && !(await tableExists('stock_movements_items'))) {
+      // Migrate existing data: create items sub-table first, then move data
+      await pool.query(`
+        CREATE TABLE "stock_movements_items" (
+          "_order" integer NOT NULL,
+          "_parent_id" integer NOT NULL,
+          "id" varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+          "product_id" integer,
+          "quantity" numeric DEFAULT 1
+        )
+      `)
+      await pool.query(`
+        DO $$ BEGIN
+          ALTER TABLE "stock_movements_items"
+            ADD CONSTRAINT "stock_movements_items_parent_id_fk"
+            FOREIGN KEY ("_parent_id") REFERENCES "stock_movements"("id") ON DELETE CASCADE;
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$
+      `)
+      await pool.query('CREATE INDEX IF NOT EXISTS "stock_movements_items_order_idx" ON "stock_movements_items" ("_order")')
+      await pool.query('CREATE INDEX IF NOT EXISTS "stock_movements_items_parent_id_idx" ON "stock_movements_items" ("_parent_id")')
+      // Migrate existing rows: copy product_id+quantity into items sub-table
+      await pool.query(`
+        INSERT INTO "stock_movements_items" ("_order", "_parent_id", "product_id", "quantity")
+        SELECT 1, "id", "product_id", "quantity"
+        FROM "stock_movements"
+        WHERE "product_id" IS NOT NULL
+      `)
+      // Drop old columns
+      await pool.query('ALTER TABLE "stock_movements" DROP COLUMN IF EXISTS "product_id"')
+      await pool.query('ALTER TABLE "stock_movements" DROP COLUMN IF EXISTS "quantity"')
+      console.log('[migrate] Migrated stock_movements: product+quantity -> items array')
+    }
+  }
+
+  // ---- STOCK_MOVEMENTS_ITEMS sub-table (if not yet created) ----
+  if (!(await tableExists('stock_movements_items'))) {
+    await pool.query(`
+      CREATE TABLE "stock_movements_items" (
+        "_order" integer NOT NULL,
+        "_parent_id" integer NOT NULL,
+        "id" varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        "product_id" integer,
+        "quantity" numeric DEFAULT 1
+      )
+    `)
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE "stock_movements_items"
+          ADD CONSTRAINT "stock_movements_items_parent_id_fk"
+          FOREIGN KEY ("_parent_id") REFERENCES "stock_movements"("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "stock_movements_items_order_idx" ON "stock_movements_items" ("_order")')
+    await pool.query('CREATE INDEX IF NOT EXISTS "stock_movements_items_parent_id_idx" ON "stock_movements_items" ("_parent_id")')
+    console.log('[migrate] Created stock_movements_items table')
+  }
+
   // ---- APPEARANCE_SETTINGS (Payload internal global) ----
   if (!(await tableExists('appearance_settings'))) {
     await pool.query(`

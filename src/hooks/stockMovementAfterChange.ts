@@ -11,30 +11,37 @@ export const stockMovementAfterChange: CollectionAfterChangeHook = async ({
   const { payload } = req
 
   const operationType: string = doc.operationType
-  const productId: string = typeof doc.product === 'object' ? doc.product.id : doc.product
   const warehouseId: string = typeof doc.warehouse === 'object' ? doc.warehouse.id : doc.warehouse
-  const quantity: number = doc.quantity
   const targetWarehouseId: string | null = doc.targetWarehouse
     ? typeof doc.targetWarehouse === 'object'
       ? doc.targetWarehouse.id
       : doc.targetWarehouse
     : null
 
-  const product = typeof doc.product === 'object'
-    ? doc.product
-    : await payload.findByID({ collection: 'products', id: productId })
+  const items: any[] = doc.items || []
+  if (items.length === 0) return doc
 
-  if (product?.isBundle && product.bundleItems?.length) {
-    for (const item of product.bundleItems) {
-      const baseProductId = typeof item.product === 'object' ? item.product.id : item.product
-      const baseQty = quantity * (item.quantity || 1)
+  for (const entry of items) {
+    const productId: string = typeof entry.product === 'object' ? entry.product.id : entry.product
+    const quantity: number = entry.quantity || 1
+    if (!productId) continue
+
+    const product = typeof entry.product === 'object'
+      ? entry.product
+      : await payload.findByID({ collection: 'products', id: productId })
+
+    // Bundle decomposition: create a separate movement with decomposed items
+    if (product?.isBundle && product.bundleItems?.length) {
+      const decomposedItems = product.bundleItems.map((bi: any) => ({
+        product: typeof bi.product === 'object' ? bi.product.id : bi.product,
+        quantity: quantity * (bi.quantity || 1),
+      }))
 
       await payload.create({
         collection: 'stock-movements' as any,
         data: {
           operationType,
-          product: baseProductId,
-          quantity: baseQty,
+          items: decomposedItems,
           warehouse: warehouseId,
           targetWarehouse: targetWarehouseId,
           status: doc.status,
@@ -46,14 +53,12 @@ export const stockMovementAfterChange: CollectionAfterChangeHook = async ({
         },
         req,
       })
+      continue
     }
-    return doc
+
+    await updateStockLevel(payload, productId, warehouseId, operationType, quantity, targetWarehouseId, doc.status, req)
+    await syncProductInStock(payload, productId, req)
   }
-
-  await updateStockLevel(payload, productId, warehouseId, operationType, quantity, targetWarehouseId, doc.status, req)
-
-  // Sync Products.inStock
-  await syncProductInStock(payload, productId, req)
 
   return doc
 }

@@ -12,7 +12,7 @@ export const StockMovements: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'operationType',
-    defaultColumns: ['operationType', 'product', 'quantity', 'warehouse', 'operator', 'createdAt'],
+    defaultColumns: ['operationType', 'warehouse', 'status', 'operator', 'createdAt'],
     group: 'Склад',
     description: 'Журнал всех операций: производство, перемещение, отправка, списание',
   },
@@ -38,21 +38,32 @@ export const StockMovements: CollectionConfig = {
       ],
     },
     {
-      name: 'product',
-      type: 'relationship',
-      relationTo: 'products',
+      name: 'items',
+      type: 'array',
       required: true,
-      label: 'Товар',
+      minRows: 1,
+      label: 'Товары',
+      labels: { singular: 'Позиция', plural: 'Позиции' },
       admin: {
-        description: 'Базовый товар (не набор). Наборы раскладываются автоматически.',
+        description: 'Товары и количество для этой операции. Наборы раскладываются автоматически.',
       },
-    },
-    {
-      name: 'quantity',
-      type: 'number',
-      required: true,
-      min: 1,
-      label: 'Количество',
+      fields: [
+        {
+          name: 'product',
+          type: 'relationship',
+          relationTo: 'products',
+          required: true,
+          label: 'Товар',
+        },
+        {
+          name: 'quantity',
+          type: 'number',
+          required: true,
+          min: 1,
+          defaultValue: 1,
+          label: 'Количество',
+        },
+      ],
     },
     {
       name: 'warehouse',
