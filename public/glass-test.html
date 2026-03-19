@@ -1,111 +1,247 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Glass Displacement Test</title>
 <style>
-  body { margin: 0; min-height: 100vh; background: url('/images/bg.jpg') center/cover no-repeat; font-family: sans-serif; }
-  .overlay { position: fixed; inset: 0; background: linear-gradient(180deg, rgba(4,14,10,0.70), rgba(7,26,18,0.55), rgba(4,14,10,0.75)); }
-  .content { position: relative; z-index: 1; padding: 40px 20px; }
-  
-  /* Test card with displacement */
-  .card {
-    position: relative;
-    width: 300px; height: 200px; margin: 20px auto;
-    border-radius: 16px; overflow: hidden;
-    border: 1px solid rgba(80,200,160,0.25);
-  }
-  .card-backdrop {
-    position: absolute; inset: 0; z-index: 0;
-    background: url('/images/bg.jpg') center/cover no-repeat;
-    filter: blur(12px) saturate(1.6) url(#dm-card);
-  }
-  .card-backdrop::after {
-    content: ''; position: absolute; inset: 0;
-    background: rgba(16,60,42,0.55);
-  }
-  .card-text {
-    position: relative; z-index: 1;
-    color: white; padding: 20px; font-size: 18px; font-weight: 600;
-  }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #e8f5ef;
+}
 
-  /* Same card WITHOUT displacement for comparison */
-  .card-plain .card-backdrop {
-    filter: blur(12px) saturate(1.6);
-  }
+/* ── Background ── */
+.bg {
+  position: fixed; inset: 0; z-index: 0;
+  background: url('/images/bg.jpg') center/cover no-repeat;
+}
+.bg::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(4,14,10,0.70) 0%, rgba(7,26,18,0.55) 50%, rgba(4,14,10,0.75) 100%);
+}
 
-  /* Test with pill */
-  .pill {
-    position: relative; display: inline-block;
-    padding: 12px 28px; border-radius: 999px; overflow: hidden;
-    border: 1px solid rgba(80,200,160,0.25); margin: 10px;
-  }
-  .pill-backdrop {
-    position: absolute; inset: 0; z-index: 0;
-    background: url('/images/bg.jpg') center/cover no-repeat;
-    filter: blur(8px) saturate(1.4) url(#dm-pill);
-    border-radius: inherit;
-  }
-  .pill-backdrop::after {
-    content: ''; position: absolute; inset: 0; border-radius: inherit;
-    background: rgba(16,60,42,0.45);
-  }
-  .pill-text {
-    position: relative; z-index: 1;
-    color: white; font-size: 14px; font-weight: 500;
-  }
+.content {
+  position: relative; z-index: 1;
+  max-width: 420px; margin: 0 auto;
+  padding: 30px 16px;
+}
 
-  h2 { color: #3beca0; text-align: center; margin: 30px 0 10px; }
-  p.note { color: rgba(255,255,255,0.6); text-align: center; font-size: 13px; }
+h2 {
+  color: #3beca0; font-size: 16px; font-weight: 600;
+  margin: 30px 0 12px;
+  padding-left: 4px;
+}
+h2:first-child { margin-top: 0; }
+.note {
+  color: rgba(232,245,239,0.5); font-size: 12px;
+  text-align: center; margin-top: 8px;
+}
+
+/* ═══════════════════════════════════════════
+   APPROACH A: Backdrop div duplicates bg.jpg
+   Filter applied to the backdrop div only.
+   Uses CSS filter: url(#svg) — displacement
+   applied to the duplicated background pixels.
+   ═══════════════════════════════════════════ */
+.card-a {
+  position: relative;
+  border-radius: 16px; overflow: hidden;
+  border: 1px solid rgba(80,200,160,0.25);
+  padding: 20px;
+}
+.card-a .backdrop {
+  position: absolute; inset: -20px; z-index: 0;
+  background: url('/images/bg.jpg') center/cover no-repeat fixed;
+  filter: url(#displace-card);
+}
+.card-a .tint {
+  position: absolute; inset: 0; z-index: 1;
+  background: rgba(16, 60, 42, 0.55);
+  border-radius: inherit;
+}
+.card-a .text {
+  position: relative; z-index: 2;
+}
+
+/* ═══════════════════════════════════════════
+   APPROACH B: SVG filter includes feImage of
+   bg.jpg + blur + displacement — all in SVG.
+   Card uses filter: url(#glass-all-in-svg)
+   on a backdrop div that is just a trigger.
+   ═══════════════════════════════════════════ */
+.card-b {
+  position: relative;
+  border-radius: 16px; overflow: hidden;
+  border: 1px solid rgba(80,200,160,0.25);
+  padding: 20px;
+}
+.card-b .backdrop {
+  position: absolute; inset: 0; z-index: 0;
+  border-radius: inherit;
+  /* The SVG filter fetches bg.jpg via feImage, blurs and displaces it */
+  filter: url(#glass-allinsvg);
+}
+.card-b .tint {
+  position: absolute; inset: 0; z-index: 1;
+  background: rgba(16, 60, 42, 0.55);
+  border-radius: inherit;
+}
+.card-b .text {
+  position: relative; z-index: 2;
+}
+
+/* ═══════════════════════════════════════════
+   APPROACH C: Pure backdrop-filter (no SVG).
+   Just for visual comparison.
+   ═══════════════════════════════════════════ */
+.card-c {
+  position: relative;
+  border-radius: 16px; overflow: hidden;
+  border: 1px solid rgba(80,200,160,0.25);
+  padding: 20px;
+  background: rgba(16, 60, 42, 0.45);
+  backdrop-filter: blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+}
+
+/* ═══════════════════════════════════════════
+   APPROACH D: Inline SVG element with
+   feImage bg + blur + displacement rendered
+   as actual <svg> taking full card area.
+   ═══════════════════════════════════════════ */
+.card-d {
+  position: relative;
+  border-radius: 16px; overflow: hidden;
+  border: 1px solid rgba(80,200,160,0.25);
+}
+.card-d svg.bg-svg {
+  display: block; width: 100%; height: 100%;
+  position: absolute; inset: 0; z-index: 0;
+}
+.card-d .tint {
+  position: absolute; inset: 0; z-index: 1;
+  background: rgba(16, 60, 42, 0.55);
+}
+.card-d .text {
+  position: relative; z-index: 2;
+  padding: 20px;
+}
+
+/* shared */
+.text { font-size: 15px; font-weight: 500; line-height: 1.5; }
+.label { font-size: 11px; color: rgba(232,245,239,0.4); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 </style>
 </head>
 <body>
-  <div class="overlay"></div>
 
-  <!-- SVG Filters -->
-  <svg style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <filter id="dm-card" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
-        <feImage href="/images/pill-convex.png" result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
-        <feDisplacementMap in="SourceGraphic" in2="map" scale="30" xChannelSelector="R" yChannelSelector="G" />
-      </filter>
-      <filter id="dm-pill" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
-        <feImage href="/images/pill-convex.png" result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
-        <feDisplacementMap in="SourceGraphic" in2="map" scale="20" xChannelSelector="R" yChannelSelector="G" />
-      </filter>
-    </defs>
-  </svg>
+<div class="bg"></div>
 
-  <div class="content">
-    <h2>WITH Displacement (scale=30)</h2>
-    <div class="card">
-      <div class="card-backdrop"></div>
-      <div class="card-text">Glass Card with SVG Displacement Map</div>
+<!-- ════════ SVG FILTERS ════════ -->
+<svg style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- A: displacement only, applied to backdrop div that has bg.jpg as CSS background -->
+    <filter id="displace-card" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+      <feImage href="/images/pill-convex.png" result="map"
+               preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
+      <feDisplacementMap in="SourceGraphic" in2="map" scale="30"
+                         xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+
+    <!-- B: all-in-SVG — fetches bg.jpg, blurs, displaces -->
+    <filter id="glass-allinsvg" x="0%" y="0%" width="100%" height="100%"
+            color-interpolation-filters="sRGB" primitiveUnits="objectBoundingBox">
+      <feImage href="/images/bg.jpg" result="bg"
+               preserveAspectRatio="xMidYMid slice" x="0" y="0" width="1" height="1" />
+      <feGaussianBlur in="bg" stdDeviation="0.02" result="blurred" />
+      <feImage href="/images/pill-convex.png" result="map"
+               preserveAspectRatio="none" x="0" y="0" width="1" height="1" />
+      <feDisplacementMap in="blurred" in2="map" scale="0.05"
+                         xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+
+    <!-- D: for inline SVG approach -->
+    <filter id="displace-inline" x="-10%" y="-10%" width="120%" height="120%"
+            color-interpolation-filters="sRGB">
+      <feImage href="/images/pill-convex.png" result="map"
+               preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
+      <feDisplacementMap in="SourceGraphic" in2="map" scale="30"
+                         xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </defs>
+</svg>
+
+<div class="content">
+
+  <!-- ══════ A ══════ -->
+  <h2>A: Backdrop div + bg.jpg + filter:url(#displace)</h2>
+  <div class="card-a">
+    <div class="backdrop"></div>
+    <div class="tint"></div>
+    <div class="text">
+      <div class="label">Backdrop div дублирует bg.jpg, filter:url(#displace) искажает пиксели</div>
+      Товары (2) — 1 700 ₽<br>
+      Доставка — При оформлении<br>
+      <strong>Итого — 1 700 ₽</strong>
     </div>
-
-    <h2>WITHOUT Displacement (plain blur)</h2>
-    <div class="card card-plain">
-      <div class="card-backdrop"></div>
-      <div class="card-text">Glass Card — plain blur only</div>
-    </div>
-
-    <h2>Pill buttons</h2>
-    <div style="text-align:center">
-      <div class="pill">
-        <div class="pill-backdrop"></div>
-        <span class="pill-text">Glass Pill</span>
-      </div>
-      <div class="pill">
-        <div class="pill-backdrop"></div>
-        <span class="pill-text">Another Pill</span>
-      </div>
-    </div>
-
-    <h2>Displacement Map Preview</h2>
-    <div style="text-align:center">
-      <img src="/images/pill-convex.png" style="width:300px; border-radius:8px; border:1px solid rgba(255,255,255,0.2)">
-    </div>
-    <p class="note">The image above is the displacement map (pill-convex.png).<br>R channel = X offset, G channel = Y offset. Gray = neutral.</p>
   </div>
+
+  <!-- ══════ B ══════ -->
+  <h2>B: All-in-SVG (feImage bg + blur + displace)</h2>
+  <div class="card-b">
+    <div class="backdrop"></div>
+    <div class="tint"></div>
+    <div class="text">
+      <div class="label">SVG фильтр сам загружает bg.jpg, размывает и искажает</div>
+      Товары (2) — 1 700 ₽<br>
+      Доставка — При оформлении<br>
+      <strong>Итого — 1 700 ₽</strong>
+    </div>
+  </div>
+
+  <!-- ══════ C ══════ -->
+  <h2>C: Контроль — только backdrop-filter (без SVG)</h2>
+  <div class="card-c">
+    <div class="text">
+      <div class="label">Просто backdrop-filter: blur(24px) — для сравнения</div>
+      Товары (2) — 1 700 ₽<br>
+      Доставка — При оформлении<br>
+      <strong>Итого — 1 700 ₽</strong>
+    </div>
+  </div>
+
+  <!-- ══════ D ══════ -->
+  <h2>D: Inline SVG с feImage bg + displacement</h2>
+  <div class="card-d">
+    <svg class="bg-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <filter id="d-filter" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blurred" />
+          <feImage href="/images/pill-convex.png" result="map"
+                   preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
+          <feDisplacementMap in="blurred" in2="map" scale="30"
+                             xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </defs>
+      <image href="/images/bg.jpg" x="0" y="0" width="100%" height="100%"
+             preserveAspectRatio="xMidYMid slice" filter="url(#d-filter)" />
+    </svg>
+    <div class="tint"></div>
+    <div class="text">
+      <div class="label">SVG image элемент с bg.jpg + blur + displacement в самом SVG</div>
+      Товары (2) — 1 700 ₽<br>
+      Доставка — При оформлении<br>
+      <strong>Итого — 1 700 ₽</strong>
+    </div>
+  </div>
+
+  <h2>Displacement Map</h2>
+  <div style="text-align:center">
+    <img src="/images/pill-convex.png" style="width:200px; border-radius:8px; border:1px solid rgba(255,255,255,0.15)">
+  </div>
+  <p class="note">R = X offset, G = Y offset. Серый (128) = нейтраль.</p>
+
+</div>
 </body>
 </html>
