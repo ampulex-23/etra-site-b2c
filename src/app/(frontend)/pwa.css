@@ -54,20 +54,36 @@ img { max-width: 100%; display: block; }
 /* ── SVG Glass filter definition ── */
 .pwa-filters { position: absolute; width: 0; height: 0; overflow: hidden; }
 
-/* ── Glass backdrop layers (applied to inner div, NOT to parent) ── */
-.glass-backdrop-card {
-  position: absolute; inset: 0; z-index: 0; border-radius: inherit; overflow: hidden;
-  background: var(--c-glass-strong);
-  backdrop-filter: blur(32px) saturate(1.7); -webkit-backdrop-filter: blur(32px) saturate(1.7);
-  filter: url(#glass-card);
+/* ── Glass backdrop layers ──
+   Two-layer approach inside each glass container:
+   1. .glass-backdrop-* div: duplicated bg image + blur + SVG displacement filter
+      → this gives visible distortion because filter works on actual pixels
+   2. ::after on that div: semi-transparent tint overlay
+   Content sits above (z-index:1) via the auto-elevation rule below. */
+.glass-backdrop-card,
+.glass-backdrop-pill {
+  position: absolute; inset: 0; z-index: 0;
+  border-radius: inherit; overflow: hidden;
   pointer-events: none;
+  background: url('/images/bg.jpg') center/cover no-repeat;
+}
+.glass-backdrop-card {
+  filter: url(#glass-card);
 }
 .glass-backdrop-pill {
-  position: absolute; inset: 0; z-index: 0; border-radius: inherit; overflow: hidden;
-  background: var(--c-glass);
-  backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
   filter: url(#glass-pill);
+}
+/* Color tint on top of distorted backdrop */
+.glass-backdrop-card::after,
+.glass-backdrop-pill::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
   pointer-events: none;
+}
+.glass-backdrop-card::after {
+  background: var(--c-glass-strong);
+}
+.glass-backdrop-pill::after {
+  background: var(--c-glass);
 }
 
 /* All direct children of glass containers sit above backdrop */

@@ -186,6 +186,8 @@ export interface User {
   active?: boolean | null;
   phone?: string | null;
   position?: string | null;
+  inviteToken?: string | null;
+  inviteExpires?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -406,6 +408,14 @@ export interface Order {
     address?: string | null;
     trackingNumber?: string | null;
   };
+  /**
+   * Создаётся автоматически при создании заказа
+   */
+  linkedDelivery?: (number | null) | Delivery;
+  /**
+   * Создаётся автоматически при создании заказа
+   */
+  linkedPayment?: (number | null) | Payment;
   promoCode?: (number | null) | PromoCode;
   source?: ('site' | 'telegram_bot' | 'import') | null;
   /**
@@ -480,67 +490,6 @@ export interface Customer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "promo-codes".
- */
-export interface PromoCode {
-  id: number;
-  code: string;
-  discountType: 'percent' | 'fixed';
-  discountValue: number;
-  minOrderAmount?: number | null;
-  maxUses?: number | null;
-  usedCount?: number | null;
-  validFrom?: string | null;
-  validTo?: string | null;
-  active?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "posts".
- */
-export interface Post {
-  id: number;
-  title: string;
-  slug: string;
-  excerpt?: string | null;
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  coverImage?: (number | null) | Media;
-  category?: string | null;
-  tags?:
-    | {
-        tag: string;
-        id?: string | null;
-      }[]
-    | null;
-  author?: string | null;
-  publishedAt?: string | null;
-  status?: ('draft' | 'published') | null;
-  seo?: {
-    title?: string | null;
-    description?: string | null;
-    ogImage?: (number | null) | Media;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "deliveries".
  */
 export interface Delivery {
@@ -607,6 +556,67 @@ export interface Payment {
   paidAt?: string | null;
   refundedAt?: string | null;
   notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "promo-codes".
+ */
+export interface PromoCode {
+  id: number;
+  code: string;
+  discountType: 'percent' | 'fixed';
+  discountValue: number;
+  minOrderAmount?: number | null;
+  maxUses?: number | null;
+  usedCount?: number | null;
+  validFrom?: string | null;
+  validTo?: string | null;
+  active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt?: string | null;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  coverImage?: (number | null) | Media;
+  category?: string | null;
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  author?: string | null;
+  publishedAt?: string | null;
+  status?: ('draft' | 'published') | null;
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+    ogImage?: (number | null) | Media;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -735,10 +745,13 @@ export interface StockMovement {
     | 'return_to_stock'
     | 'inventory_adjustment';
   /**
-   * Базовый товар (не набор). Наборы раскладываются автоматически.
+   * Товары и количество для этой операции. Наборы раскладываются автоматически.
    */
-  product: number | Product;
-  quantity: number;
+  items: {
+    product: number | Product;
+    quantity: number;
+    id?: string | null;
+  }[];
   /**
    * Склад, на котором выполняется операция
    */
@@ -987,6 +1000,8 @@ export interface UsersSelect<T extends boolean = true> {
   active?: T;
   phone?: T;
   position?: T;
+  inviteToken?: T;
+  inviteExpires?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1160,6 +1175,8 @@ export interface OrdersSelect<T extends boolean = true> {
         address?: T;
         trackingNumber?: T;
       };
+  linkedDelivery?: T;
+  linkedPayment?: T;
   promoCode?: T;
   source?: T;
   puzzleBotOrderId?: T;
@@ -1396,8 +1413,13 @@ export interface WarehousesSelect<T extends boolean = true> {
  */
 export interface StockMovementsSelect<T extends boolean = true> {
   operationType?: T;
-  product?: T;
-  quantity?: T;
+  items?:
+    | T
+    | {
+        product?: T;
+        quantity?: T;
+        id?: T;
+      };
   warehouse?: T;
   targetWarehouse?: T;
   status?: T;

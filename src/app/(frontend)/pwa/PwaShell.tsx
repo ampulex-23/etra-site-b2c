@@ -4,6 +4,7 @@ import React, { useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCart } from '../cart/CartProvider'
+import { PILL_CONVEX_URI } from './displacementMap'
 
 export function PwaShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -26,18 +27,22 @@ export function PwaShell({ children }: { children: React.ReactNode }) {
       {/* Static background */}
       <div className="pwa-bg" />
 
-      {/* SVG displacement map filters for glassmorphism */}
-      <svg className="pwa-filters" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink">
+      {/* SVG displacement map filters — blur + saturate + displacement all in SVG chain */}
+      <svg className="pwa-filters" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          {/* Card glass — rounded rect displacement */}
-          <filter id="glass-card" x="0%" y="0%" width="100%" height="100%" colorInterpolationFilters="sRGB">
-            <feImage xlinkHref="/images/dm-card.svg" result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
-            <feDisplacementMap in="SourceGraphic" in2="map" scale="18" xChannelSelector="R" yChannelSelector="G" />
+          {/* Card glass: blur → saturate → displacement */}
+          <filter id="glass-card" x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blurred" />
+            <feColorMatrix in="blurred" type="saturate" values="1.6" result="saturated" />
+            <feImage href={PILL_CONVEX_URI} result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
+            <feDisplacementMap in="saturated" in2="map" scale="22" xChannelSelector="R" yChannelSelector="G" />
           </filter>
-          {/* Pill glass — capsule displacement */}
-          <filter id="glass-pill" x="0%" y="0%" width="100%" height="100%" colorInterpolationFilters="sRGB">
-            <feImage xlinkHref="/images/dm-pill.svg" result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
-            <feDisplacementMap in="SourceGraphic" in2="map" scale="14" xChannelSelector="R" yChannelSelector="G" />
+          {/* Pill glass: blur → saturate → displacement */}
+          <filter id="glass-pill" x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blurred" />
+            <feColorMatrix in="blurred" type="saturate" values="1.4" result="saturated" />
+            <feImage href={PILL_CONVEX_URI} result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
+            <feDisplacementMap in="saturated" in2="map" scale="16" xChannelSelector="R" yChannelSelector="G" />
           </filter>
         </defs>
       </svg>
