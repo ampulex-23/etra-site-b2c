@@ -12,7 +12,7 @@ const html = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Glass Lens — Cross-browser Test</title>
+<title>Glass Lens — Стенд</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -22,7 +22,7 @@ body {
   background: #071a12;
 }
 
-/* ── Page background ── */
+/* ── Page background (same as PWA) ── */
 .bg {
   position: fixed; inset: 0; z-index: 0;
   background: url('${bgUrl}') center/cover no-repeat;
@@ -69,75 +69,51 @@ h2:first-child { margin-top: 0; }
   -webkit-backdrop-filter: blur(24px) saturate(1.5);
 }
 
-/* ── G: ::before with fixed bg + filter:url(#displace) ──
-   Cross-browser! ::before duplicates the page background with
-   background-attachment:fixed, then filter:url() displaces it.
-   Tint overlay via ::after. Content via z-index. */
-.card-g {
-  background: transparent;
-}
-.card-g::before {
-  content: '';
-  position: absolute; inset: -10px; /* extra space for displacement overflow */
-  z-index: 0;
-  background: url('${bgUrl}') center/cover no-repeat fixed;
-  filter: url(#glass-displace);
-}
-.card-g::after {
-  content: '';
-  position: absolute; inset: 0; z-index: 1;
-  border-radius: inherit;
+/* ── B: backdrop-filter: url(#glass-card) blur(1px) brightness(1.05)
+   Matches PWA approach — scale=150 ── */
+.card-b {
   background: rgba(45, 94, 83, 0.42);
-  pointer-events: none;
+  backdrop-filter: url(#glass-card) blur(1px) brightness(1.05);
+  -webkit-backdrop-filter: url(#glass-card) blur(1px) brightness(1.05);
 }
-.card-g .text { position: relative; z-index: 2; }
 
-/* ── H: Same as G but with gradient overlay on ::before ── */
-.card-h {
-  background: transparent;
-}
-.card-h::before {
-  content: '';
-  position: absolute; inset: -10px;
-  z-index: 0;
-  /* Two backgrounds layered: gradient on top, bg image below */
-  background:
-    linear-gradient(180deg, rgba(4,14,10,0.70) 0%, rgba(7,26,18,0.55) 50%, rgba(4,14,10,0.75) 100%),
-    url('${bgUrl}') center/cover no-repeat fixed;
-  filter: url(#glass-displace);
-}
-.card-h::after {
-  content: '';
-  position: absolute; inset: 0; z-index: 1;
-  border-radius: inherit;
+/* ── C: backdrop-filter: url(#glass-card) only — no blur/brightness ── */
+.card-c {
   background: rgba(45, 94, 83, 0.42);
-  pointer-events: none;
+  backdrop-filter: url(#glass-card);
+  -webkit-backdrop-filter: url(#glass-card);
 }
-.card-h .text { position: relative; z-index: 2; }
 
-/* ── I: Same as H but with blur too ── */
-.card-i {
+/* ── D: backdrop-filter: url(#glass-150) — scale=150, file path ── */
+.card-d {
+  background: rgba(45, 94, 83, 0.42);
+  backdrop-filter: url(#glass-150) blur(1px) brightness(1.05);
+  -webkit-backdrop-filter: url(#glass-150) blur(1px) brightness(1.05);
+}
+
+/* ── E: ::before fixed bg + filter:url(#displace) — fallback ── */
+.card-e {
   background: transparent;
 }
-.card-i::before {
+.card-e::before {
   content: '';
   position: absolute; inset: -10px;
   z-index: 0;
   background:
     linear-gradient(180deg, rgba(4,14,10,0.70) 0%, rgba(7,26,18,0.55) 50%, rgba(4,14,10,0.75) 100%),
     url('${bgUrl}') center/cover no-repeat fixed;
-  filter: url(#glass-displace-blur);
+  filter: url(#glass-displace);
 }
-.card-i::after {
+.card-e::after {
   content: '';
   position: absolute; inset: 0; z-index: 1;
   border-radius: inherit;
   background: rgba(45, 94, 83, 0.42);
   pointer-events: none;
 }
-.card-i .text { position: relative; z-index: 2; }
+.card-e .text { position: relative; z-index: 2; }
 
-/* ── Pill variant ── */
+/* ── Pill variants ── */
 .pill-wrap { display: flex; gap: 6px; flex-wrap: wrap; }
 .pill {
   display: inline-block; position: relative;
@@ -146,26 +122,11 @@ h2:first-child { margin-top: 0; }
   padding: 8px 20px; margin: 0;
   font-size: 13px; font-weight: 500;
 }
-.pill-g {
-  background: transparent;
-}
-.pill-g::before {
-  content: '';
-  position: absolute; inset: -8px;
-  z-index: 0;
-  background:
-    linear-gradient(180deg, rgba(4,14,10,0.70) 0%, rgba(7,26,18,0.55) 50%, rgba(4,14,10,0.75) 100%),
-    url('${bgUrl}') center/cover no-repeat fixed;
-  filter: url(#pill-displace);
-}
-.pill-g::after {
-  content: '';
-  position: absolute; inset: 0; z-index: 1;
-  border-radius: inherit;
+.pill-bd {
   background: rgba(45, 94, 83, 0.42);
-  pointer-events: none;
+  backdrop-filter: url(#pill-lens) blur(1px) brightness(1.05);
+  -webkit-backdrop-filter: url(#pill-lens) blur(1px) brightness(1.05);
 }
-.pill-g span { position: relative; z-index: 2; }
 .pill-ctrl {
   background: rgba(45, 94, 83, 0.42);
   backdrop-filter: blur(16px) saturate(1.4);
@@ -177,39 +138,37 @@ h2:first-child { margin-top: 0; }
 
 <div class="bg"></div>
 
-<!-- ════════ SVG FILTERS ════════ -->
-<svg style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
+<!-- ═══ SVG FILTERS ═══ -->
+
+<!-- Filter set 1: display:none SVG (same as layout.tsx in PWA) -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <filter id="glass-card">
+    <feImage href="/images/pill-convex.png" result="map" preserveAspectRatio="none" />
+    <feDisplacementMap in="SourceGraphic" in2="map" scale="150" xChannelSelector="R" yChannelSelector="G" />
+  </filter>
+  <filter id="pill-lens">
+    <feImage href="/images/pill-convex.png" result="map" preserveAspectRatio="none" />
+    <feDisplacementMap in="SourceGraphic" in2="map" scale="100" xChannelSelector="R" yChannelSelector="G" />
+  </filter>
+</svg>
+
+<!-- Filter set 2: with base64 + defs (for comparison) -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Displacement only — for ::before with duplicated background -->
+    <filter id="glass-150" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feImage href="${dmB64}" result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
+      <feDisplacementMap in="SourceGraphic" in2="map" scale="150" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
     <filter id="glass-displace" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
-      <feImage href="${dmB64}" result="map"
-               preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
-      <feDisplacementMap in="SourceGraphic" in2="map" scale="60"
-                         xChannelSelector="R" yChannelSelector="G" />
-    </filter>
-
-    <!-- Displacement + blur -->
-    <filter id="glass-displace-blur" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blurred" />
-      <feImage href="${dmB64}" result="map"
-               preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
-      <feDisplacementMap in="blurred" in2="map" scale="60"
-                         xChannelSelector="R" yChannelSelector="G" />
-    </filter>
-
-    <!-- Pill displacement -->
-    <filter id="pill-displace" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
-      <feImage href="${dmB64}" result="map"
-               preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
-      <feDisplacementMap in="SourceGraphic" in2="map" scale="40"
-                         xChannelSelector="R" yChannelSelector="G" />
+      <feImage href="${dmB64}" result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
+      <feDisplacementMap in="SourceGraphic" in2="map" scale="150" xChannelSelector="R" yChannelSelector="G" />
     </filter>
   </defs>
 </svg>
 
 <div class="content">
 
-  <h2>A: Контроль — backdrop-filter: blur (без искажения)</h2>
+  <h2>A: Контроль — backdrop-filter: blur (без displacement)</h2>
   <div class="card card-a">
     <div class="text">
       Товары (2) — 1 700 ₽<br>
@@ -218,41 +177,51 @@ h2:first-child { margin-top: 0; }
     </div>
   </div>
 
-  <h2>G: ::before fixed bg + filter:url(#displace) — кросс-браузер</h2>
-  <div class="card card-g">
+  <h2>B: backdrop-filter: url(#glass-card) blur(1px) brightness(1.05)</h2>
+  <div class="card card-b">
     <div class="text">
-      <div class="label">::before дублирует фон страницы (fixed) + displacement</div>
+      <div class="label">Как в PWA — file path, display:none SVG, scale=150</div>
       Товары (2) — 1 700 ₽<br>
       Доставка — При оформлении<br>
       <strong>Итого — 1 700 ₽</strong>
     </div>
   </div>
 
-  <h2>H: ::before fixed bg + gradient + displacement</h2>
-  <div class="card card-h">
+  <h2>C: backdrop-filter: url(#glass-card) — без blur/brightness</h2>
+  <div class="card card-c">
     <div class="text">
-      <div class="label">::before с фоном + градиент оверлей + displacement</div>
+      <div class="label">Только displacement, scale=150</div>
       Товары (2) — 1 700 ₽<br>
       Доставка — При оформлении<br>
       <strong>Итого — 1 700 ₽</strong>
     </div>
   </div>
 
-  <h2>I: ::before fixed bg + gradient + displacement + blur(3px)</h2>
-  <div class="card card-i">
+  <h2>D: backdrop-filter: url(#glass-150) — base64, defs, scale=150</h2>
+  <div class="card card-d">
     <div class="text">
-      <div class="label">::before с фоном + градиент + displacement + лёгкий blur</div>
+      <div class="label">Base64 displacement map, внутри defs</div>
       Товары (2) — 1 700 ₽<br>
       Доставка — При оформлении<br>
       <strong>Итого — 1 700 ₽</strong>
     </div>
   </div>
 
-  <h2>Pills — ::before fixed bg + displacement</h2>
+  <h2>E: ::before fixed bg + filter:url() — фоллбэк</h2>
+  <div class="card card-e">
+    <div class="text">
+      <div class="label">::before дублирует фон + обычный filter (кросс-браузер)</div>
+      Товары (2) — 1 700 ₽<br>
+      Доставка — При оформлении<br>
+      <strong>Итого — 1 700 ₽</strong>
+    </div>
+  </div>
+
+  <h2>Pills — backdrop-filter: url(#pill-lens)</h2>
   <div class="pill-wrap">
-    <div class="pill pill-g"><span>Закваски</span></div>
-    <div class="pill pill-g"><span>Наборы</span></div>
-    <div class="pill pill-g"><span>Напитки</span></div>
+    <div class="pill pill-bd">Закваски</div>
+    <div class="pill pill-bd">Наборы</div>
+    <div class="pill pill-bd">Напитки</div>
     <div class="pill pill-ctrl">Контроль</div>
   </div>
 
@@ -260,8 +229,13 @@ h2:first-child { margin-top: 0; }
   <div style="text-align:center">
     <img src="${dmB64}" style="width:200px; border-radius:8px; border:1px solid rgba(255,255,255,0.15)">
   </div>
-  <p class="note">R = X offset, G = Y offset. 128 = нейтраль. Scale=60px.</p>
-  <p class="note" style="margin-top:20px">Подход G/H/I: ::before дублирует background-attachment:fixed + filter:url(#svg).<br>Работает в любом браузере — обычный CSS filter на элементе.</p>
+  <p class="note">R = X offset, G = Y offset. 128 = нейтраль.</p>
+  <p class="note" style="margin-top:12px">
+    B = как в PWA (file path, display:none, scale=150)<br>
+    C = только url(), без blur/brightness<br>
+    D = base64, defs, scale=150<br>
+    E = ::before fallback (filter:url на элементе)
+  </p>
 </div>
 
 </body>
