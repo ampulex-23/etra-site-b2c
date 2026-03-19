@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
             active: true,
             inviteToken: token,
             inviteExpires: expires.toISOString(),
-          },
+          } as any,
         })
         targetUserId = newUser.id
       }
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       data: {
         inviteToken: token,
         inviteExpires: expires.toISOString(),
-      },
+      } as any,
     })
 
     const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || req.nextUrl.origin

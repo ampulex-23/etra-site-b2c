@@ -1,27 +1,12 @@
-'use client'
+﻿'use client'
 
 import React, { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ThemeProvider } from '../../themes/ThemeProvider'
-import { PageWrapper } from '../../components/PageWrapper'
-import { Header } from '../../components/Header'
-import { Footer } from '../../components/Footer'
-import { Button } from '../../components/ui/Button'
-import { Badge } from '../../components/ui/Badge'
-import { QuantityStepper } from '../../components/ui/QuantityStepper'
 import { useCart } from '@/app/(frontend)/cart/CartProvider'
 
-interface ProductImage {
-  url: string
-}
-
-interface ProductVariant {
-  name: string
-  price: number
-  sku?: string
-}
-
+interface ProductImage { url: string }
+interface ProductVariant { name: string; price: number; sku?: string }
 interface BundleItem {
   product: { id: string; title: string; slug: string; price: number; images?: ProductImage[] } | null
   quantity: number
@@ -51,9 +36,7 @@ interface Product {
   bundleItems?: BundleItem[]
 }
 
-interface Props {
-  product: Product
-}
+interface Props { product: Product }
 
 export function ProductDetailClient({ product }: Props) {
   const { addItem } = useCart()
@@ -61,299 +44,140 @@ export function ProductDetailClient({ product }: Props) {
   const [selectedVariant, setSelectedVariant] = useState<number | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [activeTab, setActiveTab] = useState('description')
+  const [added, setAdded] = useState(false)
 
-  const currentPrice = selectedVariant !== null
-    ? product.variants[selectedVariant].price
-    : product.price
-
-  const discount = product.oldPrice
-    ? Math.round(((product.oldPrice - currentPrice) / product.oldPrice) * 100)
-    : 0
+  const currentPrice = selectedVariant !== null ? product.variants[selectedVariant].price : product.price
+  const discount = product.oldPrice ? Math.round(((product.oldPrice - currentPrice) / product.oldPrice) * 100) : 0
 
   const handleAddToCart = () => {
     addItem({
-      productId: product.id,
-      title: product.title,
-      slug: product.slug,
-      price: currentPrice,
-      imageUrl: product.images[0]?.url || null,
-      quantity,
+      productId: product.id, title: product.title, slug: product.slug, price: currentPrice,
+      imageUrl: product.images[0]?.url || null, quantity,
       variantName: selectedVariant !== null ? product.variants[selectedVariant].name : undefined,
     })
+    setAdded(true)
+    setTimeout(() => setAdded(false), 1500)
   }
 
   return (
-    <ThemeProvider>
-      <PageWrapper>
-        <Header />
-        <div className="product-page">
-          <div className="container">
-            <div className="ui-breadcrumbs" style={{ paddingTop: '24px' }}>
-              <Link href="/">Главная</Link>
-              <span className="ui-breadcrumbs__sep">/</span>
-              <Link href="/catalog">Каталог</Link>
-              {product.category && (
-                <>
-                  <span className="ui-breadcrumbs__sep">/</span>
-                  <Link href={`/catalog?cat=${product.category.slug}`}>{product.category.title}</Link>
-                </>
-              )}
-              <span className="ui-breadcrumbs__sep">/</span>
-              <span>{product.title}</span>
-            </div>
+    <div className="pwa-screen animate-in">
+      {/* Gallery */}
+      <div style={{ margin: '-16px -16px 16px', position: 'relative', aspectRatio: '1', background: 'rgba(0,0,0,0.2)', overflow: 'hidden' }}>
+        {product.images.length > 0 ? (
+          <Image src={product.images[mainImage].url} alt={product.title} fill sizes="100vw" style={{ objectFit: 'cover' }} priority />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.2">
+              <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" />
+            </svg>
+          </div>
+        )}
+        {product.images.length > 1 && (
+          <div style={{ position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 6 }}>
+            {product.images.map((_, i) => (
+              <button key={i} onClick={() => setMainImage(i)} style={{
+                width: mainImage === i ? 24 : 8, height: 8, borderRadius: 4, border: 'none', cursor: 'pointer',
+                background: mainImage === i ? 'var(--c-primary)' : 'rgba(255,255,255,0.4)', transition: 'all 0.2s',
+              }} />
+            ))}
+          </div>
+        )}
+      </div>
 
-            <div className="product-detail">
-              {/* Gallery */}
-              <div className="product-gallery">
-                <div className="product-gallery__main">
-                  {product.images.length > 0 ? (
-                    <Image
-                      src={product.images[mainImage].url}
-                      alt={product.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      style={{ objectFit: 'cover' }}
-                      priority
-                    />
-                  ) : (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.2">
-                        <rect x="3" y="3" width="18" height="18" rx="2" />
-                        <circle cx="8.5" cy="8.5" r="1.5" />
-                        <path d="m21 15-5-5L5 21" />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-                {product.images.length > 1 && (
-                  <div className="product-gallery__thumbs">
-                    {product.images.map((img, i) => (
-                      <button
-                        key={i}
-                        className={`product-gallery__thumb ${mainImage === i ? 'product-gallery__thumb--active' : ''}`}
-                        onClick={() => setMainImage(i)}
-                      >
-                        <Image src={img.url} alt="" fill sizes="72px" style={{ objectFit: 'cover' }} />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+      {product.category && (
+        <Link href="/catalog" className="t-small" style={{ color: 'var(--c-primary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          {product.category.title}
+        </Link>
+      )}
+      <h1 className="t-h2" style={{ margin: '4px 0 6px' }}>{product.title}</h1>
+      {product.sku && <span className="t-small t-muted">{'Артикул: ' + product.sku}</span>}
 
-              {/* Info */}
-              <div className="product-info">
-                <div>
-                  {product.category && (
-                    <Link
-                      href={`/catalog?cat=${product.category.slug}`}
-                      style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-accent)', textDecoration: 'none', fontWeight: 600 }}
-                    >
-                      {product.category.title}
-                    </Link>
-                  )}
-                  <h1 className="product-info__title">{product.title}</h1>
-                  {product.sku && (
-                    <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                      Артикул: {product.sku}
-                    </span>
-                  )}
-                </div>
+      {product.shortDescription && (
+        <p className="t-body t-sec" style={{ margin: '10px 0 0' }}>{product.shortDescription}</p>
+      )}
 
-                {product.shortDescription && (
-                  <p className="product-info__short-desc">{product.shortDescription}</p>
-                )}
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, margin: '16px 0' }}>
+        <span style={{ fontSize: 24, fontWeight: 800 }}>{currentPrice.toLocaleString('ru-RU') + ' \u20BD'}</span>
+        {product.oldPrice && <span className="t-caption t-muted" style={{ textDecoration: 'line-through' }}>{product.oldPrice.toLocaleString('ru-RU') + ' \u20BD'}</span>}
+        {discount > 0 && <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--c-danger)', background: 'rgba(255,107,107,0.15)', padding: '2px 8px', borderRadius: 'var(--r-full)' }}>{'-' + discount + '%'}</span>}
+      </div>
 
-                <div className="product-info__price-row">
-                  <span className="product-info__price">
-                    {currentPrice.toLocaleString('ru-RU')} ₽
-                  </span>
-                  {product.oldPrice && (
-                    <span className="product-info__old-price">
-                      {product.oldPrice.toLocaleString('ru-RU')} ₽
-                    </span>
-                  )}
-                  {discount > 0 && (
-                    <span className="product-info__discount-badge">
-                      <Badge variant="danger">-{discount}%</Badge>
-                    </span>
-                  )}
-                </div>
-
-                {product.variants.length > 0 && (
-                  <div>
-                    <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '8px', display: 'block' }}>
-                      Вариант:
-                    </span>
-                    <div className="product-info__variants">
-                      {product.variants.map((v, i) => (
-                        <button
-                          key={i}
-                          className={`product-variant-btn ${selectedVariant === i ? 'product-variant-btn--active' : ''}`}
-                          onClick={() => setSelectedVariant(selectedVariant === i ? null : i)}
-                        >
-                          {v.name} — {v.price.toLocaleString('ru-RU')} ₽
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="product-info__stock">
-                  <span className={`product-info__stock-dot ${product.inStock ? 'product-info__stock-dot--in' : 'product-info__stock-dot--out'}`} />
-                  <span style={{ color: product.inStock ? '#4ade80' : '#f87171' }}>
-                    {product.inStock ? 'В наличии' : 'Нет в наличии'}
-                  </span>
-                  {product.weight && (
-                    <span style={{ marginLeft: '16px', color: 'var(--color-text-muted)' }}>
-                      {product.weight} г
-                    </span>
-                  )}
-                </div>
-
-                <div className="product-info__actions">
-                  <QuantityStepper value={quantity} onChange={setQuantity} />
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    onClick={handleAddToCart}
-                    disabled={!product.inStock}
-                    style={{ flex: 1 }}
-                    icon={
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-                        <line x1="3" y1="6" x2="21" y2="6" />
-                        <path d="M16 10a4 4 0 01-8 0" />
-                      </svg>
-                    }
-                  >
-                    В корзину
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Tabs */}
-            <div className="product-tabs">
-              <div className="ui-tabs">
-                <button
-                  className={`ui-tab ${activeTab === 'description' ? 'ui-tab--active' : ''}`}
-                  onClick={() => setActiveTab('description')}
-                >
-                  Описание
-                </button>
-                {product.composition && (
-                  <button
-                    className={`ui-tab ${activeTab === 'composition' ? 'ui-tab--active' : ''}`}
-                    onClick={() => setActiveTab('composition')}
-                  >
-                    Состав
-                  </button>
-                )}
-                {product.usage && (
-                  <button
-                    className={`ui-tab ${activeTab === 'usage' ? 'ui-tab--active' : ''}`}
-                    onClick={() => setActiveTab('usage')}
-                  >
-                    Применение
-                  </button>
-                )}
-                {product.isBundle && product.bundleItems && product.bundleItems.length > 0 && (
-                  <button
-                    className={`ui-tab ${activeTab === 'bundle' ? 'ui-tab--active' : ''}`}
-                    onClick={() => setActiveTab('bundle')}
-                  >
-                    Состав набора
-                  </button>
-                )}
-              </div>
-              <div className="product-tab-content">
-                {activeTab === 'description' && (
-                  <div>
-                    {product.shortDescription && <p>{product.shortDescription}</p>}
-                    {!product.description && !product.shortDescription && (
-                      <p style={{ color: 'var(--color-text-muted)' }}>Описание скоро появится</p>
-                    )}
-                  </div>
-                )}
-                {activeTab === 'composition' && (
-                  <div>
-                    <p style={{ color: 'var(--color-text-muted)' }}>Информация о составе</p>
-                  </div>
-                )}
-                {activeTab === 'usage' && (
-                  <div>
-                    <p style={{ color: 'var(--color-text-muted)' }}>Способ применения</p>
-                  </div>
-                )}
-                {activeTab === 'bundle' && product.bundleItems && (
-                  <div className="bundle-items">
-                    <p style={{ marginBottom: '16px', color: 'var(--color-text-secondary)', fontSize: '14px' }}>
-                      В этот набор входят:
-                    </p>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {product.bundleItems.map((item, i) => (
-                        item.product && (
-                          <Link
-                            key={i}
-                            href={`/products/${item.product.slug}`}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '12px',
-                              padding: '12px',
-                              background: 'var(--color-bg-secondary, #f9fafb)',
-                              borderRadius: '10px',
-                              textDecoration: 'none',
-                              color: 'inherit',
-                              transition: 'background 0.15s',
-                            }}
-                          >
-                            {item.product.images?.[0]?.url ? (
-                              <Image
-                                src={item.product.images[0].url}
-                                alt={item.product.title}
-                                width={48}
-                                height={48}
-                                style={{ borderRadius: '8px', objectFit: 'cover' }}
-                              />
-                            ) : (
-                              <div style={{
-                                width: 48, height: 48, borderRadius: '8px',
-                                background: 'var(--color-bg-tertiary, #e5e7eb)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: '18px',
-                              }}>
-                                📦
-                              </div>
-                            )}
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontWeight: 600, fontSize: '14px' }}>{item.product.title}</div>
-                              <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                                {item.product.price?.toLocaleString('ru-RU')} ₽
-                              </div>
-                            </div>
-                            <div style={{
-                              background: 'var(--color-accent, #7c3aed)',
-                              color: '#fff',
-                              borderRadius: '6px',
-                              padding: '4px 10px',
-                              fontSize: '12px',
-                              fontWeight: 600,
-                            }}>
-                              x{item.quantity}
-                            </div>
-                          </Link>
-                        )
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+      {product.variants.length > 0 && (
+        <div className="mb-12">
+          <span className="t-caption t-sec" style={{ display: 'block', marginBottom: 8 }}>{'Вариант:'}</span>
+          <div className="pill-toggle">
+            {product.variants.map((v, i) => (
+              <button key={i} className={'pill-toggle__item' + (selectedVariant === i ? ' pill-toggle__item--active' : '')}
+                onClick={() => setSelectedVariant(selectedVariant === i ? null : i)}>
+                {v.name + ' \u2014 ' + v.price.toLocaleString('ru-RU') + ' \u20BD'}
+              </button>
+            ))}
           </div>
         </div>
-        <Footer />
-      </PageWrapper>
-    </ThemeProvider>
+      )}
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <span style={{ width: 8, height: 8, borderRadius: '50%', background: product.inStock ? 'var(--c-success)' : 'var(--c-danger)' }} />
+        <span className="t-caption" style={{ color: product.inStock ? 'var(--c-success)' : 'var(--c-danger)' }}>
+          {product.inStock ? 'В наличии' : 'Нет в наличии'}
+        </span>
+        {product.weight && <span className="t-caption t-muted" style={{ marginLeft: 8 }}>{product.weight + ' г'}</span>}
+      </div>
+
+      <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+        <div className="qty">
+          <button className="qty__btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+            <svg viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
+          </button>
+          <span className="qty__val">{quantity}</span>
+          <button className="qty__btn" onClick={() => setQuantity(Math.min(99, quantity + 1))}>
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+          </button>
+        </div>
+        <button className={'btn btn--primary' + (!product.inStock ? ' btn--loading' : '')} style={{ flex: 1 }}
+          onClick={handleAddToCart} disabled={!product.inStock}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" />
+          </svg>
+          {added ? 'Добавлено!' : 'В корзину'}
+        </button>
+      </div>
+
+      <div className="pill-toggle mb-12">
+        <button className={'pill-toggle__item' + (activeTab === 'description' ? ' pill-toggle__item--active' : '')} onClick={() => setActiveTab('description')}>{'Описание'}</button>
+        {product.composition && <button className={'pill-toggle__item' + (activeTab === 'composition' ? ' pill-toggle__item--active' : '')} onClick={() => setActiveTab('composition')}>{'Состав'}</button>}
+        {product.usage && <button className={'pill-toggle__item' + (activeTab === 'usage' ? ' pill-toggle__item--active' : '')} onClick={() => setActiveTab('usage')}>{'Применение'}</button>}
+        {product.isBundle && product.bundleItems && product.bundleItems.length > 0 && (
+          <button className={'pill-toggle__item' + (activeTab === 'bundle' ? ' pill-toggle__item--active' : '')} onClick={() => setActiveTab('bundle')}>{'Набор'}</button>
+        )}
+      </div>
+
+      <div className="glass" style={{ padding: 16 }}>
+        {activeTab === 'description' && (
+          <div className="t-body t-sec">
+            {product.shortDescription || <span className="t-muted">{'Описание скоро появится'}</span>}
+          </div>
+        )}
+        {activeTab === 'composition' && <div className="t-body t-sec">{'Информация о составе'}</div>}
+        {activeTab === 'usage' && <div className="t-body t-sec">{'Способ применения'}</div>}
+        {activeTab === 'bundle' && product.bundleItems && (
+          <div className="stack">
+            <p className="t-caption t-sec mb-12">{'В этот набор входят:'}</p>
+            {product.bundleItems.map((item, i) => item.product && (
+              <Link key={i} href={'/products/' + item.product.slug} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 10, background: 'var(--c-glass)', borderRadius: 'var(--r-sm)' }}>
+                <div style={{ width: 44, height: 44, borderRadius: 'var(--r-xs)', overflow: 'hidden', position: 'relative', flexShrink: 0, background: 'rgba(0,0,0,0.2)' }}>
+                  {item.product.images?.[0]?.url && <Image src={item.product.images[0].url} alt="" fill sizes="44px" style={{ objectFit: 'cover' }} />}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div className="t-caption" style={{ fontWeight: 600 }}>{item.product.title}</div>
+                  <div className="t-small t-muted">{item.product.price?.toLocaleString('ru-RU') + ' \u20BD'}</div>
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--c-primary)', background: 'var(--c-primary-glow)', padding: '2px 8px', borderRadius: 'var(--r-full)' }}>{'x' + item.quantity}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

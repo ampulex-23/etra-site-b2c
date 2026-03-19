@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid or expired invite link' }, { status: 400 })
     }
 
-    const user = users.docs[0]
+    const user = users.docs[0] as any
 
     if (user.inviteExpires && new Date(user.inviteExpires) < new Date()) {
       return NextResponse.json({ error: 'Invite link has expired' }, { status: 400 })
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
         password,
         inviteToken: '',
         inviteExpires: '',
-      },
+      } as any,
     })
 
     return NextResponse.json({

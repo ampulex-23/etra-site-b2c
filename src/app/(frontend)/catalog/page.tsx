@@ -3,13 +3,7 @@ export const dynamic = 'force-dynamic'
 import React from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { CatalogClient } from './CatalogClient'
-
-interface CategoryData {
-  id: string
-  title: string
-  slug: string
-}
+import { CatalogScreen } from '../pwa/screens/CatalogScreen'
 
 interface ProductData {
   id: string
@@ -67,11 +61,11 @@ export default async function CatalogPage() {
     }
   })
 
-  const categories = (categoriesRes.docs as unknown as CategoryData[]).map((c) => ({
+  const categories = (categoriesRes.docs as unknown as { id: string; title: string; slug: string }[]).map((c) => ({
     id: c.id,
     title: c.title,
     slug: c.slug,
   }))
 
-  return <CatalogClient products={products} categories={categories} />
+  return <CatalogScreen products={products} categories={categories} />
 }
