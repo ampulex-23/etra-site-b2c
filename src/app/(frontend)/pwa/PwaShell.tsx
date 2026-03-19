@@ -27,19 +27,21 @@ export function PwaShell({ children }: { children: React.ReactNode }) {
       {/* Static background */}
       <div className="pwa-bg" />
 
-      {/* SVG displacement filters — used via backdrop-filter: url(#id) (Chrome) */}
-      <svg className="pwa-filters" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <filter id="glass-card" x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
-            <feImage href={PILL_CONVEX_URI} result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
-            <feDisplacementMap in="SourceGraphic" in2="map" scale="60" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
-          <filter id="glass-pill" x="-15%" y="-15%" width="130%" height="130%" colorInterpolationFilters="sRGB">
-            <feImage href={PILL_CONVEX_URI} result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
-            <feDisplacementMap in="SourceGraphic" in2="map" scale="40" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
-        </defs>
-      </svg>
+      {/* SVG displacement filters — raw HTML to match test page exactly */}
+      <div className="pwa-filters" dangerouslySetInnerHTML={{ __html: `
+        <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden">
+          <defs>
+            <filter id="glass-card" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+              <feImage href="${PILL_CONVEX_URI}" result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
+              <feDisplacementMap in="SourceGraphic" in2="map" scale="60" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+            <filter id="glass-pill" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+              <feImage href="${PILL_CONVEX_URI}" result="map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
+              <feDisplacementMap in="SourceGraphic" in2="map" scale="40" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+          </defs>
+        </svg>
+      `}} />
 
       <div className="pwa-shell">
         {/* Top bar */}

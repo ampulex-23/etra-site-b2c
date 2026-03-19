@@ -52,7 +52,7 @@ img { max-width: 100%; display: block; }
 }
 
 /* ── SVG Glass filter definition ── */
-.pwa-filters { position: absolute; width: 0; height: 0; overflow: hidden; }
+.pwa-filters { position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none; }
 
 /* ── Glass — backdrop-filter: url(#glass-card) (Chrome SVG displacement) ── */
 .glass, .glass-strong {
