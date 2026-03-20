@@ -37,8 +37,13 @@ function renderNode(node: LexicalNode, index: number): React.ReactNode {
     case 'paragraph':
       return <p key={index}>{children}</p>
     case 'heading':
-      const Tag = (node.tag || 'h2') as keyof JSX.IntrinsicElements
-      return <Tag key={index}>{children}</Tag>
+      const tag = node.tag || 'h2'
+      if (tag === 'h1') return <h1 key={index}>{children}</h1>
+      if (tag === 'h2') return <h2 key={index}>{children}</h2>
+      if (tag === 'h3') return <h3 key={index}>{children}</h3>
+      if (tag === 'h4') return <h4 key={index}>{children}</h4>
+      if (tag === 'h5') return <h5 key={index}>{children}</h5>
+      return <h6 key={index}>{children}</h6>
     case 'list':
       return node.listType === 'number' 
         ? <ol key={index}>{children}</ol>
