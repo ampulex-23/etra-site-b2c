@@ -62,7 +62,6 @@ img { max-width: 100%; display: block; }
   overflow: hidden;
   background: var(--c-glass);
   backdrop-filter: url(#glass-card) blur(1px) brightness(1.05);
-  -webkit-backdrop-filter: url(#glass-card) blur(1px) brightness(1.05);
 }
 .glass-strong {
   background: var(--c-glass-strong);
@@ -107,7 +106,6 @@ img { max-width: 100%; display: block; }
   display: flex; align-items: stretch;
   background: rgba(7, 26, 18, 0.78);
   backdrop-filter: blur(32px) saturate(1.6);
-  -webkit-backdrop-filter: blur(32px) saturate(1.6);
   border-top: 1px solid var(--c-glass-border);
 }
 .botnav__item {
@@ -183,7 +181,6 @@ textarea.inp { resize: vertical; min-height: 80px; }
   box-shadow: 0 4px 24px rgba(0,0,0,0.3);
   background: var(--c-glass-strong);
   backdrop-filter: url(#glass-card) blur(1px) brightness(1.05);
-  -webkit-backdrop-filter: url(#glass-card) blur(1px) brightness(1.05);
 }
 .product-card:active { transform: scale(0.98); }
 .product-card__img { width: 100%; aspect-ratio: 1; object-fit: cover; background: rgba(0,0,0,0.2); }
@@ -211,7 +208,6 @@ textarea.inp { resize: vertical; min-height: 80px; }
   box-shadow: 0 2px 12px rgba(0,0,0,0.2);
   background: var(--c-glass);
   backdrop-filter: url(#glass-card) blur(1px) brightness(1.05);
-  -webkit-backdrop-filter: url(#glass-card) blur(1px) brightness(1.05);
 }
 .cart-item__img { width: 72px; height: 72px; border-radius: var(--r-sm); object-fit: cover; flex-shrink: 0; background: rgba(0,0,0,0.2); }
 .cart-item__body { flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
@@ -240,7 +236,6 @@ textarea.inp { resize: vertical; min-height: 80px; }
   box-shadow: 0 4px 20px rgba(0,0,0,0.25);
   background: var(--c-glass-strong);
   backdrop-filter: url(#glass-card) blur(1px) brightness(1.05);
-  -webkit-backdrop-filter: url(#glass-card) blur(1px) brightness(1.05);
 }
 .summary__row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 8px; }
 .summary__row--total { font-size: 18px; font-weight: 700; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--c-glass-border); margin-bottom: 0; }
@@ -282,7 +277,6 @@ textarea.inp { resize: vertical; min-height: 80px; }
   transition: all 0.2s; margin-bottom: 8px;
   background: var(--c-glass);
   backdrop-filter: url(#glass-card) blur(1px) brightness(1.05);
-  -webkit-backdrop-filter: url(#glass-card) blur(1px) brightness(1.05);
 }
 .del-option--active { border-color: var(--c-primary); background: rgba(59,236,160,0.08); }
 .del-option__radio {
@@ -317,7 +311,6 @@ textarea.inp { resize: vertical; min-height: 80px; }
   margin-bottom: 16px;
   background: var(--c-glass);
   backdrop-filter: url(#glass-card) blur(1px) brightness(1.05);
-  -webkit-backdrop-filter: url(#glass-card) blur(1px) brightness(1.05);
 }
 .account-avatar {
   width: 48px; height: 48px; border-radius: var(--r-full);
@@ -335,7 +328,6 @@ textarea.inp { resize: vertical; min-height: 80px; }
   margin-bottom: 10px;
   background: var(--c-glass);
   backdrop-filter: url(#glass-card) blur(1px) brightness(1.05);
-  -webkit-backdrop-filter: url(#glass-card) blur(1px) brightness(1.05);
 }
 .order-card__head { display: flex; justify-content: space-between; margin-bottom: 8px; }
 .order-card__num { font-size: 14px; font-weight: 600; }
@@ -403,7 +395,6 @@ textarea.inp { resize: vertical; min-height: 80px; }
   white-space: nowrap; flex-shrink: 0;
   background: var(--c-glass);
   backdrop-filter: url(#glass-pill) blur(1px) brightness(1.05);
-  -webkit-backdrop-filter: url(#glass-pill) blur(1px) brightness(1.05);
 }
 .pill-toggle__item--active { background: var(--c-primary); color: var(--c-text-inv); border-color: var(--c-primary); box-shadow: 0 2px 8px rgba(59,236,160,0.3); backdrop-filter: none; -webkit-backdrop-filter: none; }
 
