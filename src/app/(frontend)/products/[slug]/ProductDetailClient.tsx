@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/app/(frontend)/cart/CartProvider'
+import { RichText } from '@/app/(frontend)/components/RichText'
 
 interface ProductImage { url: string }
 interface ProductVariant { name: string; price: number; sku?: string }
@@ -92,10 +93,6 @@ export function ProductDetailClient({ product }: Props) {
       <h1 className="t-h2" style={{ margin: '4px 0 6px' }}>{product.title}</h1>
       {product.sku && <span className="t-small t-muted">{'Артикул: ' + product.sku}</span>}
 
-      {product.shortDescription && (
-        <p className="t-body t-sec" style={{ margin: '10px 0 0' }}>{product.shortDescription}</p>
-      )}
-
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, margin: '16px 0' }}>
         <span style={{ fontSize: 24, fontWeight: 800 }}>{currentPrice.toLocaleString('ru-RU') + ' \u20BD'}</span>
         {product.oldPrice && <span className="t-caption t-muted" style={{ textDecoration: 'line-through' }}>{product.oldPrice.toLocaleString('ru-RU') + ' \u20BD'}</span>}
@@ -155,11 +152,33 @@ export function ProductDetailClient({ product }: Props) {
       <div className="glass" style={{ padding: 16 }}>
         {activeTab === 'description' && (
           <div className="t-body t-sec">
-            {product.shortDescription || <span className="t-muted">{'Описание скоро появится'}</span>}
+            {product.description ? (
+              <RichText content={product.description} />
+            ) : product.shortDescription ? (
+              <p>{product.shortDescription}</p>
+            ) : (
+              <span className="t-muted">{'Описание скоро появится'}</span>
+            )}
           </div>
         )}
-        {activeTab === 'composition' && <div className="t-body t-sec">{'Информация о составе'}</div>}
-        {activeTab === 'usage' && <div className="t-body t-sec">{'Способ применения'}</div>}
+        {activeTab === 'composition' && (
+          <div className="t-body t-sec">
+            {product.composition ? (
+              <RichText content={product.composition} />
+            ) : (
+              <span className="t-muted">{'Информация о составе скоро появится'}</span>
+            )}
+          </div>
+        )}
+        {activeTab === 'usage' && (
+          <div className="t-body t-sec">
+            {product.usage ? (
+              <RichText content={product.usage} />
+            ) : (
+              <span className="t-muted">{'Способ применения скоро появится'}</span>
+            )}
+          </div>
+        )}
         {activeTab === 'bundle' && product.bundleItems && (
           <div className="stack">
             <p className="t-caption t-sec mb-12">{'В этот набор входят:'}</p>
