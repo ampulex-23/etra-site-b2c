@@ -390,7 +390,11 @@ textarea.inp { resize: vertical; min-height: 80px; }
 .px-16 { padding-inline: 16px; }
 
 /* Pill toggle */
-.pill-toggle { display: flex; gap: 6px; margin-bottom: 14px; }
+.pill-toggle {
+  display: flex; gap: 6px; margin-bottom: 14px;
+  -ms-overflow-style: none; scrollbar-width: none;
+}
+.pill-toggle::-webkit-scrollbar { display: none; }
 .pill-toggle__item {
   padding: 7px 14px; border-radius: var(--r-full); font-size: 13px; font-weight: 500;
   border: 1px solid var(--c-glass-border); color: var(--c-text-sec);
