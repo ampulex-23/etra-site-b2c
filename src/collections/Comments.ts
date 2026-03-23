@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Where } from 'payload'
 
 export const Comments: CollectionConfig = {
   slug: 'comments',
@@ -32,7 +32,7 @@ export const Comments: CollectionConfig = {
           { 'author.customer': { equals: user.id } },
           { status: { equals: 'pending' } },
         ],
-      }
+      } as Where
     },
     delete: ({ req: { user } }) => {
       if (!user) return false
@@ -111,7 +111,7 @@ export const Comments: CollectionConfig = {
     {
       name: 'parent',
       type: 'relationship',
-      relationTo: 'comments',
+      relationTo: 'comments' as any,
       label: 'Ответ на комментарий',
       admin: {
         description: 'Если это ответ на другой комментарий',

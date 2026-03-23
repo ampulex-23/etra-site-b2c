@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Where } from 'payload'
 
 export const Reviews: CollectionConfig = {
   slug: 'reviews',
@@ -32,7 +32,7 @@ export const Reviews: CollectionConfig = {
           { customer: { equals: user.id } },
           { status: { equals: 'pending' } },
         ],
-      }
+      } as Where
     },
     delete: ({ req: { user } }) => {
       if (!user) return false
