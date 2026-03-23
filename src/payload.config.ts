@@ -24,6 +24,8 @@ import { Warehouses } from './collections/Warehouses'
 import { StockMovements } from './collections/StockMovements'
 import { StockLevels } from './collections/StockLevels'
 import { Inventories } from './collections/Inventories'
+import { Reviews } from './collections/Reviews'
+import { Comments } from './collections/Comments'
 import { AISettings } from './globals/AISettings'
 import { DeliverySettings } from './globals/DeliverySettings'
 import { LandingSettings } from './globals/LandingSettings'
@@ -84,6 +86,8 @@ export default buildConfig({
     StockMovements,
     StockLevels,
     Inventories,
+    Reviews,
+    Comments,
   ],
   globals: [
     AISettings,
