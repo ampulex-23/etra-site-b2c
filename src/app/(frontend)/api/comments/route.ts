@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     where.contentType = { equals: 'recipe' }
   }
 
-  const result = await payload.find({
+  const result = await (payload as any).find({
     collection: 'comments',
     where,
     sort: '-createdAt',
@@ -40,8 +40,8 @@ export async function GET(req: NextRequest) {
 
   // For each top-level comment, fetch replies
   const comments = await Promise.all(
-    result.docs.map(async (doc) => {
-      const replies = await payload.find({
+    result.docs.map(async (doc: any) => {
+      const replies = await (payload as any).find({
         collection: 'comments',
         where: {
           parent: { equals: doc.id },
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
         isStaff: Boolean(author?.user),
         likes: doc.likes,
         createdAt: doc.createdAt,
-        replies: replies.docs.map((r) => {
+        replies: replies.docs.map((r: any) => {
           const rAuthor = r.author as Record<string, unknown> | undefined
           return {
             id: r.id,
@@ -156,9 +156,9 @@ export async function POST(req: NextRequest) {
     commentData.parent = parentId
   }
 
-  const comment = await payload.create({
+  const comment = await (payload as any).create({
     collection: 'comments',
-    data: commentData as never,
+    data: commentData,
   })
 
   return NextResponse.json({ id: comment.id, message: 'Комментарий отправлен на модерацию' })

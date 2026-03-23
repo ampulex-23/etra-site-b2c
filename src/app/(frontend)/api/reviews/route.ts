@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     where.featured = { equals: true }
   }
 
-  const result = await payload.find({
+  const result = await (payload as any).find({
     collection: 'reviews',
     where,
     sort: '-publishedAt',
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     depth: 1,
   })
 
-  const reviews = result.docs.map((doc) => {
+  const reviews = result.docs.map((doc: any) => {
     const customer = typeof doc.customer === 'object' && doc.customer
       ? doc.customer
       : null
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
       title: doc.title,
       text: doc.text,
       rating: doc.rating,
-      customerName: (customer as Record<string, unknown>)?.name || 'Покупатель',
+      customerName: customer?.name || 'Покупатель',
       product: doc.product,
       adminReply: doc.adminReply,
       publishedAt: doc.publishedAt,
@@ -110,9 +110,9 @@ export async function POST(req: NextRequest) {
     reviewData.order = orderId
   }
 
-  const review = await payload.create({
+  const review = await (payload as any).create({
     collection: 'reviews',
-    data: reviewData as never,
+    data: reviewData,
   })
 
   return NextResponse.json({ id: review.id, message: 'Отзыв отправлен на модерацию' })
