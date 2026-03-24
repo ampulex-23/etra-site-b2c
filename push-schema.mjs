@@ -492,9 +492,26 @@ try {
     }
   }
 
-  // ---- PAYLOAD_LOCKED_DOCUMENTS_RELS: add columns for new collections ----
+  // ---- PAYLOAD_LOCKED_DOCUMENTS_RELS: add columns for ALL collections ----
   if (await tableExists('payload_locked_documents_rels')) {
     await addColumnsIfMissing('payload_locked_documents_rels', [
+      { name: 'users_id', definition: 'integer' },
+      { name: 'media_id', definition: 'integer' },
+      { name: 'products_id', definition: 'integer' },
+      { name: 'categories_id', definition: 'integer' },
+      { name: 'orders_id', definition: 'integer' },
+      { name: 'customers_id', definition: 'integer' },
+      { name: 'posts_id', definition: 'integer' },
+      { name: 'promo_codes_id', definition: 'integer' },
+      { name: 'deliveries_id', definition: 'integer' },
+      { name: 'payments_id', definition: 'integer' },
+      { name: 'recipes_id', definition: 'integer' },
+      { name: 'warehouses_id', definition: 'integer' },
+      { name: 'stock_movements_id', definition: 'integer' },
+      { name: 'stock_levels_id', definition: 'integer' },
+      { name: 'inventories_id', definition: 'integer' },
+      { name: 'reviews_id', definition: 'integer' },
+      { name: 'comments_id', definition: 'integer' },
       { name: 'infoproducts_id', definition: 'integer' },
       { name: 'course_cohorts_id', definition: 'integer' },
       { name: 'course_modules_id', definition: 'integer' },
@@ -502,6 +519,13 @@ try {
       { name: 'enrollments_id', definition: 'integer' },
       { name: 'participant_reports_id', definition: 'integer' },
       { name: 'course_results_id', definition: 'integer' },
+    ])
+  }
+
+  // ---- PAYLOAD_PREFERENCES_RELS: add columns for ALL collections ----
+  if (await tableExists('payload_preferences_rels')) {
+    await addColumnsIfMissing('payload_preferences_rels', [
+      { name: 'users_id', definition: 'integer' },
     ])
   }
 
