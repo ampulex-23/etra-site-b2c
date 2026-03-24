@@ -492,6 +492,19 @@ try {
     }
   }
 
+  // ---- PAYLOAD_LOCKED_DOCUMENTS_RELS: add columns for new collections ----
+  if (await tableExists('payload_locked_documents_rels')) {
+    await addColumnsIfMissing('payload_locked_documents_rels', [
+      { name: 'infoproducts_id', definition: 'integer' },
+      { name: 'course_cohorts_id', definition: 'integer' },
+      { name: 'course_modules_id', definition: 'integer' },
+      { name: 'course_days_id', definition: 'integer' },
+      { name: 'enrollments_id', definition: 'integer' },
+      { name: 'participant_reports_id', definition: 'integer' },
+      { name: 'course_results_id', definition: 'integer' },
+    ])
+  }
+
   // ==========================================
   // INFOPRODUCTS COLLECTIONS
   // ==========================================
