@@ -26,6 +26,13 @@ import { StockLevels } from './collections/StockLevels'
 import { Inventories } from './collections/Inventories'
 import { Reviews } from './collections/Reviews'
 import { Comments } from './collections/Comments'
+import { Infoproducts } from './collections/infoproducts/Infoproducts'
+import { CourseCohorts } from './collections/infoproducts/CourseCohorts'
+import { CourseModules } from './collections/infoproducts/CourseModules'
+import { CourseDays } from './collections/infoproducts/CourseDays'
+import { Enrollments } from './collections/infoproducts/Enrollments'
+import { ParticipantReports } from './collections/infoproducts/ParticipantReports'
+import { CourseResults } from './collections/infoproducts/CourseResults'
 import { AISettings } from './globals/AISettings'
 import { DeliverySettings } from './globals/DeliverySettings'
 import { LandingSettings } from './globals/LandingSettings'
@@ -88,6 +95,13 @@ export default buildConfig({
     Inventories,
     Reviews,
     Comments,
+    Infoproducts,
+    CourseCohorts,
+    CourseModules,
+    CourseDays,
+    Enrollments,
+    ParticipantReports,
+    CourseResults,
   ],
   globals: [
     AISettings,
