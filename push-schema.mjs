@@ -492,6 +492,344 @@ try {
     }
   }
 
+  // ==========================================
+  // INFOPRODUCTS COLLECTIONS
+  // ==========================================
+
+  // ---- ENUM TYPES for infoproducts ----
+  if (!(await enumExists('enum_infoproducts_type'))) {
+    await pool.query("CREATE TYPE enum_infoproducts_type AS ENUM ('course', 'marathon', 'program', 'retreat')")
+    console.log('[migrate] Created enum_infoproducts_type')
+  }
+  if (!(await enumExists('enum_infoproducts_status'))) {
+    await pool.query("CREATE TYPE enum_infoproducts_status AS ENUM ('draft', 'active', 'archived')")
+    console.log('[migrate] Created enum_infoproducts_status')
+  }
+  if (!(await enumExists('enum_course_cohorts_status'))) {
+    await pool.query("CREATE TYPE enum_course_cohorts_status AS ENUM ('upcoming', 'active', 'completed', 'cancelled')")
+    console.log('[migrate] Created enum_course_cohorts_status')
+  }
+  if (!(await enumExists('enum_course_modules_type'))) {
+    await pool.query("CREATE TYPE enum_course_modules_type AS ENUM ('navigation', 'schedule', 'communication', 'broadcasts', 'qa', 'reports', 'results', 'sport', 'recipes', 'protocols', 'products', 'motivation', 'custom')")
+    console.log('[migrate] Created enum_course_modules_type')
+  }
+  if (!(await enumExists('enum_course_days_broadcast_type'))) {
+    await pool.query("CREATE TYPE enum_course_days_broadcast_type AS ENUM ('thematic', 'qa', 'intro')")
+    console.log('[migrate] Created enum_course_days_broadcast_type')
+  }
+  if (!(await enumExists('enum_enrollments_status'))) {
+    await pool.query("CREATE TYPE enum_enrollments_status AS ENUM ('pending', 'active', 'paused', 'completed', 'expelled', 'refunded')")
+    console.log('[migrate] Created enum_enrollments_status')
+  }
+  if (!(await enumExists('enum_participant_reports_status'))) {
+    await pool.query("CREATE TYPE enum_participant_reports_status AS ENUM ('submitted', 'late', 'missed')")
+    console.log('[migrate] Created enum_participant_reports_status')
+  }
+  if (!(await enumExists('enum_course_results_type'))) {
+    await pool.query("CREATE TYPE enum_course_results_type AS ENUM ('intermediate', 'final')")
+    console.log('[migrate] Created enum_course_results_type')
+  }
+  if (!(await enumExists('enum_course_results_status'))) {
+    await pool.query("CREATE TYPE enum_course_results_status AS ENUM ('pending', 'published', 'featured')")
+    console.log('[migrate] Created enum_course_results_status')
+  }
+  if (!(await enumExists('enum_course_results_effects_category'))) {
+    await pool.query("CREATE TYPE enum_course_results_effects_category AS ENUM ('weight_loss', 'food_addiction', 'psycho_emotional', 'lightness', 'conscious_eating', 'sleep', 'skin', 'body_volumes', 'health_issues', 'physical_performance', 'neurographics', 'community')")
+    console.log('[migrate] Created enum_course_results_effects_category')
+  }
+
+  // ---- INFOPRODUCTS ----
+  if (!(await tableExists('infoproducts'))) {
+    await pool.query(`
+      CREATE TABLE "infoproducts" (
+        "id" serial PRIMARY KEY,
+        "title" varchar NOT NULL,
+        "slug" varchar UNIQUE NOT NULL,
+        "type" enum_infoproducts_type DEFAULT 'course',
+        "status" enum_infoproducts_status DEFAULT 'draft',
+        "short_description" varchar,
+        "description" jsonb,
+        "cover_image_id" integer,
+        "price" numeric,
+        "old_price" numeric,
+        "duration_days" numeric,
+        "product_bundle_id" integer,
+        "schedule_morning" jsonb,
+        "schedule_day" jsonb,
+        "schedule_evening" jsonb,
+        "diet_recommendations" jsonb,
+        "contraindications" jsonb,
+        "rules" jsonb,
+        "report_rules_max_missed" numeric DEFAULT 3,
+        "report_rules_penalty" jsonb,
+        "seo_title" varchar,
+        "seo_description" varchar,
+        "seo_og_image_id" integer,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    console.log('[migrate] Created infoproducts table')
+  }
+
+  // ---- infoproducts_report_template (array sub-table) ----
+  if (!(await tableExists('infoproducts_report_template'))) {
+    await pool.query(`
+      CREATE TABLE "infoproducts_report_template" (
+        "_order" integer NOT NULL,
+        "_parent_id" integer NOT NULL,
+        "id" varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        "item" varchar,
+        "emoji" varchar DEFAULT '✅'
+      )
+    `)
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE "infoproducts_report_template"
+          ADD CONSTRAINT "infoproducts_report_template_parent_id_fk"
+          FOREIGN KEY ("_parent_id") REFERENCES "infoproducts"("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "infoproducts_report_template_order_idx" ON "infoproducts_report_template" ("_order")')
+    await pool.query('CREATE INDEX IF NOT EXISTS "infoproducts_report_template_parent_id_idx" ON "infoproducts_report_template" ("_parent_id")')
+    console.log('[migrate] Created infoproducts_report_template table')
+  }
+
+  // ---- infoproducts_team (array sub-table) ----
+  if (!(await tableExists('infoproducts_team'))) {
+    await pool.query(`
+      CREATE TABLE "infoproducts_team" (
+        "_order" integer NOT NULL,
+        "_parent_id" integer NOT NULL,
+        "id" varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        "name" varchar,
+        "role" varchar,
+        "avatar_id" integer
+      )
+    `)
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE "infoproducts_team"
+          ADD CONSTRAINT "infoproducts_team_parent_id_fk"
+          FOREIGN KEY ("_parent_id") REFERENCES "infoproducts"("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "infoproducts_team_order_idx" ON "infoproducts_team" ("_order")')
+    await pool.query('CREATE INDEX IF NOT EXISTS "infoproducts_team_parent_id_idx" ON "infoproducts_team" ("_parent_id")')
+    console.log('[migrate] Created infoproducts_team table')
+  }
+
+  // ---- COURSE_COHORTS ----
+  if (!(await tableExists('course_cohorts'))) {
+    await pool.query(`
+      CREATE TABLE "course_cohorts" (
+        "id" serial PRIMARY KEY,
+        "infoproduct_id" integer,
+        "title" varchar NOT NULL,
+        "status" enum_course_cohorts_status DEFAULT 'upcoming',
+        "start_date" timestamp(3) with time zone NOT NULL,
+        "end_date" timestamp(3) with time zone,
+        "max_participants" numeric DEFAULT 0,
+        "telegram_group_id" varchar,
+        "invite_link" varchar,
+        "notes" varchar,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "course_cohorts_infoproduct_idx" ON "course_cohorts" ("infoproduct_id")')
+    console.log('[migrate] Created course_cohorts table')
+  }
+
+  // ---- COURSE_MODULES ----
+  if (!(await tableExists('course_modules'))) {
+    await pool.query(`
+      CREATE TABLE "course_modules" (
+        "id" serial PRIMARY KEY,
+        "infoproduct_id" integer,
+        "title" varchar NOT NULL,
+        "slug" varchar UNIQUE NOT NULL,
+        "type" enum_course_modules_type DEFAULT 'custom',
+        "icon" varchar,
+        "description" varchar,
+        "content" jsonb,
+        "order" numeric DEFAULT 0,
+        "visible" boolean DEFAULT true,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "course_modules_infoproduct_idx" ON "course_modules" ("infoproduct_id")')
+    console.log('[migrate] Created course_modules table')
+  }
+
+  // ---- COURSE_DAYS ----
+  if (!(await tableExists('course_days'))) {
+    await pool.query(`
+      CREATE TABLE "course_days" (
+        "id" serial PRIMARY KEY,
+        "cohort_id" integer,
+        "day_number" numeric NOT NULL,
+        "date" timestamp(3) with time zone,
+        "title" varchar,
+        "morning_block" jsonb,
+        "day_block" jsonb,
+        "evening_block" jsonb,
+        "special_notes" varchar,
+        "broadcast_scheduled" boolean DEFAULT false,
+        "broadcast_time" varchar,
+        "broadcast_title" varchar,
+        "broadcast_type" enum_course_days_broadcast_type,
+        "broadcast_zoom_link" varchar,
+        "broadcast_recording_url" varchar,
+        "sport_program" jsonb,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "course_days_cohort_idx" ON "course_days" ("cohort_id")')
+    console.log('[migrate] Created course_days table')
+  }
+
+  // ---- ENROLLMENTS ----
+  if (!(await tableExists('enrollments'))) {
+    await pool.query(`
+      CREATE TABLE "enrollments" (
+        "id" serial PRIMARY KEY,
+        "customer_id" integer,
+        "cohort_id" integer,
+        "order_id" integer,
+        "status" enum_enrollments_status DEFAULT 'pending',
+        "hashtag" varchar,
+        "enrolled_at" timestamp(3) with time zone,
+        "completed_at" timestamp(3) with time zone,
+        "current_day" numeric DEFAULT 0,
+        "report_streak" numeric DEFAULT 0,
+        "missed_reports" numeric DEFAULT 0,
+        "notes" varchar,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "enrollments_customer_idx" ON "enrollments" ("customer_id")')
+    await pool.query('CREATE INDEX IF NOT EXISTS "enrollments_cohort_idx" ON "enrollments" ("cohort_id")')
+    console.log('[migrate] Created enrollments table')
+  }
+
+  // ---- PARTICIPANT_REPORTS ----
+  if (!(await tableExists('participant_reports'))) {
+    await pool.query(`
+      CREATE TABLE "participant_reports" (
+        "id" serial PRIMARY KEY,
+        "enrollment_id" integer,
+        "course_day_id" integer,
+        "date" timestamp(3) with time zone NOT NULL,
+        "completion_rate" numeric,
+        "notes" varchar,
+        "status" enum_participant_reports_status DEFAULT 'submitted',
+        "submitted_at" timestamp(3) with time zone,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "participant_reports_enrollment_idx" ON "participant_reports" ("enrollment_id")')
+    console.log('[migrate] Created participant_reports table')
+  }
+
+  // ---- participant_reports_items (array sub-table) ----
+  if (!(await tableExists('participant_reports_items'))) {
+    await pool.query(`
+      CREATE TABLE "participant_reports_items" (
+        "_order" integer NOT NULL,
+        "_parent_id" integer NOT NULL,
+        "id" varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        "label" varchar,
+        "completed" boolean DEFAULT false
+      )
+    `)
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE "participant_reports_items"
+          ADD CONSTRAINT "participant_reports_items_parent_id_fk"
+          FOREIGN KEY ("_parent_id") REFERENCES "participant_reports"("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "participant_reports_items_order_idx" ON "participant_reports_items" ("_order")')
+    await pool.query('CREATE INDEX IF NOT EXISTS "participant_reports_items_parent_id_idx" ON "participant_reports_items" ("_parent_id")')
+    console.log('[migrate] Created participant_reports_items table')
+  }
+
+  // ---- COURSE_RESULTS ----
+  if (!(await tableExists('course_results'))) {
+    await pool.query(`
+      CREATE TABLE "course_results" (
+        "id" serial PRIMARY KEY,
+        "enrollment_id" integer,
+        "type" enum_course_results_type DEFAULT 'final',
+        "text" varchar NOT NULL,
+        "weight_before" numeric,
+        "weight_after" numeric,
+        "status" enum_course_results_status DEFAULT 'pending',
+        "published_at" timestamp(3) with time zone,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "course_results_enrollment_idx" ON "course_results" ("enrollment_id")')
+    console.log('[migrate] Created course_results table')
+  }
+
+  // ---- course_results_photos (array sub-table) ----
+  if (!(await tableExists('course_results_photos'))) {
+    await pool.query(`
+      CREATE TABLE "course_results_photos" (
+        "_order" integer NOT NULL,
+        "_parent_id" integer NOT NULL,
+        "id" varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        "image_id" integer,
+        "caption" varchar
+      )
+    `)
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE "course_results_photos"
+          ADD CONSTRAINT "course_results_photos_parent_id_fk"
+          FOREIGN KEY ("_parent_id") REFERENCES "course_results"("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "course_results_photos_order_idx" ON "course_results_photos" ("_order")')
+    await pool.query('CREATE INDEX IF NOT EXISTS "course_results_photos_parent_id_idx" ON "course_results_photos" ("_parent_id")')
+    console.log('[migrate] Created course_results_photos table')
+  }
+
+  // ---- course_results_effects (array sub-table) ----
+  if (!(await tableExists('course_results_effects'))) {
+    await pool.query(`
+      CREATE TABLE "course_results_effects" (
+        "_order" integer NOT NULL,
+        "_parent_id" integer NOT NULL,
+        "id" varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        "category" enum_course_results_effects_category,
+        "description" varchar
+      )
+    `)
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE "course_results_effects"
+          ADD CONSTRAINT "course_results_effects_parent_id_fk"
+          FOREIGN KEY ("_parent_id") REFERENCES "course_results"("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "course_results_effects_order_idx" ON "course_results_effects" ("_order")')
+    await pool.query('CREATE INDEX IF NOT EXISTS "course_results_effects_parent_id_idx" ON "course_results_effects" ("_parent_id")')
+    console.log('[migrate] Created course_results_effects table')
+  }
+
   console.log('[migrate] Done')
 } catch (err) {
   console.error('[migrate] Error:', err.message)
