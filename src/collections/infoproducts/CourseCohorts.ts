@@ -18,7 +18,12 @@ export const CourseCohorts: CollectionConfig = {
   access: {
     read: ({ req: { user } }) => {
       if (user && user.collection === 'users') return true
-      return false
+      // Customers can see upcoming (for purchase) and active/completed cohorts
+      if (user && user.collection === 'customers') {
+        return { status: { in: ['upcoming', 'active', 'completed'] } }
+      }
+      // Anonymous: only upcoming (for landing page)
+      return { status: { in: ['upcoming', 'active'] } }
     },
     create: ({ req: { user } }) => {
       if (!user) return false
@@ -90,22 +95,6 @@ export const CourseCohorts: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: '0 = без ограничения',
-      },
-    },
-    {
-      name: 'telegramGroupId',
-      type: 'text',
-      label: 'ID Telegram-группы',
-      admin: {
-        description: 'ID суперг группы в Telegram (для будущей интеграции)',
-      },
-    },
-    {
-      name: 'inviteLink',
-      type: 'text',
-      label: 'Инвайт-ссылка',
-      admin: {
-        description: 'Ссылка-приглашение в Telegram-группу курса',
       },
     },
     {

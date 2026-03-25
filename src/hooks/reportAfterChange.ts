@@ -1,4 +1,5 @@
 import type { CollectionAfterChangeHook } from 'payload'
+import { notifyEnrollmentExpelled } from '../lib/notifications'
 
 export const reportAfterChange: CollectionAfterChangeHook = async ({
   doc,
@@ -123,6 +124,8 @@ export const reportAfterChange: CollectionAfterChangeHook = async ({
           console.log(
             `[reportAfterChange] Enrollment ${enrollmentId} expelled: ${missedReports} missed reports (max: ${maxMissed})`,
           )
+          // Send expulsion notification
+          notifyEnrollmentExpelled(payload, enrollment).catch(() => {})
         }
       }
     }

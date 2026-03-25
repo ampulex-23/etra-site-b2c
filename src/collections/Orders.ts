@@ -231,6 +231,16 @@ export const Orders: CollectionConfig = {
       },
     },
     {
+      name: 'selectedCohort',
+      type: 'relationship',
+      relationTo: 'course-cohorts' as any,
+      label: 'Поток (инфопродукт)',
+      admin: {
+        position: 'sidebar',
+        description: 'Если заказ содержит инфопродукт — выбранный поток для записи',
+      },
+    },
+    {
       name: 'promoCode',
       type: 'relationship',
       relationTo: 'promo-codes',

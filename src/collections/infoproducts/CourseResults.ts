@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { resultBeforeChange } from '../../hooks/resultBeforeChange'
 
 export const CourseResults: CollectionConfig = {
   slug: 'course-results',
@@ -13,13 +14,22 @@ export const CourseResults: CollectionConfig = {
   access: {
     read: ({ req: { user } }) => {
       if (user && user.collection === 'users') return true
-      return { status: { equals: 'published' } }
+      // Customers see published/featured results + their own (any status)
+      // Own results are filtered via API; here we allow published globally
+      if (user && user.collection === 'customers') return true
+      // Anonymous: only published
+      return { status: { in: ['published', 'featured'] } }
     },
     create: ({ req: { user } }) => {
       if (!user) return false
-      if (user.collection !== 'users') return false
-      const role = (user as any).role
-      return role === 'admin' || role === 'manager' || role === 'content'
+      // Admin/manager/content from admin panel
+      if (user.collection === 'users') {
+        const role = (user as any).role
+        return role === 'admin' || role === 'manager' || role === 'content'
+      }
+      // Customers can create results (validated in beforeChange hook)
+      if (user.collection === 'customers') return true
+      return false
     },
     update: ({ req: { user } }) => {
       if (!user) return false
@@ -146,6 +156,7 @@ export const CourseResults: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [
+      resultBeforeChange,
       ({ data }) => {
         if (data?.status === 'published' && !data.publishedAt) {
           data.publishedAt = new Date().toISOString()

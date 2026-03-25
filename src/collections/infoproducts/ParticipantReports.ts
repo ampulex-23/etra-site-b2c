@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { reportAfterChange } from '../../hooks/reportAfterChange'
+import { reportBeforeChange } from '../../hooks/reportBeforeChange'
 
 export const ParticipantReports: CollectionConfig = {
   slug: 'participant-reports',
@@ -12,18 +13,26 @@ export const ParticipantReports: CollectionConfig = {
     group: '📚 Инфопродукты',
   },
   hooks: {
+    beforeChange: [reportBeforeChange],
     afterChange: [reportAfterChange],
   },
   access: {
     read: ({ req: { user } }) => {
       if (user && user.collection === 'users') return true
+      // Customers can read their own reports (filtered via enrollment in API)
+      if (user && user.collection === 'customers') return true
       return false
     },
     create: ({ req: { user } }) => {
       if (!user) return false
-      if (user.collection !== 'users') return false
-      const role = (user as any).role
-      return role === 'admin' || role === 'manager'
+      // Admin/manager can create from admin panel
+      if (user.collection === 'users') {
+        const role = (user as any).role
+        return role === 'admin' || role === 'manager'
+      }
+      // Customers can create reports (validated in beforeChange hook)
+      if (user.collection === 'customers') return true
+      return false
     },
     update: ({ req: { user } }) => {
       if (!user) return false

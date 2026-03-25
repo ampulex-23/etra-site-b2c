@@ -33,6 +33,11 @@ export const orderAfterChange: CollectionAfterChangeHook = async ({
   if (operation !== 'update') return doc
   if (oldStatus === newStatus) return doc
 
+  // --- Status: processing (paid) → auto-create enrollment if infoproduct ---
+  if (newStatus === 'processing' && oldStatus !== 'processing') {
+    await autoCreateEnrollment(payload, doc, req)
+  }
+
   // --- Status: shipped → create stock movements (ship from warehouse) ---
   if (newStatus === 'shipped' && oldStatus !== 'shipped') {
     await shipOrder(payload, doc, req)
@@ -301,6 +306,147 @@ async function shipOrder(payload: any, order: any, req: any) {
 
   // Unreserve the stock that was just shipped
   await unreserveStock(payload, order, req)
+}
+
+// --- Auto-create enrollment when order is paid and contains an infoproduct ---
+async function autoCreateEnrollment(payload: any, order: any, req: any) {
+  try {
+    const customerId = typeof order.customer === 'object' ? order.customer.id : order.customer
+    if (!customerId) return
+
+    // Check if order already has an enrollment
+    const existingEnrollment = await payload.find({
+      collection: 'enrollments',
+      where: { order: { equals: order.id } },
+      limit: 1,
+      depth: 0,
+    })
+    if (existingEnrollment.totalDocs > 0) {
+      console.log(`[orderAfterChange] Enrollment already exists for order ${order.id}`)
+      return
+    }
+
+    // If order has a selectedCohort, use it directly
+    const selectedCohortId = typeof order.selectedCohort === 'object'
+      ? order.selectedCohort?.id
+      : order.selectedCohort
+
+    if (selectedCohortId) {
+      await createEnrollmentForCohort(payload, customerId, selectedCohortId, order.id)
+      return
+    }
+
+    // Otherwise, check if any item in the order is linked to an infoproduct via productBundle
+    const orderItems: any[] = order.items || []
+    for (const item of orderItems) {
+      const productId = typeof item.product === 'object' ? item.product.id : item.product
+      if (!productId) continue
+
+      // Find infoproducts that have this product as their productBundle
+      const infoproducts = await payload.find({
+        collection: 'infoproducts',
+        where: {
+          productBundle: { equals: productId },
+          status: { equals: 'active' },
+        },
+        limit: 1,
+        depth: 0,
+      })
+
+      if (infoproducts.totalDocs === 0) continue
+
+      const infoproduct = infoproducts.docs[0]
+
+      // Find the nearest upcoming or active cohort for this infoproduct
+      const cohorts = await payload.find({
+        collection: 'course-cohorts',
+        where: {
+          infoproduct: { equals: infoproduct.id },
+          status: { in: ['upcoming', 'active'] },
+        },
+        sort: 'startDate',
+        limit: 1,
+        depth: 0,
+      })
+
+      if (cohorts.totalDocs === 0) {
+        console.warn(`[orderAfterChange] No upcoming/active cohort for infoproduct ${infoproduct.id} (${infoproduct.title})`)
+        continue
+      }
+
+      const cohort = cohorts.docs[0]
+      await createEnrollmentForCohort(payload, customerId, cohort.id, order.id)
+    }
+  } catch (err) {
+    console.error('[orderAfterChange] Error auto-creating enrollment:', err)
+  }
+}
+
+async function createEnrollmentForCohort(
+  payload: any,
+  customerId: string,
+  cohortId: string,
+  orderId: string,
+) {
+  // Check maxParticipants
+  const cohort = await payload.findByID({
+    collection: 'course-cohorts',
+    id: cohortId,
+    depth: 0,
+  })
+
+  if (!cohort) {
+    console.error(`[orderAfterChange] Cohort ${cohortId} not found`)
+    return
+  }
+
+  if (cohort.maxParticipants && cohort.maxParticipants > 0) {
+    const currentCount = await payload.find({
+      collection: 'enrollments',
+      where: {
+        cohort: { equals: cohortId },
+        status: { in: ['pending', 'active'] },
+      },
+      limit: 0,
+      depth: 0,
+    })
+
+    if (currentCount.totalDocs >= cohort.maxParticipants) {
+      console.warn(`[orderAfterChange] Cohort ${cohortId} is full (${currentCount.totalDocs}/${cohort.maxParticipants})`)
+      // Still create enrollment but log warning — business decision to handle overflow
+    }
+  }
+
+  // Check for duplicate enrollment (same customer + cohort)
+  const duplicate = await payload.find({
+    collection: 'enrollments',
+    where: {
+      customer: { equals: customerId },
+      cohort: { equals: cohortId },
+      status: { not_in: ['refunded', 'expelled'] },
+    },
+    limit: 1,
+    depth: 0,
+  })
+
+  if (duplicate.totalDocs > 0) {
+    console.log(`[orderAfterChange] Customer ${customerId} already enrolled in cohort ${cohortId}`)
+    return
+  }
+
+  const enrollment = await payload.create({
+    collection: 'enrollments',
+    data: {
+      customer: customerId,
+      cohort: cohortId,
+      order: orderId,
+      status: cohort.status === 'active' ? 'active' : 'pending',
+      enrolledAt: new Date().toISOString(),
+    },
+    depth: 0,
+  })
+
+  console.log(`[orderAfterChange] Auto-created enrollment ${enrollment.id} for customer ${customerId} in cohort ${cohortId}`)
 }
 
 // --- Sync Products.inStock based on total available across all warehouses ---

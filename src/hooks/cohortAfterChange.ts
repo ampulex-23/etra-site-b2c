@@ -1,4 +1,5 @@
 import type { CollectionAfterChangeHook } from 'payload'
+import { notifyEnrollmentActivated } from '../lib/notifications'
 
 export const cohortAfterChange: CollectionAfterChangeHook = async ({
   doc,
@@ -91,9 +92,48 @@ export const cohortAfterChange: CollectionAfterChangeHook = async ({
     console.log(
       `[cohortAfterChange] Successfully generated ${durationDays} days for cohort "${doc.title}"`,
     )
+
+    // Activate all pending enrollments for this cohort
+    await activatePendingEnrollments(payload, doc.id)
   } catch (error) {
     console.error('[cohortAfterChange] Error generating course days:', error)
   }
 
   return doc
+}
+
+async function activatePendingEnrollments(payload: any, cohortId: string | number) {
+  try {
+    const pendingEnrollments = await payload.find({
+      collection: 'enrollments',
+      where: {
+        cohort: { equals: cohortId },
+        status: { equals: 'pending' },
+      },
+      limit: 1000,
+      depth: 0,
+    })
+
+    if (pendingEnrollments.totalDocs === 0) {
+      console.log(`[cohortAfterChange] No pending enrollments for cohort ${cohortId}`)
+      return
+    }
+
+    for (const enrollment of pendingEnrollments.docs) {
+      await payload.update({
+        collection: 'enrollments',
+        id: enrollment.id,
+        data: { status: 'active' },
+        depth: 0,
+      })
+      // Send activation notification (fire-and-forget)
+      notifyEnrollmentActivated(payload, enrollment).catch(() => {})
+    }
+
+    console.log(
+      `[cohortAfterChange] Activated ${pendingEnrollments.totalDocs} enrollments for cohort ${cohortId}`,
+    )
+  } catch (error) {
+    console.error('[cohortAfterChange] Error activating enrollments:', error)
+  }
 }

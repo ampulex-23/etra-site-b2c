@@ -14,6 +14,10 @@ export const CourseModules: CollectionConfig = {
   access: {
     read: ({ req: { user } }) => {
       if (user && user.collection === 'users') return true
+      // Customers can read visible modules (filtered by enrollment in API)
+      if (user && user.collection === 'customers') {
+        return { visible: { equals: true } }
+      }
       return false
     },
     create: ({ req: { user } }) => {

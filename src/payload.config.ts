@@ -33,6 +33,8 @@ import { CourseDays } from './collections/infoproducts/CourseDays'
 import { Enrollments } from './collections/infoproducts/Enrollments'
 import { ParticipantReports } from './collections/infoproducts/ParticipantReports'
 import { CourseResults } from './collections/infoproducts/CourseResults'
+import { ChatRooms } from './collections/infoproducts/ChatRooms'
+import { Messages } from './collections/infoproducts/Messages'
 import { AISettings } from './globals/AISettings'
 import { DeliverySettings } from './globals/DeliverySettings'
 import { LandingSettings } from './globals/LandingSettings'
@@ -75,6 +77,15 @@ export default buildConfig({
         Icon: '@/components/admin/Icon',
       },
       afterNavLinks: ['@/components/admin/NavIcons'],
+      views: {
+        infoproductsDashboard: {
+          Component: '@/components/admin/InfproductsDashboard',
+          path: '/infoproducts-dashboard',
+          meta: {
+            title: 'Дашборд инфопродуктов',
+          },
+        },
+      },
     },
   },
   collections: [
@@ -102,6 +113,8 @@ export default buildConfig({
     Enrollments,
     ParticipantReports,
     CourseResults,
+    ChatRooms,
+    Messages,
   ],
   globals: [
     AISettings,
