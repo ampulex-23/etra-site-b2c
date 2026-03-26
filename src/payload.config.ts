@@ -130,7 +130,10 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: postgresAdapter({
-    push: true,
+    // push: true автоматически синхронизирует схему БД при старте
+    // В production это безопасно для добавления полей, но не для удаления
+    push: process.env.DB_PUSH !== 'false',
+    prodMigrations: [], // Пустой массив = не требовать миграций
     pool: {
       connectionString: process.env.DATABASE_URL || '',
       ssl: process.env.DATABASE_CA_PATH
