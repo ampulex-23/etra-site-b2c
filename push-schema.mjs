@@ -119,6 +119,7 @@ try {
       { name: 'amo_crm_deal_id', definition: 'numeric' },
       { name: 'linked_delivery_id', definition: 'integer' },
       { name: 'linked_payment_id', definition: 'integer' },
+      { name: 'selected_cohort_id', definition: 'integer' },
     ])
   }
 
@@ -519,6 +520,8 @@ try {
       { name: 'enrollments_id', definition: 'integer' },
       { name: 'participant_reports_id', definition: 'integer' },
       { name: 'course_results_id', definition: 'integer' },
+      { name: 'chat_rooms_id', definition: 'integer' },
+      { name: 'messages_id', definition: 'integer' },
     ])
   }
 
@@ -865,6 +868,79 @@ try {
     await pool.query('CREATE INDEX IF NOT EXISTS "course_results_effects_order_idx" ON "course_results_effects" ("_order")')
     await pool.query('CREATE INDEX IF NOT EXISTS "course_results_effects_parent_id_idx" ON "course_results_effects" ("_parent_id")')
     console.log('[migrate] Created course_results_effects table')
+  }
+
+  // ==========================================
+  // MESSENGER COLLECTIONS (ChatRooms + Messages)
+  // ==========================================
+
+  // ---- ENUM TYPES for messenger ----
+  if (!(await enumExists('enum_chat_rooms_type'))) {
+    await pool.query("CREATE TYPE enum_chat_rooms_type AS ENUM ('general', 'support', 'broadcast')")
+    console.log('[migrate] Created enum_chat_rooms_type')
+  }
+  if (!(await enumExists('enum_messages_sender_type'))) {
+    await pool.query("CREATE TYPE enum_messages_sender_type AS ENUM ('customer', 'staff', 'system')")
+    console.log('[migrate] Created enum_messages_sender_type')
+  }
+
+  // ---- CHAT_ROOMS ----
+  if (!(await tableExists('chat_rooms'))) {
+    await pool.query(`
+      CREATE TABLE "chat_rooms" (
+        "id" serial PRIMARY KEY,
+        "cohort_id" integer,
+        "title" varchar NOT NULL,
+        "type" enum_chat_rooms_type DEFAULT 'general',
+        "is_active" boolean DEFAULT true,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "chat_rooms_cohort_idx" ON "chat_rooms" ("cohort_id")')
+    console.log('[migrate] Created chat_rooms table')
+  }
+
+  // ---- MESSAGES ----
+  if (!(await tableExists('messages'))) {
+    await pool.query(`
+      CREATE TABLE "messages" (
+        "id" serial PRIMARY KEY,
+        "chat_room_id" integer,
+        "sender_type" enum_messages_sender_type DEFAULT 'customer',
+        "sender_customer_id" integer,
+        "sender_user_id" integer,
+        "text" varchar NOT NULL,
+        "is_deleted" boolean DEFAULT false,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "messages_chat_room_idx" ON "messages" ("chat_room_id")')
+    console.log('[migrate] Created messages table')
+  }
+
+  // ---- messages_attachments (array sub-table) ----
+  if (!(await tableExists('messages_attachments'))) {
+    await pool.query(`
+      CREATE TABLE "messages_attachments" (
+        "_order" integer NOT NULL,
+        "_parent_id" integer NOT NULL,
+        "id" varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        "file_id" integer
+      )
+    `)
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE "messages_attachments"
+          ADD CONSTRAINT "messages_attachments_parent_id_fk"
+          FOREIGN KEY ("_parent_id") REFERENCES "messages"("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "messages_attachments_order_idx" ON "messages_attachments" ("_order")')
+    await pool.query('CREATE INDEX IF NOT EXISTS "messages_attachments_parent_id_idx" ON "messages_attachments" ("_parent_id")')
+    console.log('[migrate] Created messages_attachments table')
   }
 
   console.log('[migrate] Done')
