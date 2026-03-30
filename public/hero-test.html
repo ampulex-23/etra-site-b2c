@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>ЭТРА — Живые ферменты</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Philosopher:wght@400;700&family=Tenor+Sans&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN SYSTEM
+   Palette: white / warm beige / moss green / leaf
+   ═══════════════════════════════════════════════ */
+:root {
+  --white:       #ffffff;
+  --snow:        #fafaf7;
+  --beige:       #f3efe8;
+  --beige-dark:  #e6dfd4;
+  --sand:        #d4c9b8;
+  --wood:        #a08b72;
+  --wood-dark:   #6e5b45;
+  --bark:        #3d3024;
+
+  --moss:        #4a6741;
+  --moss-deep:   #2f4a28;
+  --leaf:        #7cb663;
+  --leaf-light:  #a8d98a;
+  --leaf-pale:   #e8f5de;
+  --sage:        #9bb48e;
+
+  --text:        #2b2318;
+  --text-sec:    #6b6155;
+  --text-light:  #9c9284;
+  --border:      rgba(107,76,50,0.08);
+
+  --topbar-h: 54px;
+  --botnav-h: 64px;
+  --gap: 20px;
+  --r: 16px;
+  --r-sm: 10px;
+
+  --font-h: 'Philosopher', Georgia, serif;
+  --font:   'Tenor Sans', -apple-system, sans-serif;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: var(--font);
+  background: var(--white);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.55;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+button { font-family: inherit; }
+
+/* ═══════════════════════════════════════════════
+   TOPBAR
+   ═══════════════════════════════════════════════ */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--topbar-h);
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  border-bottom: 1px solid var(--border);
+  padding: 0 var(--gap);
+}
+.topbar__burger {
+  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+  width: 32px; height: 32px; background: none; border: none; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+}
+.topbar__burger i {
+  display: block; width: 20px; height: 1.6px;
+  background: var(--bark); border-radius: 1px;
+  transition: all .3s ease;
+}
+.topbar__burger.open i:nth-child(1){ transform: translateY(3.3px) rotate(45deg); }
+.topbar__burger.open i:nth-child(2){ opacity: 0; }
+.topbar__burger.open i:nth-child(3){ transform: translateY(-3.3px) rotate(-45deg); }
+
+.topbar__logo {
+  font-family: var(--font-h);
+  font-size: 20px; color: var(--bark);
+  letter-spacing: 2px;
+}
+
+/* ── Burger overlay ── */
+.burger {
+  position: fixed; inset: var(--topbar-h) 0 0 0;
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(24px);
+  z-index: 99;
+  padding: 28px 24px;
+  display: flex; flex-direction: column; gap: 0;
+  transform: translateX(-100%);
+  transition: transform .32s cubic-bezier(.4,0,.2,1);
+}
+.burger.open { transform: none; }
+.burger a {
+  font-family: var(--font-h);
+  font-size: 22px; color: var(--bark);
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ═══════════════════════════════════════════════
+   BOTTOM NAV
+   ═══════════════════════════════════════════════ */
+.botnav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: var(--botnav-h);
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  border-top: 1px solid var(--border);
+  z-index: 100;
+  display: flex; align-items: stretch;
+  padding-bottom: env(safe-area-inset-bottom,0);
+}
+.bnav {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px;
+  font-size: 10px; font-weight: 500; color: var(--text-light);
+  transition: color .2s;
+}
+.bnav.act { color: var(--moss); }
+.bnav svg { width: 22px; height: 22px; stroke-width: 1.7; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ═══════════════════════════════════════════════
+   PAGE WRAPPER
+   ═══════════════════════════════════════════════ */
+.page { padding-top: var(--topbar-h); padding-bottom: var(--botnav-h); }
+
+/* ═══════════════════════════════════════════════
+   1. HERO — video fading into last-frame image
+   ═══════════════════════════════════════════════ */
+.hero {
+  position: relative; width: 100%;
+  aspect-ratio: 9/16;
+  max-height: calc(100dvh - var(--topbar-h) - var(--botnav-h));
+  overflow: hidden; background: var(--bark);
+}
+.hero__img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;
+}
+.hero__vid {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 2;
+}
+.hero__vid.done { display: none; }
+
+/* Hero overlay content */
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  pointer-events: none;
+}
+
+/* Logo block - top center */
+.hero__logo-wrap {
+  display: flex;
+  justify-content: center;
+  padding-top: 20px;
+  pointer-events: auto;
+  filter: contrast(1.3) brightness(1.9) drop-shadow(5px 4px 6px #F0F0FF) drop-shadow(2px 5px 3px #40A0FF) opacity(0.7)
+}
+
+.hero__logo {
+  width: 360px;
+  height: auto;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+  filter: drop-shadow(0 0 24px rgba(255,255,255,0.6)) 
+          drop-shadow(0 0 48px rgba(255,255,255,0.4))
+          drop-shadow(0 0 72px rgba(255,255,255,0.25));
+  animation: shimmer 4s ease-in-out infinite;
+}
+
+.hero__logo.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@keyframes shimmer {
+  0%, 100% { filter: drop-shadow(0 0 24px rgba(255,255,255,0.6)) drop-shadow(0 0 48px rgba(255,255,255,0.4)) drop-shadow(0 0 72px rgba(255,255,255,0.25)) hue-rotate(0deg); }
+  25% { filter: drop-shadow(0 0 28px rgba(255,200,255,0.7)) drop-shadow(0 0 52px rgba(200,255,255,0.5)) drop-shadow(0 0 76px rgba(255,255,200,0.3)) hue-rotate(15deg); }
+  50% { filter: drop-shadow(0 0 32px rgba(200,255,255,0.8)) drop-shadow(0 0 56px rgba(255,255,200,0.6)) drop-shadow(0 0 80px rgba(255,200,255,0.35)) hue-rotate(30deg); }
+  75% { filter: drop-shadow(0 0 28px rgba(255,255,200,0.7)) drop-shadow(0 0 52px rgba(255,200,255,0.5)) drop-shadow(0 0 76px rgba(200,255,255,0.3)) hue-rotate(15deg); }
+}
+
+/* Liquid glass cards - right side */
+.hero__cards {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 16px;
+  padding-bottom: 30px;
+  padding-right: 40px;
+  pointer-events: auto;
+}
+
+.glass-card {
+  position: relative;
+  width: 200px;
+  padding: 20px 18px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: url(#glass-distortion) blur(16px) saturate(1.5) brightness(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5) brightness(1.15);
+  border: 1px solid rgba(255,255,255,0.35);
+  border-top: 1.5px solid rgba(255,255,255,0.5);
+  border-left: 1.5px solid rgba(255,255,255,0.45);
+  box-shadow: 
+    0 8px 32px rgba(0,0,0,0.12),
+    0 4px 16px rgba(0,0,0,0.08),
+    inset 0 1px 2px rgba(255,255,255,0.5),
+    inset 0 -1px 2px rgba(0,0,0,0.08);
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+  border-radius: 20px 20px 0 0;
+  pointer-events: none;
+}
+
+.glass-card.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.glass-card:nth-child(1) { transition-delay: 0.2s; }
+.glass-card:nth-child(2) { transition-delay: 0.4s; }
+.glass-card:nth-child(3) { transition-delay: 0.6s; }
+
+.glass-card__icon {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.25);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+}
+
+.glass-card__icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: rgba(255,255,255,0.95);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.glass-card__title {
+  font-family: var(--font-h);
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.glass-card__text {
+  font-size: 12px;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.5;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+/* ═══════════════════════════════════════════════
+   2. CIRCULAR BADGES (with icons and circular text)
+   ═══════════════════════════════════════════════ */
+.tag-section { 
+  padding: 56px var(--gap) 64px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: 
+    linear-gradient(135deg, rgba(200,230,176,0.15) 0%, transparent 40%),
+    linear-gradient(225deg, rgba(230,223,212,0.2) 0%, transparent 40%),
+    linear-gradient(315deg, rgba(168,217,138,0.12) 0%, transparent 50%),
+    linear-gradient(180deg, var(--snow) 0%, var(--beige) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.tag-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 30% 40%, rgba(200,230,176,0.25) 0%, transparent 50%),
+    radial-gradient(circle at 70% 60%, rgba(230,223,212,0.3) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(168,217,138,0.2) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.tags {
+  display: flex; 
+  gap: 24px; 
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.badge {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .3s ease, box-shadow .3s ease;
+  cursor: pointer;
+  box-shadow: 
+    0 6px 24px rgba(0,0,0,0.12),
+    0 2px 8px rgba(0,0,0,0.08),
+    inset 0 -4px 12px rgba(0,0,0,0.25),
+    inset 0 4px 8px rgba(255,255,255,0.4),
+    inset 0 1px 2px rgba(255,255,255,0.6);
+}
+
+.badge:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 
+    0 12px 40px rgba(0,0,0,0.16),
+    0 4px 12px rgba(0,0,0,0.1),
+    inset 0 -4px 12px rgba(0,0,0,0.25),
+    inset 0 4px 8px rgba(255,255,255,0.4),
+    inset 0 1px 2px rgba(255,255,255,0.6);
+}
+
+.badge.spinning {
+  animation: spin-decelerate 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes spin-decelerate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(1080deg); }
+}
+
+.badge--blue {
+  background: linear-gradient(135deg, #5a7d8c 0%, #4a6d7c 100%);
+}
+
+.badge--green {
+  background: linear-gradient(135deg, #c8e6b0 0%, #a8d98a 100%);
+}
+
+.badge--beige {
+  background: linear-gradient(135deg, #e6dfd4 0%, #d4c9b8 100%);
+}
+
+.badge__icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.badge__icon svg {
+  width: 32px;
+  height: 32px;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.badge--blue .badge__icon svg { stroke: #fff; }
+.badge--green .badge__icon svg { stroke: var(--moss-deep); }
+.badge--beige .badge__icon svg { stroke: var(--wood-dark); }
+
+.badge__text {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.badge__text text {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 3.5px;
+  text-transform: uppercase;
+  fill: currentColor;
+}
+
+.badge--blue .badge__text text { fill: rgba(255,255,255,0.95); }
+.badge--green .badge__text text { fill: var(--moss-deep); }
+.badge--beige .badge__text text { fill: var(--wood-dark); }
+
+/* ═══════════════════════════════════════════════
+   3. SCROLLABLE PRODUCT STRIP
+   ═══════════════════════════════════════════════ */
+.strip-section { padding: 0 0 36px; }
+.strip-section .sec-head { padding: 0 var(--gap) 16px; }
+
+.strip {
+  display: flex; gap: 14px;
+  overflow-x: auto; scroll-snap-type: x mandatory;
+  padding: 0 var(--gap);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin-left: var(--gap);
+}
+.strip::-webkit-scrollbar { display: none; }
+
+.prod {
+  flex: 0 0 150px; scroll-snap-align: start;
+  background: var(--snow); border-radius: var(--r);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: transform .2s, box-shadow .2s;
+}
+.prod:active { transform: scale(.97); }
+
+.prod__img {
+  width: 100%; aspect-ratio: 1; object-fit: cover;
+  background: var(--beige);
+}
+.prod__body { padding: 12px; }
+.prod__name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+.prod__price { font-size: 14px; font-weight: 700; color: var(--moss); }
+.prod__old   { font-size: 12px; color: var(--text-light); text-decoration: line-through; margin-left: 6px; }
+
+/* ═══════════════════════════════════════════════
+   4. TEXT BLOCK — beige band
+   ═══════════════════════════════════════════════ */
+.text-band {
+  background: var(--beige);
+  padding: 48px var(--gap);
+}
+.text-band__label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 2.5px; color: var(--moss); margin-bottom: 8px;
+}
+.text-band__title {
+  font-family: var(--font-h); font-size: 26px;
+  color: var(--bark); line-height: 1.25; margin-bottom: 12px;
+}
+.text-band__body {
+  font-size: 15px; line-height: 1.7; color: var(--text-sec);
+  max-width: 520px;
+}
+
+/* ═══════════════════════════════════════════════
+   5. BAR CHART — health effects
+   ═══════════════════════════════════════════════ */
+.chart-section { padding: 48px var(--gap); }
+
+.chart-section .sec-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 2.5px; color: var(--moss); margin-bottom: 6px;
+}
+.chart-section .sec-title {
+  font-family: var(--font-h); font-size: 24px; color: var(--bark);
+  margin-bottom: 24px; line-height: 1.25;
+}
+
+.bars { display: flex; flex-direction: column; gap: 16px; }
+
+.bar-row { display: flex; align-items: center; gap: 12px; }
+.bar-label {
+  width: 100px; flex-shrink: 0;
+  font-size: 13px; font-weight: 500; color: var(--text-sec);
+  text-align: right;
+}
+.bar-track {
+  flex: 1; height: 28px; background: var(--beige);
+  border-radius: 14px; overflow: hidden; position: relative;
+}
+.bar-fill {
+  height: 100%; border-radius: 14px;
+  background: linear-gradient(90deg, var(--leaf), var(--moss));
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 10px;
+  font-size: 12px; font-weight: 700; color: #fff;
+  min-width: 40px;
+  transition: width 1.2s cubic-bezier(.4,0,.2,1);
+}
+
+/* ═══════════════════════════════════════════════
+   6. ICON CARDS — 3-col on mobile too
+   ═══════════════════════════════════════════════ */
+.icon-cards-section { padding: 48px var(--gap); background: var(--snow); }
+
+.icon-cards {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  margin-top: 20px;
+}
+.ic {
+  text-align: center; padding: 20px 8px;
+  border-radius: var(--r); background: var(--white);
+  border: 1px solid var(--border);
+}
+.ic__circle {
+  width: 48px; height: 48px; border-radius: 50%;
+  margin: 0 auto 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.ic__circle svg { width: 22px; height: 22px; stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.ic__circle--moss { background: rgba(74,103,65,.1); }
+.ic__circle--moss svg { stroke: var(--moss); }
+.ic__circle--leaf { background: rgba(124,182,99,.1); }
+.ic__circle--leaf svg { stroke: var(--leaf); }
+.ic__circle--sand { background: rgba(160,139,114,.1); }
+.ic__circle--sand svg { stroke: var(--wood); }
+
+.ic__label { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.3; }
+
+/* ═══════════════════════════════════════════════
+   7. LARGE FEATURE CARDS
+   ═══════════════════════════════════════════════ */
+.feat-section { padding: 48px var(--gap); }
+.feats { display: flex; flex-direction: column; gap: 16px; }
+
+.feat {
+  display: flex; gap: 16px; align-items: flex-start;
+  background: var(--snow); border-radius: var(--r);
+  padding: 20px; border: 1px solid var(--border);
+}
+.feat__num {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: var(--leaf-pale); color: var(--moss-deep);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-h); font-size: 18px; flex-shrink: 0;
+}
+.feat__title {
+  font-family: var(--font-h); font-size: 17px;
+  color: var(--bark); margin-bottom: 4px;
+}
+.feat__text {
+  font-size: 13px; line-height: 1.6; color: var(--text-sec);
+}
+
+/* ═══════════════════════════════════════════════
+   8. CTA BANNER
+   ═══════════════════════════════════════════════ */
+.cta {
+  margin: 0 var(--gap); padding: 36px 24px;
+  border-radius: var(--r);
+  background: linear-gradient(135deg, var(--moss-deep) 0%, var(--moss) 100%);
+  text-align: center; color: #fff;
+}
+.cta h3 { font-family: var(--font-h); font-size: 22px; margin-bottom: 10px; }
+.cta p  { font-size: 14px; opacity: .9; line-height: 1.6; margin-bottom: 20px; }
+.cta .btn { background: #fff; color: var(--moss-deep); }
+
+/* ═══════════════════════════════════════════════
+   9. REVIEWS — horizontal scroll
+   ═══════════════════════════════════════════════ */
+.reviews-section { padding: 48px 0; background: var(--beige); }
+.reviews-section .sec-head { padding: 0 var(--gap) 20px; }
+
+.reviews {
+  display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory;
+  padding: 0 var(--gap); scrollbar-width: none;
+  margin-left: var(--gap);
+}
+.reviews::-webkit-scrollbar { display: none; }
+
+.rev {
+  flex: 0 0 280px; scroll-snap-align: start;
+  background: var(--white); border-radius: var(--r); padding: 24px 20px;
+  border: 1px solid var(--border);
+}
+.rev__stars { color: #e6a817; font-size: 14px; letter-spacing: 2px; margin-bottom: 12px; }
+.rev__text  { font-size: 14px; line-height: 1.6; color: var(--text); font-style: italic; margin-bottom: 14px; }
+.rev__who   { font-size: 13px; font-weight: 600; color: var(--wood-dark); }
+
+/* ═══════════════════════════════════════════════
+   10. FOOTER
+   ═══════════════════════════════════════════════ */
+.footer {
+  background: var(--bark); color: rgba(255,255,255,.7);
+  padding: 40px var(--gap) calc(40px + var(--botnav-h));
+}
+.footer__logo {
+  font-family: var(--font-h); font-size: 22px;
+  color: #fff; letter-spacing: 2px; margin-bottom: 20px;
+}
+.footer__cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px; }
+.footer__col-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,.45); margin-bottom: 10px; }
+.footer__link { display: block; font-size: 14px; padding: 4px 0; color: rgba(255,255,255,.7); transition: color .2s; }
+.footer__link:hover { color: #fff; }
+
+.footer__copy {
+  font-size: 12px; color: rgba(255,255,255,.35);
+  border-top: 1px solid rgba(255,255,255,.08);
+  padding-top: 20px;
+}
+
+/* ═══════════════════════════════════════════════
+   SHARED
+   ═══════════════════════════════════════════════ */
+.sec-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 2.5px; color: var(--moss); margin-bottom: 6px;
+}
+.sec-title {
+  font-family: var(--font-h); font-size: 24px; color: var(--bark);
+  line-height: 1.25;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 28px; border-radius: 50px;
+  font-size: 14px; font-weight: 600;
+  border: none; cursor: pointer;
+  transition: transform .2s, filter .2s;
+}
+.btn:active { transform: scale(.97); }
+.btn--primary { background: var(--moss); color: #fff; }
+.btn--outline { background: transparent; color: var(--moss); border: 1.5px solid var(--moss); }
+
+/* ═══════════════════════════════════════════════
+   FONT PICKER PANEL
+   ═══════════════════════════════════════════════ */
+.font-panel {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  width: 220px;
+  background: rgba(255,255,255,0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  z-index: 9999;
+  user-select: none;
+  transform: scale(.7);
+  display: none;
+}
+
+.font-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--beige);
+  border-radius: var(--r) var(--r) 0 0;
+  cursor: grab;
+  border-bottom: 1px solid var(--border);
+}
+
+.font-panel__header:active {
+  cursor: grabbing;
+}
+
+.font-panel__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bark);
+}
+
+.font-panel__toggle {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: var(--white);
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--moss);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s;
+}
+
+.font-panel__toggle:hover {
+  background: var(--snow);
+}
+
+.font-panel__body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.font-picker__label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-sec);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.font-picker__select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--white);
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color .2s;
+}
+
+.font-picker__select:hover {
+  border-color: var(--moss);
+}
+
+.font-picker__select:focus {
+  outline: none;
+  border-color: var(--moss);
+  box-shadow: 0 0 0 3px rgba(74,103,65,0.1);
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════ */
+@media(min-width:640px){
+  .icon-cards { gap: 16px; }
+  .prod { flex: 0 0 170px; }
+  .rev  { flex: 0 0 300px; }
+}
+@media(min-width:768px){
+  .hero { max-width: 480px; margin: 0 auto; border-radius: 0 0 var(--r) var(--r); }
+  .feats { flex-direction: row; }
+  .feat  { flex: 1; flex-direction: column; }
+  .icon-cards { grid-template-columns: repeat(6, 1fr); }
+}
+@media(min-width:1024px){
+  .botnav { display: none; }
+  .page { padding-bottom: 0; }
+  .footer { padding-bottom: 40px; }
+}
+
+@media(max-width:640px){
+  .font-panel {
+    width: calc(100vw - 40px);
+    right: 20px;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- SVG Filters for Liquid Glass Effect -->
+<svg width="0" height="0" style="position: absolute;">
+  <defs>
+    <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="0" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0" result="matrix"/>
+      <feImage href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.6,0.7' numOctaves='3' seed='2'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0'/%3E%3C/svg%3E" result="noise" x="0%" y="0%" width="100%" height="100%"/>
+      <feDisplacementMap in="matrix" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G" result="displacement"/>
+      <feGaussianBlur in="displacement" stdDeviation="0.6" result="blur2"/>
+      <feComposite in="blur2" in2="SourceGraphic" operator="atop" result="composite"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- ═══ TOPBAR ═══ -->
+<header class="topbar">
+  <button class="topbar__burger" id="burgerBtn" aria-label="Menu">
+    <i></i><i></i><i></i>
+  </button>
+  <div class="topbar__title" style="opacity: 0; pointer-events: none;"></div>
+</header>
+
+<!-- ═══ BURGER ═══ -->
+<nav class="burger" id="burger">
+  <a href="#about" onclick="closeBurger()">О нас</a>
+  <a href="#science" onclick="closeBurger()">Наука</a>
+  <a href="#catalog" onclick="closeBurger()">Каталог</a>
+  <a href="#effects" onclick="closeBurger()">Эффекты</a>
+  <a href="#reviews" onclick="closeBurger()">Отзывы</a>
+</nav>
+
+<!-- ═══ PAGE ═══ -->
+<div class="page">
+
+  <!-- 1 ─ HERO ─────────────────────── -->
+  <section class="hero">
+    <img class="hero__img" src="/images/hero-lastframe.png" alt="">
+    <video class="hero__vid" id="vid" src="/images/hero-video.mp4" autoplay muted playsinline preload="auto"></video>
+    
+    <!-- Overlay content -->
+    <div class="hero__overlay">
+      <!-- Logo with glow -->
+      <div class="hero__logo-wrap">
+        <img class="hero__logo" id="heroLogo" src="/images/logo.png" alt="ЭТРА">
+      </div>
+      
+      <!-- Liquid glass cards -->
+      <div class="hero__cards">
+        <div class="glass-card">
+          <div class="glass-card__icon">
+            <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <div class="glass-card__title">Живая энергия</div>
+          <div class="glass-card__text">Ферменты сохраняют активность благодаря бережной технологии</div>
+        </div>
+        
+        <div class="glass-card">
+          <div class="glass-card__icon">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="glass-card__title">Природная защита</div>
+          <div class="glass-card__text">Пробиотики укрепляют иммунитет и микробиом</div>
+        </div>
+        
+        <div class="glass-card">
+          <div class="glass-card__icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
+          </div>
+          <div class="glass-card__title">Чистый состав</div>
+          <div class="glass-card__text">Без консервантов, красителей и искусственных добавок</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 ─ CIRCULAR BADGES ─────────── -->
+  <div class="tag-section">
+    <div class="tags">
+      <div class="badge badge--blue">
+        <div class="badge__icon">
+          <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <svg class="badge__text" viewBox="0 0 140 140">
+          <defs>
+            <path id="circlePath1" d="M 70,70 m -50,0 a 50,50 0 1,1 100,0 a 50,50 0 1,1 -100,0"/>
+          </defs>
+          <text>
+            <textPath href="#circlePath1" startOffset="50%" text-anchor="middle">
+              ЖИВЫЕ ФЕРМЕНТЫ
+            </textPath>
+          </text>
+        </svg>
+      </div>
+      
+      <div class="badge badge--green">
+        <div class="badge__icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <svg class="badge__text" viewBox="0 0 140 140">
+          <defs>
+            <path id="circlePath2" d="M 70,70 m -50,0 a 50,50 0 1,1 100,0 a 50,50 0 1,1 -100,0"/>
+          </defs>
+          <text>
+            <textPath href="#circlePath2" startOffset="50%" text-anchor="middle">
+              ПРОБИОТИКИ
+            </textPath>
+          </text>
+        </svg>
+      </div>
+      
+      <div class="badge badge--beige">
+        <div class="badge__icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
+        </div>
+        <svg class="badge__text" viewBox="0 0 140 140">
+          <defs>
+            <path id="circlePath3" d="M 70,70 m -50,0 a 50,50 0 1,1 100,0 a 50,50 0 1,1 -100,0"/>
+          </defs>
+          <text>
+            <textPath href="#circlePath3" startOffset="50%" text-anchor="middle">
+              БЕЗ КОНСЕРВАНТОВ
+            </textPath>
+          </text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 ─ PRODUCT STRIP ────────────── -->
+  <section class="strip-section" id="catalog">
+    <div class="sec-head">
+      <div class="sec-label" style="visibility: collapse;">Каталог</div>
+      <div class="sec-title">Популярные продукты</div>
+    </div>
+    <div class="strip">
+      <div class="prod">
+        <div class="prod__img" style="background: linear-gradient(135deg,#e8f5de,#c8e6b0);"></div>
+        <div class="prod__body">
+          <div class="prod__name">ЭТРА Утро</div>
+          <div class="prod__price">1 290 &#8381;</div>
+        </div>
+      </div>
+      <div class="prod">
+        <div class="prod__img" style="background: linear-gradient(135deg,#fef3e0,#f5ddb8);"></div>
+        <div class="prod__body">
+          <div class="prod__name">ЭТРА День</div>
+          <div class="prod__price">1 290 &#8381;</div>
+        </div>
+      </div>
+      <div class="prod">
+        <div class="prod__img" style="background: linear-gradient(135deg,#e0e8f5,#b8c8e6);"></div>
+        <div class="prod__body">
+          <div class="prod__name">ЭТРА Вечер</div>
+          <div class="prod__price">1 290 &#8381;</div>
+        </div>
+      </div>
+      <div class="prod">
+        <div class="prod__img" style="background: linear-gradient(135deg,#f5e0e8,#e6b8c8);"></div>
+        <div class="prod__body">
+          <div class="prod__name">Антипаразитарка</div>
+          <div class="prod__price">980 &#8381;</div>
+        </div>
+      </div>
+      <div class="prod">
+        <div class="prod__img" style="background: linear-gradient(135deg,#e8e0f5,#c8b8e6);"></div>
+        <div class="prod__body">
+          <div class="prod__name">Живое железо</div>
+          <div class="prod__price">1 490 &#8381;<span class="prod__old">1 890 &#8381;</span></div>
+        </div>
+      </div>
+      <div class="prod">
+        <div class="prod__img" style="background: linear-gradient(135deg,#f5f0e0,#e6dab0);"></div>
+        <div class="prod__body">
+          <div class="prod__name">Каша ЭТРАСУТРА</div>
+          <div class="prod__price">890 &#8381;</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 ─ TEXT BAND ────────────────── -->
+  <section class="text-band" id="about">
+    <div class="text-band__label">О компании</div>
+    <h2 class="text-band__title">Мы — ЭТРА</h2>
+    <p class="text-band__body">
+      Производим живые ферментированные напитки из натурального сырья.
+      Наша миссия — сделать пробиотики доступными и вкусными.
+      Каждая бутылка — результат научных исследований и бережной ферментации
+      в экологически чистых условиях Алтайских гор.
+    </p>
+  </section>
+
+  <!-- 5 ─ BAR CHART ────────────────── -->
+  <section class="chart-section" id="effects">
+    <div class="sec-label">Результаты участников</div>
+    <div class="sec-title" style="margin-bottom:24px;">Полезные эффекты курса</div>
+    <div class="bars" id="bars">
+      <div class="bar-row">
+        <span class="bar-label">Пищеварение</span>
+        <div class="bar-track"><div class="bar-fill" data-w="92">92%</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Энергия</span>
+        <div class="bar-track"><div class="bar-fill" data-w="87">87%</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Кожа</span>
+        <div class="bar-track"><div class="bar-fill" data-w="78">78%</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Иммунитет</span>
+        <div class="bar-track"><div class="bar-fill" data-w="84">84%</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Сон</span>
+        <div class="bar-track"><div class="bar-fill" data-w="73">73%</div></div>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">Снижение веса</span>
+        <div class="bar-track"><div class="bar-fill" data-w="68">68%</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 ─ ICON CARDS (6 items) ─────── -->
+  <section class="icon-cards-section" id="science">
+    <div class="sec-label">Наука</div>
+    <div class="sec-title">Что внутри каждой бутылки</div>
+    <div class="icon-cards">
+      <div class="ic">
+        <div class="ic__circle ic__circle--moss">
+          <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <div class="ic__label">Энзимы</div>
+      </div>
+      <div class="ic">
+        <div class="ic__circle ic__circle--leaf">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41"/></svg>
+        </div>
+        <div class="ic__label">Витамины</div>
+      </div>
+      <div class="ic">
+        <div class="ic__circle ic__circle--sand">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="ic__label">Пробиотики</div>
+      </div>
+      <div class="ic">
+        <div class="ic__circle ic__circle--moss">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z"/></svg>
+        </div>
+        <div class="ic__label">Кислоты</div>
+      </div>
+      <div class="ic">
+        <div class="ic__circle ic__circle--leaf">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
+        </div>
+        <div class="ic__label">Минералы</div>
+      </div>
+      <div class="ic">
+        <div class="ic__circle ic__circle--sand">
+          <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 017 7c0 5-7 13-7 13S5 14 5 9a7 7 0 017-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+        </div>
+        <div class="ic__label">Клетчатка</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 ─ FEATURE CARDS ────────────── -->
+  <section class="feat-section">
+    <div class="sec-label">Технология</div>
+    <div class="sec-title" style="margin-bottom:20px;">Как мы это делаем</div>
+    <div class="feats">
+      <div class="feat">
+        <div class="feat__num">1</div>
+        <div>
+          <div class="feat__title">Подготовка сырья</div>
+          <div class="feat__text">Отбираем экологически чистые ингредиенты. Первичный микробиологический контроль.</div>
+        </div>
+      </div>
+      <div class="feat">
+        <div class="feat__num">2</div>
+        <div>
+          <div class="feat__title">Ферментация</div>
+          <div class="feat__text">14–30 дней при контролируемой температуре и влажности. Мониторинг 24/7.</div>
+        </div>
+      </div>
+      <div class="feat">
+        <div class="feat__num">3</div>
+        <div>
+          <div class="feat__title">Контроль и розлив</div>
+          <div class="feat__text">Лабораторный анализ каждой партии. Бережный розлив сохраняет живые культуры.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 ─ CTA BANNER ───────────────── -->
+  <section style="padding: 0 0 48px;">
+    <div class="cta">
+      <h3>Попробуйте МЕГАГЕНЕЗ</h3>
+      <p>21-дневный курс ферментированных продуктов с персональным сопровождением и программой питания.</p>
+      <button class="btn" style="background:#fff;color:var(--moss-deep);">Узнать подробнее</button>
+    </div>
+  </section>
+
+  <!-- 9 ─ REVIEWS ──────────────────── -->
+  <section class="reviews-section" id="reviews">
+    <div class="sec-head">
+      <div class="sec-label">Отзывы</div>
+      <div class="sec-title">Что говорят клиенты</div>
+    </div>
+    <div class="reviews">
+      <div class="rev">
+        <div class="rev__stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <div class="rev__text">&laquo;Пью ЭТРА каждое утро уже полгода. Пищеварение наладилось, энергии заметно больше. Рекомендую всем!&raquo;</div>
+        <div class="rev__who">Анна К.</div>
+      </div>
+      <div class="rev">
+        <div class="rev__stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <div class="rev__text">&laquo;Наконец нашла натуральные пробиотики без химии. Вкус приятный, дети тоже пьют с удовольствием.&raquo;</div>
+        <div class="rev__who">Мария С.</div>
+      </div>
+      <div class="rev">
+        <div class="rev__stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <div class="rev__text">&laquo;После курса МЕГАГЕНЕЗ похудела на 5 кг и полностью пересмотрела питание. Невероятный результат!&raquo;</div>
+        <div class="rev__who">Елена В.</div>
+      </div>
+      <div class="rev">
+        <div class="rev__stars">&#9733;&#9733;&#9733;&#9733;&#9734;</div>
+        <div class="rev__text">&laquo;Отличные продукты, быстрая доставка, аккуратная упаковка. Буду заказывать ещё.&raquo;</div>
+        <div class="rev__who">Дмитрий П.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 ─ FOOTER ──────────────────── -->
+  <footer class="footer">
+    <div class="footer__logo">ЭТРА</div>
+    <div class="footer__cols">
+      <div>
+        <div class="footer__col-title">Компания</div>
+        <a class="footer__link" href="#">О нас</a>
+        <a class="footer__link" href="#">Технология</a>
+        <a class="footer__link" href="#">Команда</a>
+        <a class="footer__link" href="#">Партнёрам</a>
+      </div>
+      <div>
+        <div class="footer__col-title">Покупателям</div>
+        <a class="footer__link" href="#">Каталог</a>
+        <a class="footer__link" href="#">Доставка</a>
+        <a class="footer__link" href="#">Оплата</a>
+        <a class="footer__link" href="#">Контакты</a>
+      </div>
+    </div>
+    <div class="footer__copy">&copy; 2025 ЭТРА Project. Все права защищены.</div>
+  </footer>
+
+</div><!-- /page -->
+
+<!-- ═══ BOTTOM NAV ═══ -->
+<nav class="botnav">
+  <a class="bnav act" href="#about">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+    <span>О нас</span>
+  </a>
+  <a class="bnav" href="#catalog">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span>Каталог</span>
+  </a>
+  <a class="bnav" href="/account">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Кабинет</span>
+  </a>
+  <a class="bnav" href="/cart">
+    <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+    <span>Корзина</span>
+  </a>
+</nav>
+
+<!-- ═══ FONT PICKER PANEL ═══ -->
+<div id="fontPanel" class="font-panel">
+  <div class="font-panel__header" id="fontPanelHeader">
+    <span class="font-panel__title">🔤 Шрифты</span>
+    <button class="font-panel__toggle" id="fontPanelToggle">−</button>
+  </div>
+  <div class="font-panel__body" id="fontPanelBody">
+    <div class="font-picker">
+      <label class="font-picker__label">Заголовки</label>
+      <select class="font-picker__select" id="headingFont">
+        <option value="">Загрузка...</option>
+      </select>
+    </div>
+    <div class="font-picker">
+      <label class="font-picker__label">Основной текст</label>
+      <select class="font-picker__select" id="bodyFont">
+        <option value="">Загрузка...</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ JS ═══ -->
+<script>
+// Burger
+const bb = document.getElementById('burgerBtn'), bm = document.getElementById('burger');
+bb.onclick = () => { bb.classList.toggle('open'); bm.classList.toggle('open'); };
+function closeBurger(){ bb.classList.remove('open'); bm.classList.remove('open'); }
+
+// Hero video + logo/cards reveal
+const v = document.getElementById('vid');
+const heroLogo = document.getElementById('heroLogo');
+const glassCards = document.querySelectorAll('.glass-card');
+
+let contentRevealed = false;
+
+function hideVideo() {
+  v.classList.add('done');
+}
+
+function revealContent() {
+  if (contentRevealed) return;
+  contentRevealed = true;
+  // Reveal logo with glow
+  setTimeout(() => {
+    heroLogo.classList.add('visible');
+  }, 100);
+  // Reveal glass cards with stagger
+  glassCards.forEach((card, i) => {
+    setTimeout(() => card.classList.add('visible'), 300 + i * 200);
+  });
+}
+
+// Hide video when it ends
+v.addEventListener('ended', hideVideo);
+
+// Start revealing content 1 second before video ends
+v.addEventListener('timeupdate', () => {
+  if (v.duration - v.currentTime <= 1.0 && !contentRevealed) {
+    revealContent();
+  }
+});
+
+v.play().catch(() => {
+  hideVideo();
+  revealContent();
+});
+
+// Bar chart animation on scroll
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.bar-fill').forEach(b => {
+        b.style.width = b.dataset.w + '%';
+      });
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.3 });
+
+const barsEl = document.getElementById('bars');
+barsEl.querySelectorAll('.bar-fill').forEach(b => b.style.width = '0%');
+io.observe(barsEl);
+
+// Badge spin animation on click
+document.querySelectorAll('.badge').forEach(badge => {
+  badge.addEventListener('click', function() {
+    // Remove animation class if already spinning
+    this.classList.remove('spinning');
+    // Force reflow to restart animation
+    void this.offsetWidth;
+    // Add animation class
+    this.classList.add('spinning');
+    // Remove class after animation completes
+    setTimeout(() => {
+      this.classList.remove('spinning');
+    }, 3000);
+  });
+});
+
+// ═══════════════════════════════════════════════
+// FONT PICKER PANEL
+// ═══════════════════════════════════════════════
+(function() {
+  // No API key needed - we'll use a curated list of popular Cyrillic fonts
+  const panel = document.getElementById('fontPanel');
+  const header = document.getElementById('fontPanelHeader');
+  const body = document.getElementById('fontPanelBody');
+  const toggle = document.getElementById('fontPanelToggle');
+  const headingSelect = document.getElementById('headingFont');
+  const bodySelect = document.getElementById('bodyFont');
+
+  let isDragging = false;
+  let startX = 0, startY = 0;
+  let initialX = 0, initialY = 0;
+  let fonts = [];
+
+  // Dragging
+  header.addEventListener('mousedown', (e) => {
+    if (e.target === toggle || e.target.closest('.font-panel__toggle')) return;
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    const rect = panel.getBoundingClientRect();
+    initialX = rect.left;
+    initialY = rect.top;
+    header.style.cursor = 'grabbing';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    panel.style.left = (initialX + dx) + 'px';
+    panel.style.top = (initialY + dy) + 'px';
+    panel.style.right = 'auto';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      header.style.cursor = 'grab';
+    }
+  });
+
+  // Toggle collapse
+  toggle.addEventListener('click', () => {
+    const isCollapsed = body.style.display === 'none';
+    body.style.display = isCollapsed ? 'block' : 'none';
+    toggle.textContent = isCollapsed ? '−' : '+';
+  });
+
+  // Curated list of popular Google Fonts with Cyrillic support
+  const cyrillicFonts = [
+    'Inter', 'Roboto', 'Open Sans', 'Montserrat', 'Lato', 'Oswald', 'Raleway',
+    'PT Sans', 'PT Serif', 'Merriweather', 'Nunito', 'Playfair Display',
+    'DM Serif Display', 'Cormorant Garamond', 'Lora', 'Source Sans Pro',
+    'Rubik', 'Fira Sans', 'Noto Sans', 'Ubuntu', 'Roboto Condensed',
+    'Roboto Slab', 'Poppins', 'Mukta', 'Manrope', 'IBM Plex Sans',
+    'Comfortaa', 'Jost', 'Philosopher', 'Caveat', 'Marck Script',
+    'Lobster', 'Pacifico', 'Bebas Neue', 'Exo 2', 'Commissioner',
+    'Alegreya', 'Alegreya Sans', 'PT Sans Narrow', 'PT Mono',
+    'Spectral', 'Old Standard TT', 'Yeseva One', 'Kelly Slab',
+    'Podkova', 'Ruslan Display', 'Bad Script', 'Scada', 'Tenor Sans'
+  ];
+
+  function loadFonts() {
+    fonts = cyrillicFonts.map(name => ({ family: name }));
+    populateSelect(headingSelect, 'Philosopher');
+    populateSelect(bodySelect, 'Tenor Sans');
+  }
+
+  function populateSelect(select, current) {
+    select.innerHTML = fonts.map(f => 
+      `<option value="${f.family}" ${f.family === current ? 'selected' : ''}>${f.family}</option>`
+    ).join('');
+  }
+
+  // Apply font
+  function applyFont(family, type) {
+    if (!family) return;
+    
+    // Load font dynamically
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${family.replace(/ /g, '+')}:wght@400;500;600;700&subset=cyrillic&display=swap`;
+    document.head.appendChild(link);
+
+    // Apply to CSS variable
+    if (type === 'heading') {
+      document.documentElement.style.setProperty('--font-h', `'${family}', Georgia, serif`);
+    } else {
+      document.documentElement.style.setProperty('--font', `'${family}', -apple-system, sans-serif`);
+    }
+  }
+
+  headingSelect.addEventListener('change', (e) => applyFont(e.target.value, 'heading'));
+  bodySelect.addEventListener('change', (e) => applyFont(e.target.value, 'body'));
+
+  // Init
+  loadFonts();
+})();
+</script>
+
+</body>
+</html>

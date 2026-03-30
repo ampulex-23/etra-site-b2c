@@ -1,8 +1,14 @@
 'use client'
 
-import React, { useState, Suspense } from 'react'
+import React, { useState, Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '../../auth/AuthProvider'
+
+declare global {
+  interface Window {
+    onTelegramAuth?: (user: any) => void
+  }
+}
 
 export function AuthScreen() {
   return (
@@ -22,7 +28,7 @@ function AuthScreenInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/account'
-  const { customer, login, register, loading: authLoading } = useAuth()
+  const { customer, login, register, loginWithTelegram, loading: authLoading } = useAuth()
 
   const [tab, setTab] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
@@ -30,6 +36,59 @@ function AuthScreenInner() {
   const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [telegramBotUsername, setTelegramBotUsername] = useState<string | null>(null)
+
+  // Load Telegram bot username from settings
+  useEffect(() => {
+    fetch('/api/shop-settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.telegramBotUsername) {
+          setTelegramBotUsername(data.telegramBotUsername)
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  // Setup Telegram callback
+  useEffect(() => {
+    window.onTelegramAuth = async (user: any) => {
+      setLoading(true)
+      setError('')
+      const result = await loginWithTelegram(user)
+      if (result.success) {
+        router.replace(redirect)
+      } else {
+        setError(result.error || 'Ошибка авторизации через Telegram')
+        setLoading(false)
+      }
+    }
+    return () => {
+      delete window.onTelegramAuth
+    }
+  }, [loginWithTelegram, router, redirect])
+
+  // Load Telegram widget script
+  useEffect(() => {
+    if (!telegramBotUsername) return
+
+    const container = document.getElementById('telegram-login-container')
+    if (!container) return
+
+    // Clear container
+    container.innerHTML = ''
+
+    // Create script element
+    const script = document.createElement('script')
+    script.src = 'https://telegram.org/js/telegram-widget.js?22'
+    script.async = true
+    script.setAttribute('data-telegram-login', telegramBotUsername)
+    script.setAttribute('data-size', 'large')
+    script.setAttribute('data-onauth', 'onTelegramAuth(user)')
+    script.setAttribute('data-request-access', 'write')
+
+    container.appendChild(script)
+  }, [telegramBotUsername])
 
   if (authLoading) {
     return (
@@ -138,6 +197,36 @@ function AuthScreenInner() {
               {tab === 'login' ? 'Войти' : 'Зарегистрироваться'}
             </button>
           </form>
+
+          {telegramBotUsername && (
+            <>
+              <div style={{ 
+                margin: '20px 0', 
+                textAlign: 'center', 
+                color: 'var(--c-text-secondary)',
+                fontSize: '14px',
+                position: 'relative'
+              }}>
+                <span style={{ 
+                  background: 'var(--c-bg)', 
+                  padding: '0 12px',
+                  position: 'relative',
+                  zIndex: 1
+                }}>или</span>
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: 0,
+                  right: 0,
+                  height: '1px',
+                  background: 'var(--c-border)',
+                  zIndex: 0
+                }} />
+              </div>
+
+              <div id="telegram-login-container" style={{ textAlign: 'center' }} />
+            </>
+          )}
         </div>
       </div>
     </div>
