@@ -12,25 +12,25 @@ export const orderAfterChange: CollectionAfterChangeHook = async ({
 
   // --- On CREATE: auto-create Delivery + Payment records, reserve stock ---
   if (operation === 'create') {
-    // Use setTimeout to ensure the order transaction is committed before creating related records
-    // This avoids foreign key constraint violations
-    setImmediate(async () => {
-      try {
-        const deliveryId = await createDeliveryRecord(payload, doc, req)
-        const paymentId = await createPaymentRecord(payload, doc, req)
-        await reserveStock(payload, doc, req)
+    try {
+      console.log('[orderAfterChange] Creating delivery and payment for order:', doc.id)
+      // Create without req to avoid transaction issues - these are separate transactions
+      const deliveryId = await createDeliveryRecord(payload, doc, null)
+      const paymentId = await createPaymentRecord(payload, doc, null)
+      await reserveStock(payload, doc, null)
+      console.log('[orderAfterChange] Created delivery:', deliveryId, 'payment:', paymentId)
 
-        // Link back to order
-        const linkData: Record<string, any> = {}
-        if (deliveryId) linkData.linkedDelivery = deliveryId
-        if (paymentId) linkData.linkedPayment = paymentId
-        if (Object.keys(linkData).length > 0) {
-          await payload.update({ collection: 'orders', id: doc.id, data: linkData })
-        }
-      } catch (err) {
-        console.error('[orderAfterChange] Error in deferred operations:', err)
+      // Link back to order (also without req for separate transaction)
+      const linkData: Record<string, any> = {}
+      if (deliveryId) linkData.linkedDelivery = deliveryId
+      if (paymentId) linkData.linkedPayment = paymentId
+      if (Object.keys(linkData).length > 0) {
+        await payload.update({ collection: 'orders', id: doc.id, data: linkData })
+        console.log('[orderAfterChange] Linked delivery/payment to order')
       }
-    })
+    } catch (err) {
+      console.error('[orderAfterChange] Error creating related records:', err)
+    }
     return doc
   }
 
@@ -65,7 +65,7 @@ export const orderAfterChange: CollectionAfterChangeHook = async ({
 }
 
 // --- Create Delivery record from order data, return delivery ID ---
-async function createDeliveryRecord(payload: any, order: any, req: any): Promise<string | null> {
+async function createDeliveryRecord(payload: any, order: any, _req: any): Promise<string | null> {
   try {
     const deliveryMethod = order.delivery?.method || 'pickup'
     const customer = typeof order.customer === 'object' ? order.customer : null
@@ -75,7 +75,6 @@ async function createDeliveryRecord(payload: any, order: any, req: any): Promise
       collection: 'deliveries',
       where: { order: { equals: order.id } },
       limit: 1,
-      req,
     })
     if (existing.docs.length > 0) return existing.docs[0].id
 
@@ -102,7 +101,6 @@ async function createDeliveryRecord(payload: any, order: any, req: any): Promise
     const delivery = await payload.create({
       collection: 'deliveries',
       data: deliveryData,
-      req,
     })
     return delivery?.id || null
   } catch (err) {
@@ -112,14 +110,13 @@ async function createDeliveryRecord(payload: any, order: any, req: any): Promise
 }
 
 // --- Create Payment record from order data, return payment ID ---
-async function createPaymentRecord(payload: any, order: any, req: any): Promise<string | null> {
+async function createPaymentRecord(payload: any, order: any, _req: any): Promise<string | null> {
   try {
     // Check if a payment already exists for this order
     const existing = await payload.find({
       collection: 'payments',
       where: { order: { equals: order.id } },
       limit: 1,
-      req,
     })
     if (existing.docs.length > 0) return existing.docs[0].id
 
@@ -144,7 +141,6 @@ async function createPaymentRecord(payload: any, order: any, req: any): Promise<
         transactionId: order.payment?.transactionId || undefined,
         paidAt: order.payment?.paidAt || undefined,
       },
-      req,
     })
     return payment?.id || null
   } catch (err) {
@@ -154,7 +150,7 @@ async function createPaymentRecord(payload: any, order: any, req: any): Promise<
 }
 
 // --- Reserve stock for all items in the order ---
-async function reserveStock(payload: any, order: any, req: any) {
+async function reserveStock(payload: any, order: any, _req: any) {
   const items: any[] = order.items || []
   for (const item of items) {
     const productId = typeof item.product === 'object' ? item.product.id : item.product
@@ -170,7 +166,6 @@ async function reserveStock(payload: any, order: any, req: any) {
           available: { greater_than: 0 },
         },
         limit: 10,
-        req,
       })
 
       let remaining = quantity
@@ -186,7 +181,6 @@ async function reserveStock(payload: any, order: any, req: any) {
             reserved: (sl.reserved || 0) + canReserve,
             available: Math.max(0, (sl.available || 0) - canReserve),
           },
-          req,
         })
         remaining -= canReserve
       }
@@ -201,7 +195,7 @@ async function reserveStock(payload: any, order: any, req: any) {
   }
 
   // Sync Products.inStock flags
-  await syncProductInStock(payload, order.items, req)
+  await syncProductInStock(payload, order.items, null)
 }
 
 // --- Unreserve stock (on cancel or after shipment completes) ---
@@ -454,7 +448,7 @@ async function createEnrollmentForCohort(
 }
 
 // --- Sync Products.inStock based on total available across all warehouses ---
-async function syncProductInStock(payload: any, items: any[], req: any) {
+async function syncProductInStock(payload: any, items: any[], _req: any) {
   if (!items || !Array.isArray(items)) return
 
   const productIds = items
@@ -469,7 +463,6 @@ async function syncProductInStock(payload: any, items: any[], req: any) {
         collection: 'stock-levels',
         where: { product: { equals: productId } },
         limit: 100,
-        req,
       })
 
       const totalAvailable = stockLevels.docs.reduce(
@@ -481,7 +474,6 @@ async function syncProductInStock(payload: any, items: any[], req: any) {
         collection: 'products',
         id: productId,
         data: { inStock: totalAvailable > 0 },
-        req,
       })
     } catch (err) {
       console.error(`[orderAfterChange] Error syncing inStock for product ${productId}:`, err)
