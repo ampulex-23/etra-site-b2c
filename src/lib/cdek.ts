@@ -11,9 +11,10 @@ const CDEK_API_TEST = 'https://api.edu.cdek.ru/v2'
 const CDEK_AUTH_PROD = 'https://api.cdek.ru/v2/oauth/token'
 const CDEK_AUTH_TEST = 'https://api.edu.cdek.ru/v2/oauth/token'
 
-// Test credentials from CDEK docs
-const CDEK_TEST_CLIENT_ID = 'EMscd6r9JnFiQ3bLoyjJY6eM78JrJceI'
-const CDEK_TEST_SECRET = 'PjLZkKBHEiLK3YsjtNrt3TGNG0ahs3dP'
+// Test credentials from CDEK docs (updated 2024)
+// Source: https://github.com/AntistressStore/cdek-sdk-v2/blob/master/src/Constants.php
+const CDEK_TEST_CLIENT_ID = 'wqGwiQx0gg8mLtiEKsUinjVSICCjtTEP'
+const CDEK_TEST_SECRET = 'RmAmgvSgSl1yirlz9QupbzOJVqhCxcP5'
 
 // Token cache
 let tokenCache: { token: string; expiresAt: number } | null = null
