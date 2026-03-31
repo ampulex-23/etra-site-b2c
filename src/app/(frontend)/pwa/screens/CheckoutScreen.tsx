@@ -14,7 +14,8 @@ type CdekPvz = {
   location: { address: string; address_full: string; latitude: number; longitude: number }
   work_time: string; type: string
 }
-type CdekCalcResult = { delivery_sum: number; period_min: number; period_max: number; total_sum: number }
+type CdekTariff = { tariff_code: number; tariff_name: string; delivery_sum: number; period_min: number; period_max: number }
+type CdekCalcResult = { delivery_sum: number; period_min: number; period_max: number; tariff_code: number; tariff_name: string; available_tariffs?: CdekTariff[]; error?: string }
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value)
@@ -45,6 +46,8 @@ export function CheckoutScreen() {
   const [deliveryType, setDeliveryType] = useState<'pvz' | 'door'>('pvz')
   const [cdekCalc, setCdekCalc] = useState<CdekCalcResult | null>(null)
   const [calcLoading, setCalcLoading] = useState(false)
+  const [calcError, setCalcError] = useState('')
+  const [selectedTariff, setSelectedTariff] = useState<CdekTariff | null>(null)
   const cityRef = useRef<HTMLDivElement>(null)
   const debouncedCityQuery = useDebounce(cityQuery, 400)
 
@@ -77,20 +80,44 @@ export function CheckoutScreen() {
   }, [selectedCity, deliveryType])
 
   const calculateDelivery = useCallback(async () => {
-    if (!selectedCity || deliveryMethod !== 'cdek') { setCdekCalc(null); return }
+    if (!selectedCity || deliveryMethod !== 'cdek') { 
+      setCdekCalc(null)
+      setCalcError('')
+      setSelectedTariff(null)
+      return 
+    }
     setCalcLoading(true)
+    setCalcError('')
     try {
       const totalWeight = items.reduce((sum, i) => sum + 500 * i.quantity, 0)
-      const tariffCode = deliveryType === 'pvz' ? 139 : 138
       const res = await fetch('/api/cdek/calculate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cityCode: String(selectedCity.code), weight: totalWeight || 500, tariffCode }),
+        body: JSON.stringify({ cityCode: String(selectedCity.code), weight: totalWeight || 500 }),
       })
-      if (!res.ok) { setCdekCalc(null); return }
       const data = await res.json()
-      setCdekCalc(data.errors ? null : data)
-    } catch { setCdekCalc(null) } finally { setCalcLoading(false) }
-  }, [selectedCity, deliveryMethod, deliveryType, items])
+      if (!res.ok || data.error) { 
+        setCdekCalc(null)
+        setSelectedTariff(null)
+        setCalcError(data.error || 'Не удалось рассчитать доставку')
+        return 
+      }
+      setCdekCalc(data)
+      // Auto-select the cheapest tariff (already selected by API)
+      if (data.tariff_code) {
+        setSelectedTariff({
+          tariff_code: data.tariff_code,
+          tariff_name: data.tariff_name,
+          delivery_sum: data.delivery_sum,
+          period_min: data.period_min,
+          period_max: data.period_max,
+        })
+      }
+    } catch { 
+      setCdekCalc(null)
+      setSelectedTariff(null)
+      setCalcError('Ошибка расчёта доставки') 
+    } finally { setCalcLoading(false) }
+  }, [selectedCity, deliveryMethod, items])
 
   useEffect(() => { calculateDelivery() }, [calculateDelivery])
 
@@ -102,7 +129,7 @@ export function CheckoutScreen() {
     return () => document.removeEventListener('mousedown', handle)
   }, [])
 
-  const deliveryCost = deliveryMethod === 'pickup' ? 0 : (cdekCalc?.total_sum || 0)
+  const deliveryCost = deliveryMethod === 'pickup' ? 0 : (selectedTariff?.delivery_sum || 0)
   const orderTotal = totalPrice + deliveryCost
 
   if (items.length === 0) {
@@ -206,7 +233,7 @@ export function CheckoutScreen() {
               <div className="del-option__desc">{cdekCalc ? `${cdekCalc.period_min}–${cdekCalc.period_max} дн.` : 'Курьером или в ПВЗ'}</div>
             </div>
             <div className="del-option__price">
-              {calcLoading ? '...' : cdekCalc ? `${Math.round(cdekCalc.total_sum).toLocaleString('ru-RU')} ₽` : 'Рассчитать'}
+              {calcLoading ? '...' : selectedTariff ? `${Math.round(selectedTariff.delivery_sum).toLocaleString('ru-RU')} ₽` : calcError ? '—' : 'Рассчитать'}
             </div>
           </button>
 
@@ -221,12 +248,35 @@ export function CheckoutScreen() {
 
           {deliveryMethod === 'cdek' && (
             <div className="mt-16 stack">
-              <div className="pill-toggle">
-                <button type="button" className={`pill-toggle__item ${deliveryType === 'pvz' ? 'pill-toggle__item--active' : ''}`}
-                  onClick={() => { setDeliveryType('pvz'); setSelectedPvz(null) }}>В ПВЗ</button>
-                <button type="button" className={`pill-toggle__item ${deliveryType === 'door' ? 'pill-toggle__item--active' : ''}`}
-                  onClick={() => { setDeliveryType('door'); setSelectedPvz(null) }}>До двери</button>
-              </div>
+              {calcError && (
+                <div className="auth-card__error" style={{ marginBottom: 12 }}>
+                  {calcError}
+                  <div className="t-small" style={{ marginTop: 4, opacity: 0.8 }}>Попробуйте выбрать другой город</div>
+                </div>
+              )}
+
+              {/* Tariff selection - show available tariffs if any */}
+              {cdekCalc?.available_tariffs && cdekCalc.available_tariffs.length > 1 && (
+                <div>
+                  <label className="inp-label mb-8">Тариф доставки</label>
+                  <div className="tariff-list">
+                    {cdekCalc.available_tariffs.map((tariff) => (
+                      <button
+                        key={tariff.tariff_code}
+                        type="button"
+                        className={`tariff-item ${selectedTariff?.tariff_code === tariff.tariff_code ? 'tariff-item--active' : ''}`}
+                        onClick={() => setSelectedTariff(tariff)}
+                      >
+                        <div className="tariff-item__name">{tariff.tariff_name}</div>
+                        <div className="tariff-item__info">
+                          <span>{tariff.period_min}–{tariff.period_max} дн.</span>
+                          <span className="tariff-item__price">{Math.round(tariff.delivery_sum).toLocaleString('ru-RU')} ₽</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div ref={cityRef} style={{ position: 'relative' }}>
                 <div className="inp-wrap">
@@ -308,7 +358,7 @@ export function CheckoutScreen() {
           </div>
           <div className="summary__row">
             <span className="summary__label">Доставка</span>
-            <span>{deliveryMethod === 'pickup' ? 'Бесплатно' : calcLoading ? '...' : cdekCalc ? `${Math.round(cdekCalc.total_sum).toLocaleString('ru-RU')} ₽` : '—'}</span>
+            <span>{deliveryMethod === 'pickup' ? 'Бесплатно' : calcLoading ? '...' : selectedTariff ? `${Math.round(selectedTariff.delivery_sum).toLocaleString('ru-RU')} ₽` : '—'}</span>
           </div>
           <div className="summary__row summary__row--total">
             <span>Итого</span>

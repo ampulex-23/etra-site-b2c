@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { getCdekConfigFromPayload, calculateTariff, calculateTariffList } from '@/lib/cdek'
+import { getCdekConfigFromPayload, calculateTariffList } from '@/lib/cdek'
 
 /**
  * POST /api/cdek/calculate
- * Calculate delivery cost.
- * Body: { cityCode?: string, postalCode?: string, weight: number, tariffCode?: number }
- * Returns: tariff calculation result or list of available tariffs
+ * Calculate delivery cost - returns list of available tariffs and picks the cheapest one.
+ * Body: { cityCode?: string, postalCode?: string, weight?: number }
+ * Returns: cheapest tariff + list of all available tariffs
  */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { cityCode, postalCode, weight = 500, tariffCode, length, width, height } = body
+    const { cityCode, postalCode, weight = 500 } = body
 
     if (!cityCode && !postalCode) {
       return NextResponse.json(
@@ -24,12 +24,7 @@ export async function POST(req: NextRequest) {
     const payload = await getPayload({ config })
     const cdekConfig = await getCdekConfigFromPayload(payload)
 
-    const packages = [{
-      weight: Number(weight),
-      length: Number(length) || 20,
-      width: Number(width) || 15,
-      height: Number(height) || 10,
-    }]
+    const packages = [{ weight: Number(weight) }]
 
     // Convert city codes to numbers (CDEK API requires numeric codes)
     const fromLocation = { code: parseInt(cdekConfig.senderCityCode, 10) }
@@ -37,28 +32,37 @@ export async function POST(req: NextRequest) {
     if (cityCode) toLocation.code = parseInt(String(cityCode), 10)
     if (postalCode) toLocation.postal_code = String(postalCode)
 
-    if (tariffCode) {
-      const result = await calculateTariff(cdekConfig, {
-        tariff_code: Number(tariffCode),
-        from_location: fromLocation,
-        to_location: toLocation,
-        packages,
-      })
+    console.log('[CDEK calculate] Request:', { from: fromLocation.code, to: toLocation.code || toLocation.postal_code, weight })
 
-      if (result.errors && result.errors.length > 0) {
-        return NextResponse.json({ error: result.errors[0].message, errors: result.errors }, { status: 400 })
-      }
-
-      return NextResponse.json(result)
-    }
-
+    // Always get all available tariffs instead of requesting specific one
     const result = await calculateTariffList(cdekConfig, {
       from_location: fromLocation,
       to_location: toLocation,
       packages,
     })
 
-    return NextResponse.json(result)
+    console.log('[CDEK calculate] Available tariffs:', result.tariff_codes?.length || 0)
+
+    // Return the cheapest available tariff
+    if (result.tariff_codes && result.tariff_codes.length > 0) {
+      const cheapest = result.tariff_codes.reduce((min, tariff) => 
+        tariff.delivery_sum < min.delivery_sum ? tariff : min
+      )
+      
+      return NextResponse.json({
+        delivery_sum: cheapest.delivery_sum,
+        period_min: cheapest.period_min,
+        period_max: cheapest.period_max,
+        tariff_code: cheapest.tariff_code,
+        tariff_name: cheapest.tariff_name,
+        available_tariffs: result.tariff_codes,
+      })
+    }
+
+    return NextResponse.json({ 
+      error: 'No available tariffs for this route',
+      details: result,
+    }, { status: 400 })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'CDEK calculation error'
     console.error('[CDEK calculate]', message)
