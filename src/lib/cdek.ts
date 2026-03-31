@@ -290,13 +290,16 @@ async function cdekFetch<T>(
 
   if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
     options.body = JSON.stringify(body)
+    console.log('[CDEK] Request body:', JSON.stringify(body, null, 2))
   }
 
   const url = path.startsWith('http') ? path : `${baseUrl}${path}`
+  console.log('[CDEK] Fetching:', method, url)
   const res = await fetch(url, options)
 
   if (!res.ok) {
     const text = await res.text()
+    console.error('[CDEK] Error response:', text)
     clearTokenCache()
     throw new Error(`CDEK API error (${res.status}): ${text}`)
   }
