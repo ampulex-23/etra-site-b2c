@@ -29,8 +29,8 @@ export interface CdekConfig {
 
 export interface CdekTariffRequest {
   tariff_code?: number
-  from_location: { code?: string; postal_code?: string; address?: string }
-  to_location: { code?: string; postal_code?: string; address?: string }
+  from_location: { code?: number; postal_code?: string; address?: string }
+  to_location: { code?: number; postal_code?: string; address?: string }
   packages: { weight: number; length?: number; width?: number; height?: number }[]
   services?: { code: string; parameter?: string }[]
 }
@@ -47,8 +47,8 @@ export interface CdekTariffResponse {
 }
 
 export interface CdekTariffListRequest {
-  from_location: { code?: string; postal_code?: string }
-  to_location: { code?: string; postal_code?: string }
+  from_location: { code?: number; postal_code?: string }
+  to_location: { code?: number; postal_code?: string }
   packages: { weight: number; length?: number; width?: number; height?: number }[]
 }
 

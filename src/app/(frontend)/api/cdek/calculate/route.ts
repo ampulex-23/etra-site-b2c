@@ -22,16 +22,20 @@ export async function POST(req: NextRequest) {
     const payload = await getPayload({ config })
     const cdekConfig = await getCdekConfigFromPayload(payload)
 
+    // Convert city codes to numbers (CDEK API requires numeric codes)
+    const fromCode = parseInt(cdekConfig.senderCityCode, 10)
+    const toCode = parseInt(cityCode, 10)
+
     console.log('[CDEK calculate] Request:', {
-      from: cdekConfig.senderCityCode,
-      to: cityCode,
+      from: fromCode,
+      to: toCode,
       weight: weight || 500,
     })
 
     // Get all available tariffs instead of requesting specific one
     const result = await calculateTariffList(cdekConfig, {
-      from_location: { code: cdekConfig.senderCityCode },
-      to_location: { code: cityCode },
+      from_location: { code: fromCode },
+      to_location: { code: toCode },
       packages: [{ weight: weight || 500 }],
     })
 
