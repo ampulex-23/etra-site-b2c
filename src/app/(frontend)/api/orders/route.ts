@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
       collection: 'orders',
       data: {
         orderNumber: body.orderNumber || `ETR-${Date.now().toString(36).toUpperCase()}`,
-        customer: decoded.id,
+        customer: decoded.id as any,
         items: body.items,
         subtotal: body.subtotal || 0,
         deliveryCost: body.deliveryCost || 0,
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
         notes: body.notes || '',
         payment: body.payment || { status: 'pending' },
         source: 'site',
-      },
+      } as any,
     })
 
     return NextResponse.json(order, { status: 201 })
