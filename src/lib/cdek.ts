@@ -208,9 +208,16 @@ function getAuthUrl(testMode: boolean): string {
  * Get OAuth 2.0 access token (cached until expiration)
  */
 export async function getToken(config: CdekConfig): Promise<string> {
+  // Check if cached token is valid AND matches current mode
   if (tokenCache && Date.now() < tokenCache.expiresAt) {
     console.log('[CDEK] Using cached token')
     return tokenCache.token
+  }
+
+  // Clear cache if switching modes or expired
+  if (tokenCache) {
+    console.log('[CDEK] Token expired or mode changed, clearing cache')
+    tokenCache = null
   }
 
   const clientId = config.testMode ? CDEK_TEST_CLIENT_ID : config.clientId
@@ -459,8 +466,9 @@ export async function getCdekConfigFromPayload(payload: any): Promise<CdekConfig
   }
 
   // If no production credentials are set, force test mode
-  const hasProductionCredentials = settings.cdekAccount && settings.cdekSecurePassword
-  const useTestMode = Boolean(settings.cdekTestMode) || !hasProductionCredentials
+  const hasProductionCredentials = Boolean(settings.cdekAccount && settings.cdekSecurePassword)
+  const explicitTestMode = Boolean(settings.cdekTestMode)
+  const useTestMode = explicitTestMode || !hasProductionCredentials
 
   const config = {
     clientId: (settings.cdekAccount as string) || '',
@@ -470,8 +478,12 @@ export async function getCdekConfigFromPayload(payload: any): Promise<CdekConfig
     defaultTariffCode: (settings.cdekTariffCode as number) || 139,
   }
 
-  if (!hasProductionCredentials && !useTestMode) {
-    console.warn('[CDEK] No production credentials set, forcing test mode')
+  if (!hasProductionCredentials) {
+    console.log('[CDEK] No production credentials set, using test mode with built-in credentials')
+  } else if (explicitTestMode) {
+    console.log('[CDEK] Test mode explicitly enabled in settings')
+  } else {
+    console.log('[CDEK] Using production mode with provided credentials')
   }
 
   console.log('[CDEK] Config created:', { ...config, clientSecret: config.clientSecret ? '***' : 'empty' })
