@@ -12,21 +12,25 @@ export const orderAfterChange: CollectionAfterChangeHook = async ({
 
   // --- On CREATE: auto-create Delivery + Payment records, reserve stock ---
   if (operation === 'create') {
-    const deliveryId = await createDeliveryRecord(payload, doc, req)
-    const paymentId = await createPaymentRecord(payload, doc, req)
-    await reserveStock(payload, doc, req)
-
-    // Link back to order
-    const linkData: Record<string, any> = {}
-    if (deliveryId) linkData.linkedDelivery = deliveryId
-    if (paymentId) linkData.linkedPayment = paymentId
-    if (Object.keys(linkData).length > 0) {
+    // Use setTimeout to ensure the order transaction is committed before creating related records
+    // This avoids foreign key constraint violations
+    setImmediate(async () => {
       try {
-        await payload.update({ collection: 'orders', id: doc.id, data: linkData, req })
+        const deliveryId = await createDeliveryRecord(payload, doc, req)
+        const paymentId = await createPaymentRecord(payload, doc, req)
+        await reserveStock(payload, doc, req)
+
+        // Link back to order
+        const linkData: Record<string, any> = {}
+        if (deliveryId) linkData.linkedDelivery = deliveryId
+        if (paymentId) linkData.linkedPayment = paymentId
+        if (Object.keys(linkData).length > 0) {
+          await payload.update({ collection: 'orders', id: doc.id, data: linkData })
+        }
       } catch (err) {
-        console.error('[orderAfterChange] Error linking delivery/payment:', err)
+        console.error('[orderAfterChange] Error in deferred operations:', err)
       }
-    }
+    })
     return doc
   }
 
