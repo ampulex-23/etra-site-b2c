@@ -68,11 +68,20 @@ export const DeliverySettings: GlobalConfig = {
         {
           name: 'cdekSenderCity',
           type: 'text',
-          label: 'Город отправителя (код СДЭК)',
-          defaultValue: '44',
+          label: 'Код города отправителя СДЭК',
+          defaultValue: '119',
           admin: {
             condition: (data) => data?.cdekEnabled,
-            description: 'Код города в системе СДЭК (44 = Москва)',
+            description: 'Числовой код города в системе СДЭК. Примеры: 44 = Москва, 137 = СПб, 119 = Сочи. Найти код: https://api-docs.cdek.ru/36990336.html',
+          },
+        },
+        {
+          name: 'cdekSenderAddress',
+          type: 'text',
+          label: 'Адрес отправителя (для накладной)',
+          admin: {
+            condition: (data) => data?.cdekEnabled,
+            description: 'Полный адрес для печати на накладной (например: Краснодарский край, г Сочи, ул Транспортная, д 17А)',
           },
         },
         {
