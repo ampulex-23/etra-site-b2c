@@ -35,6 +35,7 @@ function verifyTelegramAuth(data: TelegramAuthData, botToken: string): boolean {
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as TelegramAuthData
+    console.log('[Telegram API] Received auth request:', body)
     const payload = await getPayload({ config })
 
     // Get bot token from settings
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest) {
     const botToken = settings.telegramBotToken as string | undefined
 
     if (!botToken) {
+      console.error('[Telegram API] Bot token not configured')
       return NextResponse.json(
         { error: 'Telegram авторизация не настроена' },
         { status: 500 },
@@ -50,7 +52,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify Telegram data
-    if (!verifyTelegramAuth(body, botToken)) {
+    const isValid = verifyTelegramAuth(body, botToken)
+    console.log('[Telegram API] Verification result:', isValid)
+    if (!isValid) {
       return NextResponse.json(
         { error: 'Неверные данные авторизации Telegram' },
         { status: 401 },
@@ -147,7 +151,7 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    return NextResponse.json({
+    const response = {
       token: loginResult.token,
       user: {
         id: (loginResult.user as unknown as Record<string, unknown>).id,
@@ -155,9 +159,11 @@ export async function POST(req: NextRequest) {
         name: (loginResult.user as unknown as Record<string, unknown>).name || telegramName,
         telegramId,
       },
-    })
+    }
+    console.log('[Telegram API] Sending success response:', response)
+    return NextResponse.json(response)
   } catch (err) {
-    console.error('Telegram auth error:', err)
+    console.error('[Telegram API] Error:', err)
     return NextResponse.json(
       { error: 'Внутренняя ошибка сервера' },
       { status: 500 },

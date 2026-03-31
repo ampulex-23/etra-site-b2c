@@ -50,19 +50,30 @@ function AuthScreenInner() {
       .catch(() => {})
   }, [])
 
-  // Setup Telegram callback
+  // Setup Telegram callback - must be set BEFORE widget script loads
   useEffect(() => {
     window.onTelegramAuth = async (user: any) => {
+      console.log('[Telegram Auth] Callback triggered with user:', user)
       setLoading(true)
       setError('')
-      const result = await loginWithTelegram(user)
-      if (result.success) {
-        router.replace(redirect)
-      } else {
-        setError(result.error || 'Ошибка авторизации через Telegram')
+      try {
+        const result = await loginWithTelegram(user)
+        console.log('[Telegram Auth] Login result:', result)
+        if (result.success) {
+          console.log('[Telegram Auth] Success, redirecting to:', redirect)
+          router.replace(redirect)
+        } else {
+          console.error('[Telegram Auth] Login failed:', result.error)
+          setError(result.error || 'Ошибка авторизации через Telegram')
+          setLoading(false)
+        }
+      } catch (err) {
+        console.error('[Telegram Auth] Exception:', err)
+        setError('Произошла ошибка при авторизации')
         setLoading(false)
       }
     }
+    console.log('[Telegram Auth] Callback function registered')
     return () => {
       delete window.onTelegramAuth
     }

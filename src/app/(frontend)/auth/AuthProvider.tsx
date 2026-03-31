@@ -116,17 +116,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithTelegram = useCallback(
     async (telegramData: Record<string, unknown>) => {
       try {
+        console.log('[AuthProvider] loginWithTelegram called with:', telegramData)
         const res = await fetch('/api/auth/telegram', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(telegramData),
         })
         const data = await res.json()
+        console.log('[AuthProvider] API response:', { ok: res.ok, status: res.status, data })
         if (!res.ok) return { success: false, error: data.error || 'Ошибка авторизации через Telegram' }
+        console.log('[AuthProvider] Saving token and setting customer')
         saveToken(data.token)
         setCustomer(data.user)
+        setToken(data.token)
         return { success: true }
-      } catch {
+      } catch (err) {
+        console.error('[AuthProvider] Exception in loginWithTelegram:', err)
         return { success: false, error: 'Ошибка сети' }
       }
     },
