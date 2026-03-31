@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { getCdekConfigFromPayload, calculateTariff } from '@/lib/cdek'
+import { getCdekConfigFromPayload, calculateTariffList } from '@/lib/cdek'
 
 /**
  * POST /api/cdek/calculate
- * Calculate delivery cost
+ * Calculate delivery cost - returns list of available tariffs
  */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { cityCode, weight, tariffCode } = body
+    const { cityCode, weight } = body
 
     if (!cityCode) {
       return NextResponse.json(
@@ -22,14 +22,41 @@ export async function POST(req: NextRequest) {
     const payload = await getPayload({ config })
     const cdekConfig = await getCdekConfigFromPayload(payload)
 
-    const result = await calculateTariff(cdekConfig, {
-      tariff_code: tariffCode || cdekConfig.defaultTariffCode,
+    console.log('[CDEK calculate] Request:', {
+      from: cdekConfig.senderCityCode,
+      to: cityCode,
+      weight: weight || 500,
+    })
+
+    // Get all available tariffs instead of requesting specific one
+    const result = await calculateTariffList(cdekConfig, {
       from_location: { code: cdekConfig.senderCityCode },
       to_location: { code: cityCode },
       packages: [{ weight: weight || 500 }],
     })
 
-    return NextResponse.json(result)
+    console.log('[CDEK calculate] Available tariffs:', result.tariff_codes?.length || 0)
+
+    // Return the cheapest available tariff
+    if (result.tariff_codes && result.tariff_codes.length > 0) {
+      const cheapest = result.tariff_codes.reduce((min, tariff) => 
+        tariff.delivery_sum < min.delivery_sum ? tariff : min
+      )
+      
+      return NextResponse.json({
+        delivery_sum: cheapest.delivery_sum,
+        period_min: cheapest.period_min,
+        period_max: cheapest.period_max,
+        tariff_code: cheapest.tariff_code,
+        tariff_name: cheapest.tariff_name,
+        available_tariffs: result.tariff_codes,
+      })
+    }
+
+    return NextResponse.json({ 
+      error: 'No available tariffs for this route',
+      details: result,
+    }, { status: 400 })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'CDEK calculate error'
     console.error('[CDEK calculate]', message)
