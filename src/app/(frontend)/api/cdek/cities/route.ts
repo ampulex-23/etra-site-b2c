@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
 
     const payload = await getPayload({ config })
     const cdekConfig = await getCdekConfigFromPayload(payload)
+    console.log('[CDEK cities] Config:', { testMode: cdekConfig.testMode, senderCityCode: cdekConfig.senderCityCode })
 
     const cities = await searchCities(cdekConfig, {
       city,

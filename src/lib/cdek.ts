@@ -209,12 +209,20 @@ function getAuthUrl(testMode: boolean): string {
  */
 export async function getToken(config: CdekConfig): Promise<string> {
   if (tokenCache && Date.now() < tokenCache.expiresAt) {
+    console.log('[CDEK] Using cached token')
     return tokenCache.token
   }
 
   const clientId = config.testMode ? CDEK_TEST_CLIENT_ID : config.clientId
   const clientSecret = config.testMode ? CDEK_TEST_SECRET : config.clientSecret
   const authUrl = getAuthUrl(config.testMode)
+
+  console.log('[CDEK] Auth request:', {
+    testMode: config.testMode,
+    authUrl,
+    clientIdPrefix: clientId.substring(0, 8) + '...',
+    usingTestCredentials: config.testMode,
+  })
 
   const params = new URLSearchParams({
     grant_type: 'client_credentials',
@@ -230,6 +238,9 @@ export async function getToken(config: CdekConfig): Promise<string> {
 
   if (!res.ok) {
     const text = await res.text()
+    console.error('[CDEK] Auth failed:', { status: res.status, response: text })
+    // Clear any cached token on auth failure
+    tokenCache = null
     throw new Error(`CDEK auth failed (${res.status}): ${text}`)
   }
 
@@ -435,15 +446,35 @@ export async function deleteWebhook(
 export async function getCdekConfigFromPayload(payload: any): Promise<CdekConfig> {
   const settings = await payload.findGlobal({ slug: 'delivery-settings', depth: 0 })
 
+  console.log('[CDEK] DeliverySettings loaded:', {
+    cdekEnabled: settings.cdekEnabled,
+    cdekTestMode: settings.cdekTestMode,
+    cdekAccount: settings.cdekAccount ? 'set' : 'empty',
+    cdekSecurePassword: settings.cdekSecurePassword ? 'set' : 'empty',
+    cdekSenderCity: settings.cdekSenderCity,
+  })
+
   if (!settings.cdekEnabled) {
     throw new Error('CDEK integration is disabled')
   }
 
-  return {
+  // If no production credentials are set, force test mode
+  const hasProductionCredentials = settings.cdekAccount && settings.cdekSecurePassword
+  const useTestMode = Boolean(settings.cdekTestMode) || !hasProductionCredentials
+
+  const config = {
     clientId: (settings.cdekAccount as string) || '',
     clientSecret: (settings.cdekSecurePassword as string) || '',
-    testMode: Boolean(settings.cdekTestMode),
+    testMode: useTestMode,
     senderCityCode: (settings.cdekSenderCity as string) || '44',
     defaultTariffCode: (settings.cdekTariffCode as number) || 139,
   }
+
+  if (!hasProductionCredentials && !useTestMode) {
+    console.warn('[CDEK] No production credentials set, forcing test mode')
+  }
+
+  console.log('[CDEK] Config created:', { ...config, clientSecret: config.clientSecret ? '***' : 'empty' })
+
+  return config
 }
