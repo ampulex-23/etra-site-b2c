@@ -113,18 +113,6 @@ export const DeliverySettings: GlobalConfig = {
           },
         },
         {
-          name: 'cdekSenderAddress',
-          type: 'text',
-          label: 'Адрес отправителя',
-          admin: {
-            condition: (data) => data?.cdekEnabled,
-            description: 'Улица, дом — для забора курьером',
-            components: {
-              Field: '@/components/admin/AddressAutocomplete',
-            },
-          },
-        },
-        {
           name: 'cdekDefaultWeight',
           type: 'number',
           label: 'Вес по умолчанию (г)',
