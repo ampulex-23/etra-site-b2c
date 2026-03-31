@@ -12,30 +12,46 @@ export const orderAfterChange: CollectionAfterChangeHook = async ({
 
   // --- On CREATE: auto-create Delivery + Payment records, reserve stock ---
   if (operation === 'create') {
-    try {
-      console.log('[orderAfterChange] Creating delivery and payment for order:', doc.id)
-      // Create with overrideAccess to bypass access control - these are system operations
-      const deliveryId = await createDeliveryRecord(payload, doc)
-      const paymentId = await createPaymentRecord(payload, doc)
-      await reserveStock(payload, doc)
-      console.log('[orderAfterChange] Created delivery:', deliveryId, 'payment:', paymentId)
-
-      // Link back to order
-      const linkData: Record<string, any> = {}
-      if (deliveryId) linkData.linkedDelivery = deliveryId
-      if (paymentId) linkData.linkedPayment = paymentId
-      if (Object.keys(linkData).length > 0) {
-        await payload.update({ 
-          collection: 'orders', 
-          id: doc.id, 
-          data: linkData,
+    // Defer creation to ensure order transaction is committed
+    // Use process.nextTick to execute after current operation completes
+    process.nextTick(async () => {
+      try {
+        console.log('[orderAfterChange] Deferred: Creating delivery and payment for order:', doc.id)
+        
+        // Verify order exists before creating related records
+        const orderExists = await payload.findByID({
+          collection: 'orders',
+          id: doc.id,
           overrideAccess: true,
-        })
-        console.log('[orderAfterChange] Linked delivery/payment to order')
+        }).catch(() => null)
+        
+        if (!orderExists) {
+          console.error('[orderAfterChange] Order not found after creation, retrying in 500ms')
+          await new Promise(resolve => setTimeout(resolve, 500))
+        }
+        
+        const deliveryId = await createDeliveryRecord(payload, doc)
+        const paymentId = await createPaymentRecord(payload, doc)
+        await reserveStock(payload, doc)
+        console.log('[orderAfterChange] Created delivery:', deliveryId, 'payment:', paymentId)
+
+        // Link back to order
+        const linkData: Record<string, any> = {}
+        if (deliveryId) linkData.linkedDelivery = deliveryId
+        if (paymentId) linkData.linkedPayment = paymentId
+        if (Object.keys(linkData).length > 0) {
+          await payload.update({ 
+            collection: 'orders', 
+            id: doc.id, 
+            data: linkData,
+            overrideAccess: true,
+          })
+          console.log('[orderAfterChange] Linked delivery/payment to order')
+        }
+      } catch (err) {
+        console.error('[orderAfterChange] Error in deferred operations:', err)
       }
-    } catch (err) {
-      console.error('[orderAfterChange] Error creating related records:', err)
-    }
+    })
     return doc
   }
 
