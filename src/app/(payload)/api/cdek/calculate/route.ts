@@ -31,9 +31,10 @@ export async function POST(req: NextRequest) {
       height: Number(height) || 10,
     }]
 
-    const fromLocation = { code: cdekConfig.senderCityCode }
-    const toLocation: { code?: string; postal_code?: string } = {}
-    if (cityCode) toLocation.code = String(cityCode)
+    // Convert city codes to numbers (CDEK API requires numeric codes)
+    const fromLocation = { code: parseInt(cdekConfig.senderCityCode, 10) }
+    const toLocation: { code?: number; postal_code?: string } = {}
+    if (cityCode) toLocation.code = parseInt(String(cityCode), 10)
     if (postalCode) toLocation.postal_code = String(postalCode)
 
     if (tariffCode) {
