@@ -7,18 +7,14 @@ import { useCart } from '../cart/CartProvider'
 import { useAuth } from '../auth/AuthProvider'
 
 const menuLinks = [
-  { href: '/#about', label: 'О НАС' },
-  { href: '/#enzymes', label: 'ЭНЗИМЫ' },
-  { href: '/#bacteria', label: 'БАКТЕРИИ' },
-  { href: '/#technology', label: 'ТЕХНОЛОГИЯ' },
+  { href: '#', label: 'О НАС' },
   { href: '/catalog', label: 'КАТАЛОГ' },
-  { href: '/#new', label: 'НОВИНКИ' },
-  { href: '/#places', label: 'МЕСТА' },
-  { href: '/#reviews', label: 'ОТЗЫВЫ' },
-  { href: '/#encyclopedia', label: 'ЭНЦИКЛОПЕДИЯ' },
-  { href: '/#production', label: 'ПРОИЗВОДСТВО ВМЕСТЕ' },
-  { href: '/#team', label: 'КОМАНДА' },
-  { href: '/#partners', label: 'ПАРТНЁРЫ' },
+  { href: '#', label: 'НОВИНКИ' },
+  { href: '#', label: 'МЕСТА' },
+  { href: '#', label: 'ЭНЦИКЛОПЕДИЯ' },
+  { href: '#', label: 'ПРОИЗВОДСТВО ВМЕСТЕ' },
+  { href: '#', label: 'КОМАНДА' },
+  { href: '#', label: 'ПАРТНЁРЫ' },
 ]
 
 export function PwaShell({ children }: { children: React.ReactNode }) {
