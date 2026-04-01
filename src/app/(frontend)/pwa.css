@@ -557,16 +557,16 @@ textarea.inp { resize: vertical; min-height: 80px; }
   gap: 14px;
   z-index: 10;
   width: 320px;
-  margin-left: 22%;
+  margin-left: 25%;
   margin-top: 3%;
 }
 
 /* Concave arc — closer to center, further at edges (hugging bottle) */
-.feature-drop--1 { margin-left: 3%; }
+.feature-drop--1 { margin-left: 4%; }
 .feature-drop--2 { margin-left: 4%; }
 .feature-drop--3 { margin-left: 4%; }
 .feature-drop--4 { margin-left: 4%; }
-.feature-drop--5 { margin-left: 3%; }
+.feature-drop--5 { margin-left: 4%; }
 
 .feature-drop {
   position: relative;
