@@ -8,8 +8,9 @@ import config from '@payload-config'
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params
   try {
     const payload = await getPayload({ config })
     const productId = params.id
