@@ -3,6 +3,7 @@
 import React from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { FeatureDrops } from './FeatureDrops'
 
 interface HeroProps {
   title?: string
@@ -58,6 +59,9 @@ export function Hero({
             <div className="hero-section__bottle-glow" />
           </div>
         </motion.div>
+
+        {/* Feature drops on the right */}
+        <FeatureDrops />
       </div>
 
       {/* Scroll indicator */}

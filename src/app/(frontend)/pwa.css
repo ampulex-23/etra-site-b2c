@@ -518,6 +518,121 @@ textarea.inp { resize: vertical; min-height: 80px; }
   z-index: -1;
 }
 
+/* Feature Drops - glass droplets on the right */
+.feature-drops {
+  position: absolute;
+  right: 5%;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 3;
+  max-width: 280px;
+}
+
+.feature-drop {
+  position: relative;
+  cursor: pointer;
+  padding: 20px 24px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  backdrop-filter: url(#liquidGlassFilter) blur(8px);
+  -webkit-backdrop-filter: url(#liquidGlassFilter) blur(8px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.feature-drop::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(224, 64, 251, 0.15), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+
+.feature-drop:hover::before,
+.feature-drop--active::before {
+  opacity: 1;
+}
+
+/* Different drop shapes using border-radius */
+.feature-drop--1 {
+  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+}
+
+.feature-drop--2 {
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+}
+
+.feature-drop--3 {
+  border-radius: 70% 30% 50% 50% / 30% 60% 40% 70%;
+}
+
+.feature-drop--4 {
+  border-radius: 40% 60% 60% 40% / 60% 40% 60% 40%;
+}
+
+.feature-drop--5 {
+  border-radius: 50% 50% 30% 70% / 70% 70% 30% 30%;
+}
+
+/* Hover and active states */
+.feature-drop:hover,
+.feature-drop--active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(224, 64, 251, 0.3);
+  box-shadow: 0 8px 30px rgba(224, 64, 251, 0.3);
+  transform: scale(1.02);
+}
+
+.feature-drop--active {
+  padding: 24px 28px;
+  min-height: 180px;
+}
+
+.feature-drop__inner {
+  position: relative;
+  z-index: 1;
+}
+
+.feature-drop__title {
+  font-family: var(--font-h);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--c-text);
+  margin: 0 0 8px 0;
+  text-shadow: 0 0 20px rgba(224, 64, 251, 0.3);
+}
+
+.feature-drop__content {
+  overflow: hidden;
+}
+
+.feature-drop__content p {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--c-text-sec);
+  margin: 0;
+  padding-top: 8px;
+}
+
+/* Mobile: hide feature drops, show them below bottle */
+@media (max-width: 767px) {
+  .feature-drops {
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+    margin-top: 40px;
+    max-width: 100%;
+    padding: 0 20px;
+  }
+}
+
 /* Scroll indicator */
 .hero-section__scroll {
   position: absolute;
