@@ -523,7 +523,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
    no nested stacking contexts — all of these break backdrop-filter */
 .feature-drops {
   position: absolute;
-  right: 8%;
+  right: 3%;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -533,12 +533,12 @@ textarea.inp { resize: vertical; min-height: 80px; }
   width: 320px;
 }
 
-/* Stagger drops along bottle contour — arc shape */
-.feature-drop--1 { margin-left: 30px; }
-.feature-drop--2 { margin-left: 10px; }
-.feature-drop--3 { margin-left: 0; }
-.feature-drop--4 { margin-left: 10px; }
-.feature-drop--5 { margin-left: 30px; }
+/* Concave arc — closer to center, further at edges (hugging bottle) */
+.feature-drop--1 { margin-left: 0; }
+.feature-drop--2 { margin-left: 20px; }
+.feature-drop--3 { margin-left: 30px; }
+.feature-drop--4 { margin-left: 20px; }
+.feature-drop--5 { margin-left: 0; }
 
 .feature-drop {
   position: relative;
