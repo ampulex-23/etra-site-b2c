@@ -34,22 +34,31 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         <link href="https://fonts.googleapis.com/css2?family=Philosopher:wght@400;700&family=Tenor+Sans&display=swap" rel="stylesheet" />
       </head>
       <body>
-        {/* Liquid Glass SVG Filter - same as shezlonger-front */}
-        <svg style={{ display: 'none' }}>
-          <filter id="liquidGlassFilter">
-            <feImage
-              href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAACXBIWXMAAA9hAAAPYQGoP6dpAAAMoElEQVRogZ1a3ZqjyI6MkBJc3XOz7/+g+53pMoq9kJQk2K6Zs0yNGzAG/YRCSgn+/r0PYpCD2IEH+SC/yIdZfj6MD9pu3M02cjMb5KC50cycNBoJ0kiCJKn8BEWCACgCAkAAIAhQAGAAIRccNGIDBjCADdilHdilh/QAH9AX+DA+yN1sM9vAYRw2SIKg1dNJkm61Y0YzGkmDGc1A0og8JEGT1Q1gBCkQJEgArENgCi4QFDR1AABIAEEJggAIECRJogBJeblIkLK0AUEOjpQUBMzMyPk/naTRUvTUgTQDjWZESmxgfgJGIA8poE62+HNHvSeJedzngdYgZZaASNepr1HelgQhYthuhjKrpaBmrP+MZuUHt9IqP9mKWnkEZiAxzc8UkgQFkDzFLAeohZJw7qh3InRAIYYUQAhBCOVStauHbaTBQXMaPWV2L4Sb08ytxPUS1wxmaftohIEX0QkT076Fe1UcZExISB3Uhp3Ctw9CSt0i2jMSKCKmP4nBB70AYsbEudtwcx++DR/DbJi7mafh6WVs2sSPQJql+Zmxm9Y/kVPSsw1OlB/K3gIhEwI4ICqDO47QM8Lj2BShCFHMCEnTaPhXYd5TBXN3H2N/7PtjezzG/nDfzDe6kw66+cRQBsQKfaSLK2RXBU6Y84SSFtwrhCOjNcULAaEIHId/f38f37tCoQAEBCBQ0uCXO+E0N7rb5j58e+y/f339/v3462t7bDaGuTMZkwZ6RgBIEvk50d/Si1DGMi8KqHVicc8ZstEIknBAh3Aojjjw/Obzb/v7z/78ez9CVAhKiAHDv8qYLPSPfX/8+vX719f//Nr/2rd9s+FWdOPNWCk9KzpZzM7Cjdr2J0+CnPSji+yEAATAPqeCO0IRccTzie9tH//7/A+ex98hISoeAhr2SCah08wSPV/7778eX3899t/DNrdJnMVXGapW4hbceSLnZP4VP9P20jw76afUUAMqACkkQYPb+OP8j8WXjnhGxHFECBQEcPCr2JFGp49tG4992x/742GeadcIFNXgBE3zQJ1sE99wX0Q/sbXkrsvRCa+ZCxonh/jc9Y3vZ4yDT4UiEJLIkIZ9mYFmNtLGw20bY9vMh/mocAVViM/Yb7uDInlyJRfEL9C/RO881HJGEFtZQJnBLc8LDBwxxrF7wCNiZmmBw3abGcvo5u6bcTg9MzEh4sXkrUMVBLwY/oV83m7pNgEpO1sNZDSUtWAZL6ag3GKjghIVRabDdzeaZx6AmRs35yCsLTq5pUHPhW1O/LwXnauVr1t7RQuvcuYHAKpUSIYgMzkhyiAwQkWjtruDltUlRuZf+qx/WCiZ9cdCO9OQn23fmp940eUrCMwgpgArNVQRiqo5YJBn8UGJQEAsSPnmDnoXOk7H8CQm2Mru09LzD1cs/ajAaXV79cUstZupqoA6CcsIIZyiEIiqMxJCw410ZJ5y0tyJTrbT0h20L9J/9MNVE85/rrFbUs4I4HpeVXJKAVlWIQxrjpJEDPOytlkyvaOL0AUti7icKt00WSR+5SKhi5eVTtdMrdUH0kJveRElL29nJi4P2Kh1SqcqTvzwLmsF9Sn0xwC4UdDbzHaTm7WqqeDOmpuiQCIaRVVr5dIHQHmgFlqmWqmwFll5La/QZ+P61Q/9mUkNpzxX2c8lzZReaJOvsdCHygVAUAYJwUxzDGDQ5wLRDEZ5umHlnKvtL5iZCe6uxksk36XXTb1Xn+R9VKkzuSgoEmZSZOk0LFcyuSYrD3T4LtIvbHMR9L0H3oTvi+3Lf1otnd92NPfCIRc7hGSy6hXUugwYtQyWmVmulgm78D1XWW5S/iD9HezvtlfpZ3CXDmWlJCMjZAELSvAswIeZTfxkAjtDtrI9X2RdDf9WsZv9Lw"
-              preserveAspectRatio="none"
-            />
-            <feDisplacementMap
-              in="SourceGraphic"
-              in2="turbulence"
-              scale="600"
-              xChannelSelector="R"
-              yChannelSelector="G"
-            />
-          </filter>
-        </svg>
+        {/* Liquid Glass SVG Filter with proper displacement map */}
+        <svg 
+          style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}
+          dangerouslySetInnerHTML={{
+            __html: `
+              <defs>
+                <filter id="liquidGlassFilter" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+                  <feImage 
+                    href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAECElEQVR42u2bV3PbQAyE76e79957793+g8lwOOvbLIHjmaKdZHgP+yJRtvbDAqAkMoyNjf0assJP/JPx8aiJiXbx8f8tADY7OVlraqrW9LQvHIPXMJR/HoCaZrMzM7VmZ9uFYxnKd8EIfRpn02x4bq7W/HzUwkJT/Dxeo0AYRh8gRgZgGYdpNru4GLW05IuPYygMQ0H8FQCoumccpmFsebnWysqfWl1tPoZjGQpgWCBGSUPoah5VTxmH4cpkpbW1qPX1pvh5vAZAUiCQhi4QQtfIo+pq3DINgxsbtTY3feEYhqIwFATS0KUlwlfNI/KoOlccxmGaDW9t1drebheOVSCAUf0fTgTSwC3ROwCYR+RRdY46G1fTOzu1dnej9vai+HEca8EACG4NpIFbIhdC6Greqjobh2k1u79f6+CgKTynUBgGQFhp6AIh9GGeq87G1fDhYdTRUVP8vAJhEJyGUSGEnGmPnlfziDxXnY2zaZg8Pq51ctIUnlMggAEQnAZuCYWAwZjaDqEv81x1GGfTMHl6WuvsrCk8x0AYRvV3OQ19QAg50ce0t8wj8lp1Ns6Gz8+jLi6i+HEGwiA0DdwSCgHboa0VwlfNo+ct855xNXx56UuBeCA8CDwTciCE3OhXK4fNI/aWeTbOpq+ual1f+8IxCgMgPAjcDtX7xAlTWyuEr0a/mr6eea06G4fBm5uo29sofpxhAISmwYOAFZmbgpBTfTaP6FeDyDPvGYfZuztfDMQC4UHAduDzhOp9t6UgtFVfo8+rrhpIGns1D+MweH8f9fAQxY8zDICwIKAdeDvoPKjefyoFDQCp6nP0Me1zzavpx8emFEYuBF6RVitoCkwAiL/2vlV9jT56PmWeTT89+WIYKQiYCalWQAp0FnAbBCv+Ovmt6nP0MfDUvFYcJp+ffTEIToRCwGC0WoFToBtB2yB48bcmv1d9RF8rr+Zh8uXFF4NgCJoEbgUrBdZGsNog6PTPjb9XfSv2MA+Tr6++GARD4HbwUpDbBrwNgtX/euJjxV97H9XPNf/21lQuBE6BzgJtAz0x0jnwCcDqf2v6W/G3qu+ZV9Pv7zYIC4KXAm0DaxtYc+ATAAagt/5y4q+DTwGw+cq0J4VgpQCzIKcNvHWIQRjaBmBb/3vxV/MAkDLPELgdACHVBqk5kBqEDQB87q8DMLf/c6r/8dFUTgpy54AOQv5s0AmANQB5/fHq+04AvBK9dYhBOBIAXYF9AOCYpwBwG/QFgFdhSUCZAQkAg90Cgz4PGPyZYPksMPRPg4P/PqB8I1S+EyzfCpffBcovQ+W3wfLrcLk+oFwhUq4RKleJlesEy5Wi5VrhcrV4uV+g3DFS7hkqd42V+wbLnaPl3uFh3D3+G5TWOHu/q396AAAAAElFTkSuQmCC"
+                    x="0%" y="0%" width="100%" height="100%"
+                    preserveAspectRatio="none"
+                    result="displacementMap"
+                  />
+                  <feDisplacementMap
+                    in="SourceGraphic"
+                    in2="displacementMap"
+                    scale="30"
+                    xChannelSelector="R"
+                    yChannelSelector="G"
+                  />
+                </filter>
+              </defs>
+            `
+          }}
+        />
         <AuthProvider>
           <CartProvider>
             <PwaShell>{children}</PwaShell>

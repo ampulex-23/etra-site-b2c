@@ -130,7 +130,7 @@ img { max-width: 100%; display: block; }
 
 @supports not (hanging-punctuation: first) {
   .topbar {
-    backdrop-filter: url(#liquidGlassFilter) blur(2px);
+    backdrop-filter: blur(12px) contrast(1.1);
   }
 }
 .topbar__logo { height: 28px; width: auto; filter: brightness(1.1); }
@@ -163,7 +163,7 @@ img { max-width: 100%; display: block; }
 
 @supports not (hanging-punctuation: first) {
   .botnav {
-    backdrop-filter: url(#liquidGlassFilter) blur(2px);
+    backdrop-filter: blur(12px) contrast(1.1);
   }
 }
 .botnav__item {
