@@ -8,6 +8,25 @@ export interface CustomerUser {
   name?: string
   phone?: string
   telegramId?: string
+  bonusBalance?: number
+  addresses?: Array<{
+    id?: string
+    title?: string
+    city?: string
+    street?: string
+    apartment?: string
+    zip?: string
+  }>
+  favorites?: Array<{ id: string; title?: string; slug?: string; price?: number; images?: Array<{ url?: string }> } | string>
+  telegram?: {
+    chatId?: string
+    username?: string
+    firstName?: string
+    lastName?: string
+    phone?: string
+    photoUrl?: string
+  }
+  avatar?: { url?: string } | string
 }
 
 interface AuthContextValue {
@@ -38,17 +57,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchMe = useCallback(async (jwt: string) => {
     try {
-      const res = await fetch('/api/customers/me', {
+      const res = await fetch('/api/profile', {
         headers: { Authorization: `JWT ${jwt}` },
       })
       if (!res.ok) throw new Error('unauthorized')
       const data = await res.json()
       setCustomer({
-        id: data.user.id,
-        email: data.user.email,
-        name: data.user.name,
-        phone: data.user.phone,
-        telegramId: data.user.telegramId,
+        id: data.id,
+        email: data.email,
+        name: data.name,
+        phone: data.phone,
+        telegramId: data.telegram?.chatId,
+        bonusBalance: data.bonusBalance,
+        addresses: data.addresses,
+        favorites: data.favorites,
+        telegram: data.telegram,
+        avatar: data.avatar,
       })
       return true
     } catch {

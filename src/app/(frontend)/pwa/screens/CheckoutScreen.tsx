@@ -29,10 +29,21 @@ export function CheckoutScreen() {
   const { items, totalPrice, clearCart } = useCart()
 
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('cdek')
-  const [name, setName] = useState(customer?.name || '')
-  const [email, setEmail] = useState(customer?.email || '')
-  const [phone, setPhone] = useState(customer?.phone || '')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [comment, setComment] = useState('')
+  const [profileLoaded, setProfileLoaded] = useState(false)
+
+  // Sync form fields with customer data when it loads (fixes refresh bug)
+  useEffect(() => {
+    if (customer && !profileLoaded) {
+      setName(customer.name || '')
+      setEmail(customer.email || '')
+      setPhone(customer.phone || '')
+      setProfileLoaded(true)
+    }
+  }, [customer, profileLoaded])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
