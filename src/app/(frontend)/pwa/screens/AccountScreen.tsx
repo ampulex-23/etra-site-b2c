@@ -508,7 +508,7 @@ export function AccountScreen() {
 
                           {/* Summary */}
                           <div className="order-summary">
-                            {order.deliveryCost > 0 && (
+                            {(order.deliveryCost ?? 0) > 0 && (
                               <div className="order-summary__row">
                                 <span>Доставка</span>
                                 <span>{order.deliveryCost?.toLocaleString('ru-RU')} ₽</span>
