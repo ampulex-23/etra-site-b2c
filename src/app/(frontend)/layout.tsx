@@ -17,7 +17,7 @@ export const viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover' as const,
-  themeColor: '#0a1a14',
+  themeColor: '#0d0618',
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
@@ -32,7 +32,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         <link rel="apple-touch-icon" href="/images/logo.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Philosopher:wght@400;700&family=Tenor+Sans&display=swap" rel="stylesheet" />
       </head>
       <body>
         <Script src="/glass-filters.js" strategy="beforeInteractive" />

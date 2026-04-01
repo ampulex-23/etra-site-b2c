@@ -1,62 +1,14 @@
 'use client'
 
-import React, { useRef, useState, useEffect } from 'react'
+import React from 'react'
 import Link from 'next/link'
+import { Hero } from '../../components/Hero'
 
 export function AboutScreen() {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [ended, setEnded] = useState(false)
-  const [loaded, setLoaded] = useState(false)
-
-  useEffect(() => {
-    const v = videoRef.current
-    if (!v) return
-    const onEnded = () => setEnded(true)
-    const onLoaded = () => setLoaded(true)
-    v.addEventListener('ended', onEnded)
-    v.addEventListener('loadeddata', onLoaded)
-    return () => {
-      v.removeEventListener('ended', onEnded)
-      v.removeEventListener('loadeddata', onLoaded)
-    }
-  }, [])
-
   return (
     <div className="pwa-screen pwa-screen--flush">
       {/* ─── HERO ─── */}
-      <div className="hero-video-wrap">
-        {!ended && (
-          <video
-            ref={videoRef}
-            className="hero-video"
-            src="/images/video.mp4"
-            autoPlay
-            muted
-            playsInline
-            preload="auto"
-            style={{ opacity: loaded ? 1 : 0, transition: 'opacity 0.6s' }}
-          />
-        )}
-        {ended && (
-          <img src="/images/bg.jpg" alt="" className="hero-video" style={{ objectFit: 'cover' }} />
-        )}
-        <div className="hero-video-overlay" />
-        <div className="hero-content animate-in">
-          <img
-            src="/images/logo.png"
-            alt="ЭТРА"
-            style={{ height: 48, margin: '0 auto 20px', filter: 'brightness(1.2)' }}
-          />
-          <h1 className="t-h1" style={{ marginBottom: 10 }}>Живые ферменты</h1>
-          <p className="t-body t-sec" style={{ marginBottom: 28, maxWidth: 300, marginInline: 'auto' }}>
-            Натуральная ферментация и пробиотики в каждой бутылке. Наука на службе вкуса.
-          </p>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/catalog" className="btn btn--primary">Каталог</Link>
-            <Link href="/recipes" className="btn btn--glass">Рецепты</Link>
-          </div>
-        </div>
-      </div>
+      <Hero />
 
       {/* ─── О НАС ─── */}
       <section id="about" className="landing-section">

@@ -31,6 +31,7 @@
     "@react-three/fiber": "^9.5.0",
     "cross-env": "^7.0.3",
     "dotenv": "16.4.7",
+    "framer-motion": "^12.38.0",
     "graphql": "^16.8.1",
     "next": "15.4.11",
     "payload": "3.79.0",

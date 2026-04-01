@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Image from 'next/image'
+import { motion } from 'framer-motion'
 
 interface HeroProps {
   title?: string
@@ -10,69 +11,146 @@ interface HeroProps {
   ctaLink?: string
   secondaryCtaText?: string
   secondaryCtaLink?: string
-  bgImageUrl?: string | null
 }
 
 export function Hero({
-  title = 'Ферментированные напитки нового поколения',
-  subtitle = 'Живые ферменты и пробиотики в каждой бутылке. Наука, которую можно попробовать на вкус.',
+  title = 'Живые ферменты нового поколения',
+  subtitle = 'Пробиотики и энзимы в каждой бутылке. Наука, которую можно попробовать на вкус.',
   ctaText = 'Смотреть каталог',
-  ctaLink = '#catalog',
+  ctaLink = '/catalog',
   secondaryCtaText = 'Узнать больше',
   secondaryCtaLink = '#science',
-  bgImageUrl,
 }: HeroProps) {
   return (
-    <section className="hero" id="hero">
-      <div className="hero__bg">
+    <section className="hero-section" id="hero">
+      {/* Background with cosmic spiral */}
+      <div className="hero-section__bg">
         <Image
-          src={bgImageUrl || '/images/hero-bg.jpg'}
-          alt="ЭТРА Project"
+          src="/images/bg-purple.png"
+          alt=""
           fill
           priority
           quality={90}
           sizes="100vw"
-          style={{ objectFit: 'cover', objectPosition: 'center center' }}
+          style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
         />
-        <div className="hero__overlay" />
+        <div className="hero-section__overlay" />
       </div>
 
-      <div className="hero__content">
-        <div className="hero__text">
-          <div className="hero__badge">
-            <span className="hero__badge-dot" />
-            ЭТРА Project
-          </div>
+      <div className="hero-section__content">
+        {/* Floating bottle */}
+        <motion.div 
+          className="hero-section__bottle"
+          initial={{ opacity: 0, y: 40, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 1, ease: 'easeOut' }}
+        >
+          <motion.div
+            animate={{ y: [0, -12, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            className="hero-section__bottle-float"
+          >
+            <Image
+              src="/images/bottle-hero.png"
+              alt="ЭТРА Закваска"
+              width={280}
+              height={560}
+              priority
+              className="hero-section__bottle-img"
+            />
+            {/* Glow effect behind bottle */}
+            <div className="hero-section__bottle-glow" />
+          </motion.div>
+        </motion.div>
 
-          <h1 className="hero__title">
+        {/* Text content */}
+        <motion.div 
+          className="hero-section__text"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+        >
+          <motion.div 
+            className="hero-section__badge"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <span className="hero-section__badge-dot" />
+            ЭТРА Project
+          </motion.div>
+
+          <h1 className="hero-section__title">
             {title}
           </h1>
 
-          <p className="hero__subtitle">
+          <p className="hero-section__subtitle">
             {subtitle}
           </p>
 
-          <div className="hero__actions">
-            <a href={ctaLink} className="hero__cta">
+          <div className="hero-section__actions">
+            <motion.a 
+              href={ctaLink} 
+              className="btn btn--primary btn--lg"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
               <span>{ctaText}</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
-            </a>
-            <a href={secondaryCtaLink} className="hero__cta-secondary">
+            </motion.a>
+            <motion.a 
+              href={secondaryCtaLink} 
+              className="btn btn--outline"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+            >
               <span>{secondaryCtaText}</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M7 17l9.2-9.2M17 17V7.8H7.8" />
-              </svg>
-            </a>
+            </motion.a>
           </div>
+        </motion.div>
+
+        {/* Feature cards */}
+        <div className="hero-section__features">
+          {[
+            { icon: '⚡', title: 'Живая энергия', text: 'Активные ферменты' },
+            { icon: '🛡️', title: 'Иммунитет', text: 'Пробиотики' },
+            { icon: '✨', title: 'Чистота', text: 'Без консервантов' },
+          ].map((feature, i) => (
+            <motion.div
+              key={feature.title}
+              className="hero-feature"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.7 + i * 0.1 }}
+            >
+              <span className="hero-feature__icon">{feature.icon}</span>
+              <div>
+                <div className="hero-feature__title">{feature.title}</div>
+                <div className="hero-feature__text">{feature.text}</div>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
 
-      <div className="hero__scroll-hint">
-        <span>Вниз</span>
-        <div className="hero__scroll-line" />
-      </div>
+      {/* Scroll indicator */}
+      <motion.div 
+        className="hero-section__scroll"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.5 }}
+      >
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 5v14M5 12l7 7 7-7" />
+          </svg>
+        </motion.div>
+      </motion.div>
     </section>
   )
 }
