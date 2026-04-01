@@ -38,7 +38,8 @@ export function Hero({
         <div className="hero-section__overlay" />
       </div>
 
-      <div className="hero-section__content">
+      <div className="hero-section__container">
+        <div className="hero-section__content">
         {/* Static bottle - 6x larger, shifted left */}
         <motion.div 
           className="hero-section__bottle"
@@ -61,25 +62,26 @@ export function Hero({
         </motion.div>
       </div>
 
-      {/* Feature drops — outside content to fix backdrop-filter stacking context */}
-      <FeatureDrops />
+        {/* Feature drops — outside content to fix backdrop-filter stacking context */}
+        <FeatureDrops />
 
-      {/* Scroll indicator */}
-      <motion.div 
-        className="hero-section__scroll"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-      >
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
+        {/* Scroll indicator */}
+        <motion.div 
+          className="hero-section__scroll"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 5v14M5 12l7 7 7-7" />
-          </svg>
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 5v14M5 12l7 7 7-7" />
+            </svg>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </div>
     </section>
   )
 }

@@ -57,26 +57,27 @@ export function PwaShell({ children }: { children: React.ReactNode }) {
       <div className="pwa-shell">
         {/* Top bar */}
         <header className="topbar">
-          {/* Mobile: account button (left) */}
-          <Link href={customer ? '/account' : '/auth/login'} className="topbar__btn topbar__btn--mobile-only" aria-label={customer ? 'Аккаунт' : 'Войти'}>
-            <svg viewBox="0 0 24 24">
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </Link>
+          <div className="topbar__inner">
+            {/* Mobile: account button (left) */}
+            <Link href={customer ? '/account' : '/auth/login'} className="topbar__btn topbar__btn--mobile-only" aria-label={customer ? 'Аккаунт' : 'Войти'}>
+              <svg viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </Link>
 
-          <Link href="/" aria-label="ЭТРА" className="topbar__logo-link">
-            <img src="/images/logo.png" alt="ЭТРА" className="topbar__logo" />
-          </Link>
+            <Link href="/" aria-label="ЭТРА" className="topbar__logo-link">
+              <img src="/images/logo.png" alt="ЭТРА" className="topbar__logo" />
+            </Link>
 
-          {/* Desktop: inline nav links */}
-          <nav className="topbar__nav">
-            {menuLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="topbar__nav-link">
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+            {/* Desktop: inline nav links */}
+            <nav className="topbar__nav">
+              {menuLinks.map((link) => (
+                <Link key={link.href} href={link.href} className="topbar__nav-link">
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
 
           {/* Desktop: cart + account icons (right) */}
           <div className="topbar__actions">
@@ -104,6 +105,7 @@ export function PwaShell({ children }: { children: React.ReactNode }) {
           >
             <span /><span /><span />
           </button>
+          </div>
         </header>
 
         {/* Mobile menu overlay */}
