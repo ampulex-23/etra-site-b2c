@@ -483,7 +483,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
   width: 100%;
 }
 
-/* Floating bottle - 3x larger */
+/* Static bottle - 6x larger, shifted left */
 .hero-section__bottle {
   position: relative;
 }
@@ -491,11 +491,12 @@ textarea.inp { resize: vertical; min-height: 80px; }
 .hero-section__bottle-float {
   position: relative;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
+  margin-left: -20%;
 }
 
 .hero-section__bottle-img {
-  width: 480px;
+  width: 960px;
   height: auto;
   filter: drop-shadow(0 20px 40px rgba(224, 64, 251, 0.3))
           drop-shadow(0 0 60px rgba(224, 64, 251, 0.2));
@@ -506,17 +507,11 @@ textarea.inp { resize: vertical; min-height: 80px; }
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 600px;
-  height: 600px;
+  width: 1200px;
+  height: 1200px;
   background: radial-gradient(circle, rgba(224, 64, 251, 0.25) 0%, transparent 70%);
   border-radius: 50%;
   z-index: -1;
-  animation: pulse-glow 3s ease-in-out infinite;
-}
-
-@keyframes pulse-glow {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
-  50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.9; }
 }
 
 /* Scroll indicator */
@@ -538,16 +533,20 @@ textarea.inp { resize: vertical; min-height: 80px; }
   
   .hero-section__content {
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+  }
+  
+  .hero-section__bottle-float {
+    margin-left: -30%;
   }
   
   .hero-section__bottle-img {
-    width: 720px;
+    width: 1440px;
   }
   
   .hero-section__bottle-glow {
-    width: 900px;
-    height: 900px;
+    width: 1800px;
+    height: 1800px;
   }
 }
 

@@ -38,29 +38,25 @@ export function Hero({
       </div>
 
       <div className="hero-section__content">
-        {/* Floating bottle - 3x larger */}
+        {/* Static bottle - 6x larger, shifted left */}
         <motion.div 
           className="hero-section__bottle"
-          initial={{ opacity: 0, y: 40, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, ease: 'easeOut' }}
         >
-          <motion.div
-            animate={{ y: [0, -12, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-            className="hero-section__bottle-float"
-          >
+          <div className="hero-section__bottle-float">
             <Image
               src="/images/bottle-hero.png"
               alt="ЭТРА Закваска"
-              width={840}
-              height={1680}
+              width={1680}
+              height={3360}
               priority
               className="hero-section__bottle-img"
             />
             {/* Glow effect behind bottle */}
             <div className="hero-section__bottle-glow" />
-          </motion.div>
+          </div>
         </motion.div>
       </div>
 
