@@ -38,7 +38,7 @@ export function Hero({
       </div>
 
       <div className="hero-section__content">
-        {/* Floating bottle */}
+        {/* Floating bottle - 3x larger */}
         <motion.div 
           className="hero-section__bottle"
           initial={{ opacity: 0, y: 40, scale: 0.9 }}
@@ -53,8 +53,8 @@ export function Hero({
             <Image
               src="/images/bottle-hero.png"
               alt="ЭТРА Закваска"
-              width={280}
-              height={560}
+              width={840}
+              height={1680}
               priority
               className="hero-section__bottle-img"
             />
@@ -62,77 +62,6 @@ export function Hero({
             <div className="hero-section__bottle-glow" />
           </motion.div>
         </motion.div>
-
-        {/* Text content */}
-        <motion.div 
-          className="hero-section__text"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-        >
-          <motion.div 
-            className="hero-section__badge"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-          >
-            <span className="hero-section__badge-dot" />
-            ЭТРА Project
-          </motion.div>
-
-          <h1 className="hero-section__title">
-            {title}
-          </h1>
-
-          <p className="hero-section__subtitle">
-            {subtitle}
-          </p>
-
-          <div className="hero-section__actions">
-            <motion.a 
-              href={ctaLink} 
-              className="btn btn--primary btn--lg"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <span>{ctaText}</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </motion.a>
-            <motion.a 
-              href={secondaryCtaLink} 
-              className="btn btn--outline"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <span>{secondaryCtaText}</span>
-            </motion.a>
-          </div>
-        </motion.div>
-
-        {/* Feature cards */}
-        <div className="hero-section__features">
-          {[
-            { icon: '⚡', title: 'Живая энергия', text: 'Активные ферменты' },
-            { icon: '🛡️', title: 'Иммунитет', text: 'Пробиотики' },
-            { icon: '✨', title: 'Чистота', text: 'Без консервантов' },
-          ].map((feature, i) => (
-            <motion.div
-              key={feature.title}
-              className="hero-feature"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.7 + i * 0.1 }}
-            >
-              <span className="hero-feature__icon">{feature.icon}</span>
-              <div>
-                <div className="hero-feature__title">{feature.title}</div>
-                <div className="hero-feature__text">{feature.text}</div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
       </div>
 
       {/* Scroll indicator */}
