@@ -4,9 +4,65 @@ import config from '@payload-config'
 import crypto from 'crypto'
 
 /**
+ * Reserve stock for order items
+ */
+async function reserveStock(payload: any, order: any) {
+  const items: any[] = order.items || []
+  for (const item of items) {
+    const productId = typeof item.product === 'object' ? item.product.id : item.product
+    const quantity = item.quantity || 1
+    if (!productId) continue
+
+    try {
+      const stockLevels = await payload.find({
+        collection: 'stock-levels',
+        where: {
+          product: { equals: productId },
+          available: { greater_than: 0 },
+        },
+        limit: 10,
+        overrideAccess: true,
+      })
+
+      let remaining = quantity
+      for (const sl of stockLevels.docs) {
+        if (remaining <= 0) break
+        const canReserve = Math.min(remaining, sl.available || 0)
+        if (canReserve <= 0) continue
+
+        await payload.update({
+          collection: 'stock-levels',
+          id: sl.id,
+          data: {
+            reserved: (sl.reserved || 0) + canReserve,
+            available: Math.max(0, (sl.available || 0) - canReserve),
+          },
+          overrideAccess: true,
+        })
+        remaining -= canReserve
+      }
+
+      if (remaining > 0) {
+        console.warn(`[Orders API] Not enough stock for product ${productId}, short by ${remaining}`)
+      }
+    } catch (err) {
+      console.error(`[Orders API] Error reserving stock for product ${productId}:`, err)
+    }
+  }
+}
+
+/**
  * Create delivery and payment records asynchronously
  */
 async function createRelatedRecordsAsync(payload: any, order: any, body: any) {
+  // First, reserve stock
+  try {
+    await reserveStock(payload, order)
+    console.log('[Orders API] Stock reserved for order:', order.id)
+  } catch (err) {
+    console.error('[Orders API] Error reserving stock:', err)
+  }
+
   let deliveryId: string | null = null
   let paymentId: string | null = null
 

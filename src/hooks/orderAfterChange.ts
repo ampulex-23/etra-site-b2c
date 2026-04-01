@@ -10,12 +10,10 @@ export const orderAfterChange: CollectionAfterChangeHook = async ({
   const newStatus: string = doc.status
   const oldStatus: string | undefined = previousDoc?.status
 
-  // --- On CREATE: reserve stock only, delivery/payment created via separate API call ---
+  // --- On CREATE: skip stock reservation (will be done asynchronously) ---
   if (operation === 'create') {
-    // Reserve stock synchronously (this works within transaction)
-    await reserveStock(payload, doc)
-    console.log('[orderAfterChange] Stock reserved for order:', doc.id)
-    // Note: Delivery and Payment are created by calling POST /api/orders/process after order creation
+    console.log('[orderAfterChange] Order created, stock will be reserved asynchronously:', doc.id)
+    // Note: Stock reservation, Delivery and Payment are created asynchronously via API route
     return doc
   }
 
