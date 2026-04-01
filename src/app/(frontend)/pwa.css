@@ -678,7 +678,8 @@ textarea.inp { resize: vertical; min-height: 80px; }
   }
 
   .hero-section__bottle-img {
-    width: 480px;
+    height: auto;
+    transform: scale(2);
   }
 
   .hero-section__bottle-glow {
