@@ -3,6 +3,95 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import crypto from 'crypto'
 
+/**
+ * Create delivery and payment records asynchronously
+ */
+async function createRelatedRecordsAsync(payload: any, order: any, body: any) {
+  let deliveryId: string | null = null
+  let paymentId: string | null = null
+
+  try {
+    // Create delivery
+    const deliveryMethod = order.delivery?.method || 'pickup'
+    const customer = typeof order.customer === 'object' ? order.customer : null
+
+    const deliveryData: Record<string, any> = {
+      order: order.id,
+      method: deliveryMethod,
+      status: 'pending',
+      recipient: {
+        name: customer?.name || body.customerName || 'Клиент',
+        phone: customer?.phone || body.customerPhone || '',
+        email: customer?.email || body.customerEmail || '',
+      },
+      cost: order.deliveryCost || 0,
+    }
+
+    if (order.delivery?.address && deliveryMethod !== 'pickup') {
+      deliveryData.address = {
+        city: String(order.delivery.address).split(',')[0]?.trim() || '',
+        street: order.delivery.address || '',
+      }
+    }
+
+    const delivery = await payload.create({
+      collection: 'deliveries',
+      data: deliveryData as any,
+      overrideAccess: true,
+    })
+    deliveryId = String(delivery.id)
+    console.log('[Orders API] Created delivery:', deliveryId)
+  } catch (deliveryErr) {
+    console.error('[Orders API] Error creating delivery:', deliveryErr)
+  }
+
+  try {
+    // Create payment
+    const paymentMethod = order.payment?.method
+    let method: 'cash' | 'gateway' = 'cash'
+    let gateway: 'yokassa' | 'tinkoff' | 'none' = 'none'
+    if (paymentMethod === 'yokassa' || paymentMethod === 'tinkoff') {
+      method = 'gateway'
+      gateway = paymentMethod
+    }
+
+    const payment = await payload.create({
+      collection: 'payments',
+      data: {
+        order: order.id,
+        method,
+        gateway: method === 'gateway' ? gateway : undefined,
+        status: 'pending' as const,
+        amount: order.total || 0,
+      } as any,
+      overrideAccess: true,
+    })
+    paymentId = String(payment.id)
+    console.log('[Orders API] Created payment:', paymentId)
+  } catch (paymentErr) {
+    console.error('[Orders API] Error creating payment:', paymentErr)
+  }
+
+  // Link delivery and payment to order
+  if (deliveryId || paymentId) {
+    try {
+      const linkData: Record<string, any> = {}
+      if (deliveryId) linkData.linkedDelivery = deliveryId
+      if (paymentId) linkData.linkedPayment = paymentId
+
+      await payload.update({
+        collection: 'orders',
+        id: order.id,
+        data: linkData,
+        overrideAccess: true,
+      })
+      console.log('[Orders API] Linked delivery/payment to order')
+    } catch (linkErr) {
+      console.error('[Orders API] Error linking delivery/payment:', linkErr)
+    }
+  }
+}
+
 interface JwtPayload {
   id: string
   email: string
@@ -94,94 +183,17 @@ export async function POST(req: NextRequest) {
       } as any,
     })
 
-    // Create delivery and payment records directly (after order is created)
-    console.log('[Orders API] Creating delivery and payment for order:', order.id)
+    // Return order immediately to client
+    const response = NextResponse.json(order, { status: 201 })
+
+    // Create delivery and payment asynchronously (don't await)
+    console.log('[Orders API] Scheduling async creation of delivery/payment for order:', order.id)
     
-    let deliveryId: string | null = null
-    let paymentId: string | null = null
-    
-    try {
-      // Create delivery
-      const deliveryMethod = order.delivery?.method || 'pickup'
-      const customer = typeof order.customer === 'object' ? order.customer : null
-      
-      const deliveryData: Record<string, any> = {
-        order: order.id,
-        method: deliveryMethod,
-        status: 'pending',
-        recipient: {
-          name: customer?.name || body.customerName || 'Клиент',
-          phone: customer?.phone || body.customerPhone || '',
-          email: customer?.email || body.customerEmail || '',
-        },
-        cost: order.deliveryCost || 0,
-      }
+    createRelatedRecordsAsync(payload, order, body).catch((err: Error) => {
+      console.error('[Orders API] Error in async creation:', err)
+    })
 
-      if (order.delivery?.address && deliveryMethod !== 'pickup') {
-        deliveryData.address = {
-          city: String(order.delivery.address).split(',')[0]?.trim() || '',
-          street: order.delivery.address || '',
-        }
-      }
-
-      const delivery = await payload.create({
-        collection: 'deliveries',
-        data: deliveryData as any,
-        overrideAccess: true,
-      })
-      deliveryId = String(delivery.id)
-      console.log('[Orders API] Created delivery:', deliveryId)
-    } catch (deliveryErr) {
-      console.error('[Orders API] Error creating delivery:', deliveryErr)
-    }
-
-    try {
-      // Create payment
-      const paymentMethod = order.payment?.method
-      let method: 'cash' | 'gateway' = 'cash'
-      let gateway: 'yokassa' | 'tinkoff' | 'none' = 'none'
-      if (paymentMethod === 'yokassa' || paymentMethod === 'tinkoff') {
-        method = 'gateway'
-        gateway = paymentMethod
-      }
-
-      const payment = await payload.create({
-        collection: 'payments',
-        data: {
-          order: order.id,
-          method,
-          gateway: method === 'gateway' ? gateway : undefined,
-          status: 'pending' as const,
-          amount: order.total || 0,
-        } as any,
-        overrideAccess: true,
-      })
-      paymentId = String(payment.id)
-      console.log('[Orders API] Created payment:', paymentId)
-    } catch (paymentErr) {
-      console.error('[Orders API] Error creating payment:', paymentErr)
-    }
-
-    // Link delivery and payment to order
-    if (deliveryId || paymentId) {
-      try {
-        const linkData: Record<string, any> = {}
-        if (deliveryId) linkData.linkedDelivery = deliveryId
-        if (paymentId) linkData.linkedPayment = paymentId
-        
-        await payload.update({
-          collection: 'orders',
-          id: order.id,
-          data: linkData,
-          overrideAccess: true,
-        })
-        console.log('[Orders API] Linked delivery/payment to order')
-      } catch (linkErr) {
-        console.error('[Orders API] Error linking delivery/payment:', linkErr)
-      }
-    }
-
-    return NextResponse.json(order, { status: 201 })
+    return response
   } catch (err) {
     console.error('Create order error:', err)
     // Log full error details
