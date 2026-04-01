@@ -404,6 +404,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
 .mb-24 { margin-bottom: 24px; }
 .mt-8 { margin-top: 8px; }
 .mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
 .px-16 { padding-inline: 16px; }
 
 /* Pill toggle */
