@@ -77,6 +77,7 @@ export default buildConfig({
         Icon: '@/components/admin/Icon',
       },
       afterNavLinks: ['@/components/admin/NavIcons'],
+      providers: ['@/components/admin/SidebarPersistence'],
       views: {
         infoproductsDashboard: {
           Component: '@/components/admin/InfproductsDashboard',

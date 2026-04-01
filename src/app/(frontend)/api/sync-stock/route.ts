@@ -22,20 +22,50 @@ export async function POST() {
     let outOfStock = 0
 
     for (const product of products.docs) {
-      // Get stock levels for this product
-      const stockLevels = await payload.find({
-        collection: 'stock-levels',
-        where: { product: { equals: product.id } },
-        limit: 100,
-        overrideAccess: true,
-      })
+      let shouldBeInStock = false
 
-      const totalAvailable = stockLevels.docs.reduce(
-        (sum: number, sl: any) => sum + (sl.available || 0),
-        0
-      )
+      // For bundles, check all items availability
+      if (product.isBundle && Array.isArray(product.bundleItems) && product.bundleItems.length > 0) {
+        let minAvailableQuantity = Infinity
 
-      const shouldBeInStock = totalAvailable > 0
+        for (const item of product.bundleItems) {
+          const itemProductId = typeof item.product === 'object' ? item.product.id : item.product
+          const requiredQty = item.quantity || 1
+
+          const stockLevels = await payload.find({
+            collection: 'stock-levels',
+            where: { product: { equals: itemProductId } },
+            limit: 100,
+            overrideAccess: true,
+          })
+
+          const totalAvailable = stockLevels.docs.reduce(
+            (sum: number, sl: any) => sum + (sl.available || 0),
+            0
+          )
+
+          const maxBundles = Math.floor(totalAvailable / requiredQty)
+          minAvailableQuantity = Math.min(minAvailableQuantity, maxBundles)
+        }
+
+        shouldBeInStock = minAvailableQuantity > 0
+      } else {
+        // For regular products, check stock levels
+        const stockLevels = await payload.find({
+          collection: 'stock-levels',
+          where: { product: { equals: product.id } },
+          limit: 100,
+          overrideAccess: true,
+        })
+
+        const totalAvailable = stockLevels.docs.reduce(
+          (sum: number, sl: any) => sum + (sl.available || 0),
+          0
+        )
+
+        shouldBeInStock = totalAvailable > 0
+      }
+
       const currentInStock = product.inStock !== false
 
       // Update only if changed
