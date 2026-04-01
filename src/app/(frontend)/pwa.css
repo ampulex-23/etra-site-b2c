@@ -79,6 +79,7 @@ img { max-width: 100%; display: block; }
   position: fixed; inset: 0; z-index: 0;
   background: url('/images/bg-purple.png') center/cover no-repeat;
   background-color: var(--c-bg-deep);
+  transform: scaleX(-1);
 }
 .pwa-bg::after {
   content: ''; position: absolute; inset: 0;
@@ -461,6 +462,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
   inset: 0;
   z-index: 0;
   transform: scaleX(-1);
+  display: none;
 }
 
 .hero-section__overlay {
@@ -492,7 +494,8 @@ textarea.inp { resize: vertical; min-height: 80px; }
   position: relative;
   display: flex;
   justify-content: flex-start;
-  margin-left: -20%;
+  margin-left: -27%;
+  margin-bottom: -14%;
 }
 
 .hero-section__bottle-img {
@@ -500,6 +503,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
   height: auto;
   filter: drop-shadow(0 20px 40px rgba(224, 64, 251, 0.3))
           drop-shadow(0 0 60px rgba(224, 64, 251, 0.2));
+  mix-blend-mode: color-burn;
 }
 
 .hero-section__bottle-glow {

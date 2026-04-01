@@ -83,6 +83,17 @@ export interface Config {
     'stock-movements': StockMovement;
     'stock-levels': StockLevel;
     inventories: Inventory;
+    reviews: Review;
+    comments: Comment;
+    infoproducts: Infoproduct;
+    'course-cohorts': CourseCohort;
+    'course-modules': CourseModule;
+    'course-days': CourseDay;
+    enrollments: Enrollment;
+    'participant-reports': ParticipantReport;
+    'course-results': CourseResult;
+    'chat-rooms': ChatRoom;
+    messages: Message;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -105,6 +116,17 @@ export interface Config {
     'stock-movements': StockMovementsSelect<false> | StockMovementsSelect<true>;
     'stock-levels': StockLevelsSelect<false> | StockLevelsSelect<true>;
     inventories: InventoriesSelect<false> | InventoriesSelect<true>;
+    reviews: ReviewsSelect<false> | ReviewsSelect<true>;
+    comments: CommentsSelect<false> | CommentsSelect<true>;
+    infoproducts: InfoproductsSelect<false> | InfoproductsSelect<true>;
+    'course-cohorts': CourseCohortsSelect<false> | CourseCohortsSelect<true>;
+    'course-modules': CourseModulesSelect<false> | CourseModulesSelect<true>;
+    'course-days': CourseDaysSelect<false> | CourseDaysSelect<true>;
+    enrollments: EnrollmentsSelect<false> | EnrollmentsSelect<true>;
+    'participant-reports': ParticipantReportsSelect<false> | ParticipantReportsSelect<true>;
+    'course-results': CourseResultsSelect<false> | CourseResultsSelect<true>;
+    'chat-rooms': ChatRoomsSelect<false> | ChatRoomsSelect<true>;
+    messages: MessagesSelect<false> | MessagesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -416,6 +438,10 @@ export interface Order {
    * Создаётся автоматически при создании заказа
    */
   linkedPayment?: (number | null) | Payment;
+  /**
+   * Если заказ содержит инфопродукт — выбранный поток для записи
+   */
+  selectedCohort?: (number | null) | CourseCohort;
   promoCode?: (number | null) | PromoCode;
   source?: ('site' | 'telegram_bot' | 'import') | null;
   /**
@@ -556,6 +582,208 @@ export interface Payment {
   paidAt?: string | null;
   refundedAt?: string | null;
   notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-cohorts".
+ */
+export interface CourseCohort {
+  id: number;
+  infoproduct: number | Infoproduct;
+  /**
+   * Например: «Поток 1», «Январь 2026»
+   */
+  title: string;
+  status?: ('upcoming' | 'active' | 'completed' | 'cancelled') | null;
+  startDate: string;
+  endDate?: string | null;
+  /**
+   * 0 = без ограничения
+   */
+  maxParticipants?: number | null;
+  /**
+   * Внутренние заметки для менеджеров
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "infoproducts".
+ */
+export interface Infoproduct {
+  id: number;
+  title: string;
+  slug: string;
+  type: 'course' | 'marathon' | 'program' | 'retreat';
+  status?: ('draft' | 'active' | 'archived') | null;
+  shortDescription?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  coverImage?: (number | null) | Media;
+  price?: number | null;
+  oldPrice?: number | null;
+  /**
+   * Количество дней активной фазы курса
+   */
+  durationDays?: number | null;
+  /**
+   * Связанный товар (isBundle=true) с набором продуктов курса
+   */
+  productBundle?: (number | null) | Product;
+  /**
+   * Шаблон утреннего блока (применяется ко всем дням по умолчанию)
+   */
+  scheduleMorning?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  scheduleDay?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  scheduleEvening?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  dietRecommendations?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  contraindications?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  rules?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Список пунктов, которые участник отмечает в ежедневном отчёте
+   */
+  reportTemplate?:
+    | {
+        item: string;
+        emoji?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  reportRules?: {
+    /**
+     * 0 = не исключать автоматически
+     */
+    maxMissed?: number | null;
+    penalty?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+  };
+  team?:
+    | {
+        name: string;
+        role: string;
+        avatar?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+    ogImage?: (number | null) | Media;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -856,6 +1084,365 @@ export interface Inventory {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews".
+ */
+export interface Review {
+  id: number;
+  /**
+   * Краткий заголовок отзыва (необязательно)
+   */
+  title?: string | null;
+  text: string;
+  /**
+   * От 1 до 5
+   */
+  rating: number;
+  /**
+   * Менеджер может выбрать любого покупателя
+   */
+  customer: number | Customer;
+  /**
+   * Если отзыв на конкретный товар. Пусто — общий отзыв о магазине
+   */
+  product?: (number | null) | Product;
+  /**
+   * Привязка к заказу (если отзыв после покупки)
+   */
+  order?: (number | null) | Order;
+  status: 'pending' | 'published' | 'rejected';
+  /**
+   * Ответ на отзыв от имени магазина
+   */
+  adminReply?: string | null;
+  source?: ('site' | 'product_page' | 'account' | 'post_order' | 'admin') | null;
+  featured?: boolean | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments".
+ */
+export interface Comment {
+  id: number;
+  text: string;
+  author?: {
+    /**
+     * Если комментарий от покупателя
+     */
+    customer?: (number | null) | Customer;
+    /**
+     * Если комментарий от менеджера/администратора
+     */
+    user?: (number | null) | User;
+    /**
+     * Заполняется автоматически из профиля автора
+     */
+    displayName?: string | null;
+  };
+  contentType: 'post' | 'recipe';
+  post?: (number | null) | Post;
+  recipe?: (number | null) | Recipe;
+  /**
+   * Если это ответ на другой комментарий
+   */
+  parent?: (number | null) | Comment;
+  status: 'pending' | 'approved' | 'rejected';
+  likes?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-modules".
+ */
+export interface CourseModule {
+  id: number;
+  infoproduct: number | Infoproduct;
+  title: string;
+  slug: string;
+  type:
+    | 'navigation'
+    | 'schedule'
+    | 'communication'
+    | 'broadcasts'
+    | 'qa'
+    | 'reports'
+    | 'results'
+    | 'sport'
+    | 'recipes'
+    | 'protocols'
+    | 'products'
+    | 'motivation'
+    | 'custom';
+  /**
+   * Например: 📋, 🎞, ❗️, 🏆
+   */
+  icon?: string | null;
+  description?: string | null;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  order?: number | null;
+  visible?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-days".
+ */
+export interface CourseDay {
+  id: number;
+  cohort: number | CourseCohort;
+  dayNumber: number;
+  date?: string | null;
+  /**
+   * Если пусто — отображается «День N»
+   */
+  title?: string | null;
+  morningBlock?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  dayBlock?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  eveningBlock?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Дополнительные инструкции для этого дня
+   */
+  specialNotes?: string | null;
+  broadcast?: {
+    scheduled?: boolean | null;
+    /**
+     * Например: 19:00 МСК
+     */
+    time?: string | null;
+    title?: string | null;
+    type?: ('thematic' | 'qa' | 'intro') | null;
+    zoomLink?: string | null;
+    recordingUrl?: string | null;
+  };
+  sportProgram?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "enrollments".
+ */
+export interface Enrollment {
+  id: number;
+  customer: number | Customer;
+  cohort: number | CourseCohort;
+  /**
+   * Заказ, через который клиент попал на курс
+   */
+  order?: (number | null) | Order;
+  status: 'pending' | 'active' | 'paused' | 'completed' | 'expelled' | 'refunded';
+  /**
+   * Формат: #ИмяЧислоРождения (например #Кирилл15)
+   */
+  hashtag?: string | null;
+  enrolledAt?: string | null;
+  completedAt?: string | null;
+  /**
+   * Обновляется автоматически при подаче отчётов
+   */
+  currentDay?: number | null;
+  reportStreak?: number | null;
+  missedReports?: number | null;
+  /**
+   * Противопоказания, особые условия, комментарии
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "participant-reports".
+ */
+export interface ParticipantReport {
+  id: number;
+  enrollment: number | Enrollment;
+  /**
+   * Привязка к конкретному дню (необязательно)
+   */
+  courseDay?: (number | null) | CourseDay;
+  date: string;
+  /**
+   * Заполняются из шаблона инфопродукта
+   */
+  items?:
+    | {
+        label: string;
+        completed?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Рассчитывается автоматически
+   */
+  completionRate?: number | null;
+  notes?: string | null;
+  status?: ('submitted' | 'late' | 'missed') | null;
+  /**
+   * Заполняется автоматически
+   */
+  submittedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-results".
+ */
+export interface CourseResult {
+  id: number;
+  enrollment: number | Enrollment;
+  type?: ('intermediate' | 'final') | null;
+  text: string;
+  photos?:
+    | {
+        image: number | Media;
+        caption?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  weightBefore?: number | null;
+  weightAfter?: number | null;
+  /**
+   * Классифицированные результаты для аналитики
+   */
+  effects?:
+    | {
+        category:
+          | 'weight_loss'
+          | 'food_addiction'
+          | 'psycho_emotional'
+          | 'lightness'
+          | 'conscious_eating'
+          | 'sleep'
+          | 'skin'
+          | 'body_volumes'
+          | 'health_issues'
+          | 'physical_performance'
+          | 'neurographics'
+          | 'community';
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  status?: ('pending' | 'published' | 'featured') | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-rooms".
+ */
+export interface ChatRoom {
+  id: number;
+  cohort: number | CourseCohort;
+  /**
+   * Например: «Общий чат», «Поддержка», «Эфиры»
+   */
+  title: string;
+  type?: ('general' | 'support' | 'broadcast') | null;
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "messages".
+ */
+export interface Message {
+  id: number;
+  chatRoom: number | ChatRoom;
+  senderType: 'customer' | 'staff' | 'system';
+  senderCustomer?: (number | null) | Customer;
+  senderUser?: (number | null) | User;
+  text: string;
+  attachments?:
+    | {
+        file: number | Media;
+        id?: string | null;
+      }[]
+    | null;
+  isDeleted?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -937,6 +1524,50 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'inventories';
         value: number | Inventory;
+      } | null)
+    | ({
+        relationTo: 'reviews';
+        value: number | Review;
+      } | null)
+    | ({
+        relationTo: 'comments';
+        value: number | Comment;
+      } | null)
+    | ({
+        relationTo: 'infoproducts';
+        value: number | Infoproduct;
+      } | null)
+    | ({
+        relationTo: 'course-cohorts';
+        value: number | CourseCohort;
+      } | null)
+    | ({
+        relationTo: 'course-modules';
+        value: number | CourseModule;
+      } | null)
+    | ({
+        relationTo: 'course-days';
+        value: number | CourseDay;
+      } | null)
+    | ({
+        relationTo: 'enrollments';
+        value: number | Enrollment;
+      } | null)
+    | ({
+        relationTo: 'participant-reports';
+        value: number | ParticipantReport;
+      } | null)
+    | ({
+        relationTo: 'course-results';
+        value: number | CourseResult;
+      } | null)
+    | ({
+        relationTo: 'chat-rooms';
+        value: number | ChatRoom;
+      } | null)
+    | ({
+        relationTo: 'messages';
+        value: number | Message;
       } | null);
   globalSlug?: string | null;
   user:
@@ -1177,6 +1808,7 @@ export interface OrdersSelect<T extends boolean = true> {
       };
   linkedDelivery?: T;
   linkedPayment?: T;
+  selectedCohort?: T;
   promoCode?: T;
   source?: T;
   puzzleBotOrderId?: T;
@@ -1475,6 +2107,261 @@ export interface InventoriesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews_select".
+ */
+export interface ReviewsSelect<T extends boolean = true> {
+  title?: T;
+  text?: T;
+  rating?: T;
+  customer?: T;
+  product?: T;
+  order?: T;
+  status?: T;
+  adminReply?: T;
+  source?: T;
+  featured?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments_select".
+ */
+export interface CommentsSelect<T extends boolean = true> {
+  text?: T;
+  author?:
+    | T
+    | {
+        customer?: T;
+        user?: T;
+        displayName?: T;
+      };
+  contentType?: T;
+  post?: T;
+  recipe?: T;
+  parent?: T;
+  status?: T;
+  likes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "infoproducts_select".
+ */
+export interface InfoproductsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  type?: T;
+  status?: T;
+  shortDescription?: T;
+  description?: T;
+  coverImage?: T;
+  price?: T;
+  oldPrice?: T;
+  durationDays?: T;
+  productBundle?: T;
+  scheduleMorning?: T;
+  scheduleDay?: T;
+  scheduleEvening?: T;
+  dietRecommendations?: T;
+  contraindications?: T;
+  rules?: T;
+  reportTemplate?:
+    | T
+    | {
+        item?: T;
+        emoji?: T;
+        id?: T;
+      };
+  reportRules?:
+    | T
+    | {
+        maxMissed?: T;
+        penalty?: T;
+      };
+  team?:
+    | T
+    | {
+        name?: T;
+        role?: T;
+        avatar?: T;
+        id?: T;
+      };
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        ogImage?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-cohorts_select".
+ */
+export interface CourseCohortsSelect<T extends boolean = true> {
+  infoproduct?: T;
+  title?: T;
+  status?: T;
+  startDate?: T;
+  endDate?: T;
+  maxParticipants?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-modules_select".
+ */
+export interface CourseModulesSelect<T extends boolean = true> {
+  infoproduct?: T;
+  title?: T;
+  slug?: T;
+  type?: T;
+  icon?: T;
+  description?: T;
+  content?: T;
+  order?: T;
+  visible?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-days_select".
+ */
+export interface CourseDaysSelect<T extends boolean = true> {
+  cohort?: T;
+  dayNumber?: T;
+  date?: T;
+  title?: T;
+  morningBlock?: T;
+  dayBlock?: T;
+  eveningBlock?: T;
+  specialNotes?: T;
+  broadcast?:
+    | T
+    | {
+        scheduled?: T;
+        time?: T;
+        title?: T;
+        type?: T;
+        zoomLink?: T;
+        recordingUrl?: T;
+      };
+  sportProgram?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "enrollments_select".
+ */
+export interface EnrollmentsSelect<T extends boolean = true> {
+  customer?: T;
+  cohort?: T;
+  order?: T;
+  status?: T;
+  hashtag?: T;
+  enrolledAt?: T;
+  completedAt?: T;
+  currentDay?: T;
+  reportStreak?: T;
+  missedReports?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "participant-reports_select".
+ */
+export interface ParticipantReportsSelect<T extends boolean = true> {
+  enrollment?: T;
+  courseDay?: T;
+  date?: T;
+  items?:
+    | T
+    | {
+        label?: T;
+        completed?: T;
+        id?: T;
+      };
+  completionRate?: T;
+  notes?: T;
+  status?: T;
+  submittedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-results_select".
+ */
+export interface CourseResultsSelect<T extends boolean = true> {
+  enrollment?: T;
+  type?: T;
+  text?: T;
+  photos?:
+    | T
+    | {
+        image?: T;
+        caption?: T;
+        id?: T;
+      };
+  weightBefore?: T;
+  weightAfter?: T;
+  effects?:
+    | T
+    | {
+        category?: T;
+        description?: T;
+        id?: T;
+      };
+  status?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-rooms_select".
+ */
+export interface ChatRoomsSelect<T extends boolean = true> {
+  cohort?: T;
+  title?: T;
+  type?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "messages_select".
+ */
+export interface MessagesSelect<T extends boolean = true> {
+  chatRoom?: T;
+  senderType?: T;
+  senderCustomer?: T;
+  senderUser?: T;
+  text?: T;
+  attachments?:
+    | T
+    | {
+        file?: T;
+        id?: T;
+      };
+  isDeleted?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -1593,9 +2480,13 @@ export interface DeliverySetting {
   cdekSecurePassword?: string | null;
   cdekTestMode?: boolean | null;
   /**
-   * Код города в системе СДЭК (44 = Москва)
+   * Числовой код города в системе СДЭК. Примеры: 44 = Москва, 137 = СПб, 119 = Сочи. Найти код: https://api-docs.cdek.ru/36990336.html
    */
   cdekSenderCity?: string | null;
+  /**
+   * Полный адрес для печати на накладной (например: Краснодарский край, г Сочи, ул Транспортная, д 17А)
+   */
+  cdekSenderAddress?: string | null;
   /**
    * 139 = посылка дверь-ПВЗ, 138 = посылка дверь-дверь
    */
@@ -1605,10 +2496,6 @@ export interface DeliverySetting {
    * Формат: +79991234567
    */
   cdekSenderPhone?: string | null;
-  /**
-   * Улица, дом — для забора курьером
-   */
-  cdekSenderAddress?: string | null;
   /**
    * Вес товара если не указан в карточке
    */
@@ -1784,10 +2671,10 @@ export interface DeliverySettingsSelect<T extends boolean = true> {
   cdekSecurePassword?: T;
   cdekTestMode?: T;
   cdekSenderCity?: T;
+  cdekSenderAddress?: T;
   cdekTariffCode?: T;
   cdekSenderName?: T;
   cdekSenderPhone?: T;
-  cdekSenderAddress?: T;
   cdekDefaultWeight?: T;
   cdekWebhookUrl?: T;
   russianPostEnabled?: T;
