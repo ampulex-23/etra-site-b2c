@@ -453,8 +453,8 @@ textarea.inp { resize: vertical; min-height: 80px; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
   padding: 40px 20px 60px;
+  /* NO overflow:hidden — it breaks backdrop-filter on children */
 }
 
 .hero-section__bg {
@@ -518,100 +518,83 @@ textarea.inp { resize: vertical; min-height: 80px; }
   z-index: -1;
 }
 
-/* Feature Drops - glass droplets on the right */
+/* Feature Drops - glass droplets positioned along bottle contour
+   KEY FIX: No opacity animation, no overflow:hidden on parent, 
+   no nested stacking contexts — all of these break backdrop-filter */
 .feature-drops {
   position: absolute;
-  right: 5%;
+  right: 8%;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  z-index: 3;
-  max-width: 320px;
+  gap: 14px;
+  z-index: 10;
+  width: 320px;
 }
+
+/* Stagger drops along bottle contour — arc shape */
+.feature-drop--1 { margin-left: 30px; }
+.feature-drop--2 { margin-left: 10px; }
+.feature-drop--3 { margin-left: 0; }
+.feature-drop--4 { margin-left: 10px; }
+.feature-drop--5 { margin-left: 30px; }
 
 .feature-drop {
   position: relative;
   cursor: pointer;
-  padding: 20px 28px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-  opacity: 0;
-  transform: scale(0.9);
+  padding: 18px 28px;
+  /* Glass effect — semi-transparent bg is key for backdrop-filter */
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  /* Smooth transitions for expand/collapse */
+  transition: 
+    background 0.4s ease,
+    border-color 0.4s ease,
+    box-shadow 0.4s ease,
+    padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.feature-drop--mounted {
-  animation: dropFadeIn 0.5s ease-out forwards;
-}
+/* Organic rounded drop shapes */
+.feature-drop--1 { border-radius: 50% 50% 45% 55% / 55% 45% 55% 45%; }
+.feature-drop--2 { border-radius: 45% 55% 55% 45% / 50% 50% 50% 50%; }
+.feature-drop--3 { border-radius: 55% 45% 50% 50% / 45% 55% 45% 55%; }
+.feature-drop--4 { border-radius: 50% 50% 50% 50% / 55% 45% 55% 45%; }
+.feature-drop--5 { border-radius: 48% 52% 45% 55% / 50% 50% 50% 50%; }
 
-@keyframes dropFadeIn {
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.feature-drop::before {
+/* Subtle highlight gradient on hover/active */
+.feature-drop::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 30% 30%, rgba(224, 64, 251, 0.15), transparent 70%);
+  border-radius: inherit;
+  background: radial-gradient(ellipse at 30% 20%, rgba(224, 64, 251, 0.12), transparent 70%);
   opacity: 0;
-  transition: opacity 0.4s;
+  transition: opacity 0.4s ease;
   pointer-events: none;
 }
 
-.feature-drop:hover::before,
-.feature-drop--active::before {
+.feature-drop:hover::after,
+.feature-drop--active::after {
   opacity: 1;
 }
 
-/* Smooth organic drop shapes - no sharp corners */
-.feature-drop--1 {
-  border-radius: 50% 50% 45% 55% / 55% 45% 55% 45%;
-}
-
-.feature-drop--2 {
-  border-radius: 45% 55% 55% 45% / 50% 50% 50% 50%;
-}
-
-.feature-drop--3 {
-  border-radius: 55% 45% 50% 50% / 45% 55% 45% 55%;
-}
-
-.feature-drop--4 {
-  border-radius: 50% 50% 50% 50% / 55% 45% 55% 45%;
-}
-
-.feature-drop--5 {
-  border-radius: 48% 52% 45% 55% / 55% 55% 45% 45%;
-}
-
-/* Hover and active states */
+/* Hover state */
 .feature-drop:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(224, 64, 251, 0.3);
-  box-shadow: 0 8px 30px rgba(224, 64, 251, 0.3);
-  transform: scale(1.03);
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(224, 64, 251, 0.35);
+  box-shadow: 0 8px 32px rgba(224, 64, 251, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
+/* Active / expanded state */
 .feature-drop--active {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(224, 64, 251, 0.3);
-  box-shadow: 0 8px 30px rgba(224, 64, 251, 0.3);
-  padding: 24px 32px;
-  min-height: 200px;
-}
-
-.feature-drop__inner {
-  position: relative;
-  z-index: 1;
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(224, 64, 251, 0.35);
+  box-shadow: 0 8px 32px rgba(224, 64, 251, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  padding: 22px 32px 24px;
 }
 
 .feature-drop__title {
@@ -619,30 +602,39 @@ textarea.inp { resize: vertical; min-height: 80px; }
   font-size: 17px;
   font-weight: 700;
   color: var(--c-text);
-  margin: 0 0 12px 0;
+  margin: 0;
   text-shadow: 0 0 20px rgba(224, 64, 251, 0.3);
+  transition: margin 0.4s ease;
 }
 
+.feature-drop--active .feature-drop__title {
+  margin-bottom: 12px;
+}
+
+/* Content — always in DOM, animated via max-height + opacity */
 .feature-drop__content {
-  max-height: 0;
-  overflow: hidden;
+  display: grid;
+  grid-template-rows: 0fr;
   opacity: 0;
-  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  transition: 
+    grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
 }
 
 .feature-drop--active .feature-drop__content {
-  max-height: 300px;
+  grid-template-rows: 1fr;
   opacity: 1;
 }
 
 .feature-drop__content p {
+  overflow: hidden;
   font-size: 14px;
   line-height: 1.6;
   color: var(--c-text-sec);
   margin: 0;
 }
 
-/* Mobile: show feature drops below bottle */
+/* Mobile: position below bottle */
 @media (max-width: 767px) {
   .feature-drops {
     position: relative;
@@ -650,9 +642,15 @@ textarea.inp { resize: vertical; min-height: 80px; }
     top: auto;
     transform: none;
     margin-top: 40px;
-    max-width: 100%;
+    width: 100%;
+    max-width: 400px;
     padding: 0 20px;
   }
+  .feature-drop--1,
+  .feature-drop--2,
+  .feature-drop--3,
+  .feature-drop--4,
+  .feature-drop--5 { margin-left: 0; }
 }
 
 /* Scroll indicator */

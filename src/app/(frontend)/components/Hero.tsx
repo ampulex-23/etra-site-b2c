@@ -59,10 +59,10 @@ export function Hero({
             <div className="hero-section__bottle-glow" />
           </div>
         </motion.div>
-
-        {/* Feature drops on the right */}
-        <FeatureDrops />
       </div>
+
+      {/* Feature drops — outside content to fix backdrop-filter stacking context */}
+      <FeatureDrops />
 
       {/* Scroll indicator */}
       <motion.div 

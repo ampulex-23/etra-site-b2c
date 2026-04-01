@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 
 const features = [
   {
@@ -32,11 +32,6 @@ const features = [
 
 export function FeatureDrops() {
   const [activeId, setActiveId] = useState<number | null>(null)
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const handleToggle = (id: number) => {
     setActiveId(activeId === id ? null : id)
@@ -50,18 +45,13 @@ export function FeatureDrops() {
         return (
           <div
             key={feature.id}
-            className={`feature-drop feature-drop--${index + 1} ${isActive ? 'feature-drop--active' : ''} ${mounted ? 'feature-drop--mounted' : ''}`}
+            className={`feature-drop feature-drop--${index + 1} ${isActive ? 'feature-drop--active' : ''}`}
             onClick={() => handleToggle(feature.id)}
-            style={{ animationDelay: `${index * 0.1}s` }}
+            onMouseEnter={() => setActiveId(feature.id)}
           >
-            <div className="feature-drop__inner">
-              <h3 className="feature-drop__title">{feature.title}</h3>
-              
-              {isActive && (
-                <div className="feature-drop__content">
-                  <p>{feature.content}</p>
-                </div>
-              )}
+            <h3 className="feature-drop__title">{feature.title}</h3>
+            <div className="feature-drop__content">
+              <p>{feature.content}</p>
             </div>
           </div>
         )
