@@ -10,48 +10,12 @@ export const orderAfterChange: CollectionAfterChangeHook = async ({
   const newStatus: string = doc.status
   const oldStatus: string | undefined = previousDoc?.status
 
-  // --- On CREATE: auto-create Delivery + Payment records, reserve stock ---
+  // --- On CREATE: reserve stock only, delivery/payment created via separate API call ---
   if (operation === 'create') {
-    // Defer creation to ensure order transaction is committed
-    // Use process.nextTick to execute after current operation completes
-    process.nextTick(async () => {
-      try {
-        console.log('[orderAfterChange] Deferred: Creating delivery and payment for order:', doc.id)
-        
-        // Verify order exists before creating related records
-        const orderExists = await payload.findByID({
-          collection: 'orders',
-          id: doc.id,
-          overrideAccess: true,
-        }).catch(() => null)
-        
-        if (!orderExists) {
-          console.error('[orderAfterChange] Order not found after creation, retrying in 500ms')
-          await new Promise(resolve => setTimeout(resolve, 500))
-        }
-        
-        const deliveryId = await createDeliveryRecord(payload, doc)
-        const paymentId = await createPaymentRecord(payload, doc)
-        await reserveStock(payload, doc)
-        console.log('[orderAfterChange] Created delivery:', deliveryId, 'payment:', paymentId)
-
-        // Link back to order
-        const linkData: Record<string, any> = {}
-        if (deliveryId) linkData.linkedDelivery = deliveryId
-        if (paymentId) linkData.linkedPayment = paymentId
-        if (Object.keys(linkData).length > 0) {
-          await payload.update({ 
-            collection: 'orders', 
-            id: doc.id, 
-            data: linkData,
-            overrideAccess: true,
-          })
-          console.log('[orderAfterChange] Linked delivery/payment to order')
-        }
-      } catch (err) {
-        console.error('[orderAfterChange] Error in deferred operations:', err)
-      }
-    })
+    // Reserve stock synchronously (this works within transaction)
+    await reserveStock(payload, doc)
+    console.log('[orderAfterChange] Stock reserved for order:', doc.id)
+    // Note: Delivery and Payment are created by calling POST /api/orders/process after order creation
     return doc
   }
 

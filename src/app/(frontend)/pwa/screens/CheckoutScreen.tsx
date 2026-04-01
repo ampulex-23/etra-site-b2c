@@ -165,7 +165,7 @@ export function CheckoutScreen() {
           ? `${selectedCity?.city}, ПВЗ: ${selectedPvz.name} — ${selectedPvz.location.address}`
           : `${selectedCity?.city}, ${address}`
       }
-      const res = await fetch('/api/orders', {
+      const res = await fetch('/api/shop-orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `JWT ${token}` },
         body: JSON.stringify({

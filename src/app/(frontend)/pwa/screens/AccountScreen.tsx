@@ -32,7 +32,7 @@ export function AccountScreen() {
     if (!token) return
     setLoadingOrders(true)
     try {
-      const res = await fetch(`/api/orders?where[customer][equals]=${customer?.id}&sort=-createdAt&limit=20`, {
+      const res = await fetch(`/api/shop-orders?where[customer][equals]=${customer?.id}&sort=-createdAt&limit=20`, {
         headers: { Authorization: `JWT ${token}` },
       })
       if (res.ok) {
