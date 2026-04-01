@@ -528,20 +528,33 @@ textarea.inp { resize: vertical; min-height: 80px; }
   flex-direction: column;
   gap: 16px;
   z-index: 3;
-  max-width: 280px;
+  max-width: 320px;
 }
 
 .feature-drop {
   position: relative;
   cursor: pointer;
-  padding: 20px 24px;
+  padding: 20px 28px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  backdrop-filter: url(#liquidGlassFilter) blur(8px);
-  -webkit-backdrop-filter: url(#liquidGlassFilter) blur(8px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.feature-drop--mounted {
+  animation: dropFadeIn 0.5s ease-out forwards;
+}
+
+@keyframes dropFadeIn {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .feature-drop::before {
@@ -559,39 +572,41 @@ textarea.inp { resize: vertical; min-height: 80px; }
   opacity: 1;
 }
 
-/* Different drop shapes using border-radius */
+/* Smooth organic drop shapes - no sharp corners */
 .feature-drop--1 {
-  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  border-radius: 50% 50% 45% 55% / 55% 45% 55% 45%;
 }
 
 .feature-drop--2 {
-  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  border-radius: 45% 55% 55% 45% / 50% 50% 50% 50%;
 }
 
 .feature-drop--3 {
-  border-radius: 70% 30% 50% 50% / 30% 60% 40% 70%;
+  border-radius: 55% 45% 50% 50% / 45% 55% 45% 55%;
 }
 
 .feature-drop--4 {
-  border-radius: 40% 60% 60% 40% / 60% 40% 60% 40%;
+  border-radius: 50% 50% 50% 50% / 55% 45% 55% 45%;
 }
 
 .feature-drop--5 {
-  border-radius: 50% 50% 30% 70% / 70% 70% 30% 30%;
+  border-radius: 48% 52% 45% 55% / 55% 55% 45% 45%;
 }
 
 /* Hover and active states */
-.feature-drop:hover,
+.feature-drop:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(224, 64, 251, 0.3);
+  box-shadow: 0 8px 30px rgba(224, 64, 251, 0.3);
+  transform: scale(1.03);
+}
+
 .feature-drop--active {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(224, 64, 251, 0.3);
   box-shadow: 0 8px 30px rgba(224, 64, 251, 0.3);
-  transform: scale(1.02);
-}
-
-.feature-drop--active {
-  padding: 24px 28px;
-  min-height: 180px;
+  padding: 24px 32px;
+  min-height: 200px;
 }
 
 .feature-drop__inner {
@@ -601,26 +616,33 @@ textarea.inp { resize: vertical; min-height: 80px; }
 
 .feature-drop__title {
   font-family: var(--font-h);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--c-text);
-  margin: 0 0 8px 0;
+  margin: 0 0 12px 0;
   text-shadow: 0 0 20px rgba(224, 64, 251, 0.3);
 }
 
 .feature-drop__content {
+  max-height: 0;
   overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+.feature-drop--active .feature-drop__content {
+  max-height: 300px;
+  opacity: 1;
 }
 
 .feature-drop__content p {
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--c-text-sec);
   margin: 0;
-  padding-top: 8px;
 }
 
-/* Mobile: hide feature drops, show them below bottle */
+/* Mobile: show feature drops below bottle */
 @media (max-width: 767px) {
   .feature-drops {
     position: relative;

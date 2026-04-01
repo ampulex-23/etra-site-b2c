@@ -1,7 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useState, useEffect } from 'react'
 
 const features = [
   {
@@ -33,6 +32,11 @@ const features = [
 
 export function FeatureDrops() {
   const [activeId, setActiveId] = useState<number | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleToggle = (id: number) => {
     setActiveId(activeId === id ? null : id)
@@ -44,34 +48,22 @@ export function FeatureDrops() {
         const isActive = activeId === feature.id
 
         return (
-          <motion.div
+          <div
             key={feature.id}
-            className={`feature-drop feature-drop--${index + 1} ${isActive ? 'feature-drop--active' : ''}`}
+            className={`feature-drop feature-drop--${index + 1} ${isActive ? 'feature-drop--active' : ''} ${mounted ? 'feature-drop--mounted' : ''}`}
             onClick={() => handleToggle(feature.id)}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.98 }}
+            style={{ animationDelay: `${index * 0.1}s` }}
           >
             <div className="feature-drop__inner">
               <h3 className="feature-drop__title">{feature.title}</h3>
               
-              <AnimatePresence>
-                {isActive && (
-                  <motion.div
-                    className="feature-drop__content"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <p>{feature.content}</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {isActive && (
+                <div className="feature-drop__content">
+                  <p>{feature.content}</p>
+                </div>
+              )}
             </div>
-          </motion.div>
+          </div>
         )
       })}
     </div>
