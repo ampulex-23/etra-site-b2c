@@ -662,22 +662,63 @@ textarea.inp { resize: vertical; min-height: 80px; }
   margin: 0;
 }
 
-/* Mobile: position below bottle */
+/* Mobile: bottle left, drops right (same layout as desktop) */
 @media (max-width: 767px) {
-  .feature-drops {
-    position: relative;
-    right: auto;
-    top: auto;
-    transform: none;
-    margin-top: 40px;
-    width: 100%;
-    max-width: 400px;
-    padding: 0 20px;
+  .hero-section__container {
+    padding: 20px 0;
   }
-  .feature-drop--1,
-  .feature-drop--2,
-  .feature-drop--3,
-  .feature-drop--4,
+
+  .hero-section__content {
+    align-items: flex-start;
+  }
+
+  .hero-section__bottle-float {
+    margin-left: -50%;
+    margin-bottom: 0;
+  }
+
+  .hero-section__bottle-img {
+    width: 480px;
+  }
+
+  .hero-section__bottle-glow {
+    width: 600px;
+    height: 600px;
+  }
+
+  .feature-drops {
+    position: absolute;
+    right: 5%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 200px;
+    gap: 12px;
+    margin-left: 0;
+    margin-top: 0;
+  }
+
+  .feature-drop {
+    padding: 14px 20px;
+  }
+
+  .feature-drop__title {
+    font-size: 14px;
+    margin-bottom: 0;
+  }
+
+  .feature-drop--active .feature-drop__title {
+    margin-bottom: 8px;
+  }
+
+  .feature-drop__content p {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .feature-drop--1 { margin-left: 0; }
+  .feature-drop--2 { margin-left: 15px; }
+  .feature-drop--3 { margin-left: 20px; }
+  .feature-drop--4 { margin-left: 15px; }
   .feature-drop--5 { margin-left: 0; }
 }
 
