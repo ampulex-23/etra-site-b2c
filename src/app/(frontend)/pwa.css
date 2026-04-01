@@ -529,7 +529,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
   width: 960px;
   height: auto;
   filter: drop-shadow(0 20px 40px rgba(224, 64, 251, 0.3))
-          drop-shadow(0 0 60px rgba(224, 64, 251, 0.2)) drop-shadow(0px 60px 39px white);
+          drop-shadow(0 0 60px rgba(224, 64, 251, 0.2));
   mix-blend-mode: color-burn;
 }
 
@@ -716,11 +716,11 @@ textarea.inp { resize: vertical; min-height: 80px; }
     line-height: 1.5;
   }
 
-  .feature-drop--1 { margin-left: 0; }
-  .feature-drop--2 { margin-left: 15px; }
+  .feature-drop--1 { margin-left: 20px; }
+  .feature-drop--2 { margin-left: 20px; }
   .feature-drop--3 { margin-left: 20px; }
-  .feature-drop--4 { margin-left: 15px; }
-  .feature-drop--5 { margin-left: 0; }
+  .feature-drop--4 { margin-left: 20px; }
+  .feature-drop--5 { margin-left: 20px; }
 }
 
 /* Scroll indicator */
