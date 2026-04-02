@@ -51,8 +51,8 @@ export function Hero({
             <Image
               src="/images/bottle-hero.png"
               alt="ЭТРА Закваска"
-              width={1680}
-              height={3360}
+              width={448}
+              height={1304}
               priority
               className="hero-section__bottle-img"
             />

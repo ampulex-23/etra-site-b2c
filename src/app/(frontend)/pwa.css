@@ -508,29 +508,27 @@ textarea.inp { resize: vertical; min-height: 80px; }
   flex-direction: column;
   align-items: center;
   text-align: center;
-  max-width: 600px;
-  width: 100%;
 }
 
 /* Static bottle - 6x larger, shifted left */
 .hero-section__bottle {
   position: relative;
+  
 }
 
 .hero-section__bottle-float {
   position: relative;
   display: flex;
   justify-content: flex-start;
-  transform: translateX(-260px);
-  margin-bottom: -14%;
 }
 
 .hero-section__bottle-img {
-  width: 960px;
+  width: auto;
   height: auto;
   filter: drop-shadow(0 20px 40px rgba(224, 64, 251, 0.3))
           drop-shadow(0 0 60px rgba(224, 64, 251, 0.2));
   mix-blend-mode: color-burn;
+  transform: scale(.7) translate(-120px, -80px);
 }
 
 .hero-section__bottle-glow {
@@ -561,12 +559,6 @@ textarea.inp { resize: vertical; min-height: 80px; }
 }
 
 /* Concave arc — closer to center, further at edges (hugging bottle) */
-.feature-drop--1 { margin-left: 13px; }
-.feature-drop--2 { margin-left: 13px; }
-.feature-drop--3 { margin-left: 13px; }
-.feature-drop--4 { margin-left: 13px; }
-.feature-drop--5 { margin-left: 13px; }
-
 .feature-drop {
   position: relative;
   cursor: pointer;
@@ -574,23 +566,22 @@ textarea.inp { resize: vertical; min-height: 80px; }
   /* Glass effect — semi-transparent bg is key for backdrop-filter */
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: -4px -4px 16px -4px #FFFFFF50 inset;
   backdrop-filter:  url(#liquidGlassFilter) blur(8px);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
   /* Smooth transitions for expand/collapse */
   transition: 
     background 0.4s ease,
     border-color 0.4s ease,
-    box-shadow 0.4s ease,
     padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Organic rounded drop shapes */
-.feature-drop--1 { border-radius: 11% 90% 55% 15% / 45% 75% 47% 34%; }
+.feature-drop--1 { border-radius: 22% 40% 48% 35% / 27% 65% 27% 14%; }
 .feature-drop--2 { border-radius: 15% 65% 35% 15% / 30% 50% 60% 50%; }
 .feature-drop--3 { border-radius: 25% 45% 60% 40% / 55% 85% 65% 25%; }
 .feature-drop--4 { border-radius: 20% 60% 40% 20% / 31% 41% 65% 35%; }
-.feature-drop--5 { border-radius: 16% 82% 25% 35% / 60% 90% 30% 50%; }
+.feature-drop--5 { border-radius: 22% 62% 65% 18% / 60% 50% 70% 70%; }
 
 /* Subtle highlight gradient on hover/active */
 .feature-drop::after {
@@ -672,8 +663,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
   }
 
   .hero-section__bottle-float {
-    transform: translateX(-50vw) scale(2);
-    margin-bottom: 0;
+    
   }
 
   .hero-section__bottle-img {
@@ -686,12 +676,10 @@ textarea.inp { resize: vertical; min-height: 80px; }
   }
 
   .feature-drops {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(20px, -50%);
+    transform: translate(0px, -240px);
     width: 200px;
     gap: 12px;
+    
   }
 
   .feature-drop {
@@ -712,15 +700,11 @@ textarea.inp { resize: vertical; min-height: 80px; }
     line-height: 1.5;
   }
 
-  .feature-drop--1 { margin-left: 20px; }
-  .feature-drop--2 { margin-left: 20px; }
-  .feature-drop--3 { margin-left: 20px; }
-  .feature-drop--4 { margin-left: 20px; }
-  .feature-drop--5 { margin-left: 20px; }
 }
 
 /* Scroll indicator */
 .hero-section__scroll {
+  display: none;
   position: absolute;
   bottom: 20px;
   left: 50%;
@@ -732,7 +716,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
 /* Desktop adjustments */
 @media (min-width: 768px) {
   .hero-section {
-    padding: 60px 40px 80px;
+    padding: 0;
     justify-content: center;
   }
   
@@ -742,11 +726,11 @@ textarea.inp { resize: vertical; min-height: 80px; }
   }
   
   .hero-section__bottle-float {
-    margin-left: -30%;
+    
   }
   
   .hero-section__bottle-img {
-    width: 1440px;
+    width: auto;
   }
   
   .hero-section__bottle-glow {
