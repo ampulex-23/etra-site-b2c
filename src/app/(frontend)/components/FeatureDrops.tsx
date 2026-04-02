@@ -31,7 +31,7 @@ const features = [
 ]
 
 export function FeatureDrops() {
-  const [activeId, setActiveId] = useState<number | null>(null)
+  const [activeId, setActiveId] = useState<number | null>(1)
 
   const handleToggle = (id: number) => {
     setActiveId(activeId === id ? null : id)
