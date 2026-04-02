@@ -77,9 +77,18 @@ img { max-width: 100%; display: block; }
 
 /* ── Background layer ── */
 .pwa-bg {
-  position: fixed; inset: 0; z-index: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  z-index: 0;
   background: url('/images/bg-purple.png') center/cover no-repeat;
   background-color: var(--c-bg-deep);
+  background-attachment: fixed;
   transform: scaleX(-1);
 }
 .pwa-bg::after {
