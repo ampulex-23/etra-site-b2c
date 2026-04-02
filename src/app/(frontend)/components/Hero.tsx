@@ -4,6 +4,7 @@ import React from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { FeatureDrops } from './FeatureDrops'
+import { QuickLinks } from './QuickLinks'
 
 interface HeroProps {
   title?: string
@@ -82,6 +83,9 @@ export function Hero({
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Quick Links below hero */}
+      <QuickLinks />
     </section>
   )
 }
