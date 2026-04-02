@@ -548,9 +548,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
    no nested stacking contexts — all of these break backdrop-filter */
 .feature-drops {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(140px, -50%);
+  transform: translate(170px, -10px);
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -574,6 +572,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
     background 0.4s ease,
     border-color 0.4s ease,
     padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: contrast(1.2) drop-shadow(4px 4px 1px #bd0cb1a0);
 }
 
 /* Organic rounded drop shapes */
@@ -676,7 +675,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
   }
 
   .feature-drops {
-    transform: translate(0px, -240px);
+    transform: translate(100px, 10px);
     width: 200px;
     gap: 12px;
     
