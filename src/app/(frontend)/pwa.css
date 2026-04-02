@@ -680,9 +680,9 @@ textarea.inp { resize: vertical; min-height: 80px; }
   }
 
   .feature-drops {
-    transform: translate(100px, 10px);
-    width: 200px;
-    gap: 12px;
+    transform: translate(100px, -20px);
+    width: 180px;
+    gap: 20px;
     
   }
 
@@ -747,6 +747,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
   width: 100%;
   padding: 20px 0 40px;
   z-index: 2;
+  margin-top: -120px;
 }
 
 .quick-links__container {
@@ -758,6 +759,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  justify-content: center;
 }
 
 .quick-links__container::-webkit-scrollbar {
@@ -775,11 +777,10 @@ textarea.inp { resize: vertical; min-height: 80px; }
   justify-content: center;
   gap: 12px;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.0);
   border-radius: 20px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(16px) saturate(1.2);
+  box-shadow: 4px 4px 10px rgba(232, 118, 255, 0.721) inset, -4px -4px 20px rgba(0,0, 0,.5) inset;
+  backdrop-filter: url(#liquidGlassFilter) saturate(1.7) blur(6px);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
   transition: all 0.3s ease;
   cursor: pointer;
@@ -792,15 +793,12 @@ textarea.inp { resize: vertical; min-height: 80px; }
   position: absolute;
   inset: 0;
   background: url('/images/bg2.png') center/cover no-repeat;
-  opacity: 0.15;
+  opacity: 0.3;
   z-index: -1;
 }
 
 .quick-link:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px rgba(224, 64, 251, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transform: translateY(-4px);
+  transform: scale(1.2);
 }
 
 .quick-link:hover::before {
@@ -812,9 +810,9 @@ textarea.inp { resize: vertical; min-height: 80px; }
 }
 
 .quick-link__icon {
-  width: 36px;
-  height: 36px;
-  color: var(--c-primary);
+  width: 42px;
+  height: 42px;
+  color: var(--c-text);
   stroke-width: 1.5;
   filter: drop-shadow(0 0 12px rgba(224, 64, 251, 0.4));
 }

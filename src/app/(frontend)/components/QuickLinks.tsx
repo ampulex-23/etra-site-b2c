@@ -6,19 +6,19 @@ import { Sparkles, MapPin, Leaf } from 'lucide-react'
 const links = [
   {
     id: 1,
-    title: 'Новинки',
+    title: 'НОВИНКИ',
     href: '/catalog?filter=new',
     icon: Sparkles,
   },
   {
     id: 2,
-    title: 'Где Найти',
+    title: 'МЕСТА',
     href: '/locations',
     icon: MapPin,
   },
   {
     id: 3,
-    title: 'Биом Ретрит',
+    title: 'КУРСЫ',
     href: '/retreat',
     icon: Leaf,
   },
