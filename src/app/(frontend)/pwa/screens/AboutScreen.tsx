@@ -3,12 +3,16 @@
 import React from 'react'
 import Link from 'next/link'
 import { Hero } from '../../components/Hero'
+import { QuickLinks } from '../../components/QuickLinks'
 
 export function AboutScreen() {
   return (
     <div className="pwa-screen pwa-screen--flush">
       {/* ─── HERO ─── */}
       <Hero />
+
+      {/* ─── QUICK LINKS ─── */}
+      <QuickLinks />
 
       {/* ─── О НАС ─── */}
       <section id="about" className="landing-section">
