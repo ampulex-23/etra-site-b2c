@@ -554,7 +554,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
    no nested stacking contexts — all of these break backdrop-filter */
 .feature-drops {
   position: absolute;
-  transform: translate(170px, -80px);
+  transform: translate(190px,-40px);
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -677,7 +677,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
   }
 
   .feature-drops {
-    transform: translate(100px, -20px);
+    transform: translate(100px, -50px);
     width: 180px;
     gap: 20px;
     
@@ -772,31 +772,23 @@ textarea.inp { resize: vertical; min-height: 80px; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.0);
+  background: rgb(172 120 187 / 20%);
   border-radius: 160px;
-  box-shadow: 4px 4px 10px rgba(232, 118, 255, 0.721) inset, -4px -4px 20px rgba(0,0, 0,.5) inset;
-  backdrop-filter: url(#liquidGlassFilter) saturate(1.7) blur(6px);
+  box-shadow: 4px 4px 10px rgba(232, 118, 255, 0.5) inset, -4px -4px 20px rgba(0,0, 0,.3) inset;
+  backdrop-filter: url(#liquidGlassFilter) blur(6px);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
   transition: all 0.3s ease;
   cursor: pointer;
   text-align: center;
   overflow: hidden;
-  filter: contrast(1.4);
+
 }
 
-.quick-link::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: url('/images/bg2.png') center/cover no-repeat;
-  opacity: 0.3;
-  z-index: -1;
-}
 
 .quick-link:hover {
-  transform: scale(1.2);
+  transform: scale(1.1);
 }
 
 .quick-link:hover::before {
@@ -834,9 +826,9 @@ textarea.inp { resize: vertical; min-height: 80px; }
   }
 
   .quick-link {
-    width: 180px;
-    height: 180px;
-    gap: 16px;
+    width: 120px;
+    height: 120px;
+    gap: 10px;
     padding: 24px;
   }
 
@@ -864,13 +856,14 @@ textarea.inp { resize: vertical; min-height: 80px; }
   position: relative;
   margin: 0 auto;
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(16px) saturate(1.2);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
   transition: all 0.4s ease;
   overflow: hidden;
+  max-width: 600px;
 }
 
 /* Collapsed state */
@@ -884,8 +877,9 @@ textarea.inp { resize: vertical; min-height: 80px; }
   cursor: pointer;
   transition: all 0.3s ease;
   background: url(/images/bg2.png);
-  background-size: 60%;
+  background-size: cover;
   background-repeat: no-repeat;
+  box-shadow: 4px 4px 10px rgba(232, 118, 255, 0.5) inset, -4px -4px 20px rgba(0,0, 0,.3) inset;
 }
 
 .get-started__collapsed:hover {
@@ -905,6 +899,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.02em;
+  text-align: center;
 }
 
 .get-started__image {
