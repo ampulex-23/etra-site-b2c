@@ -81,9 +81,6 @@ img { max-width: 100%; display: block; }
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  height: 100%;
-  min-height: 100vh;
   min-height: 100svh;
   z-index: 0;
   background: url('/images/bg-purple.png') center/cover no-repeat;
@@ -557,7 +554,7 @@ textarea.inp { resize: vertical; min-height: 80px; }
    no nested stacking contexts — all of these break backdrop-filter */
 .feature-drops {
   position: absolute;
-  transform: translate(170px, -60px);
+  transform: translate(170px, -80px);
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -747,12 +744,12 @@ textarea.inp { resize: vertical; min-height: 80px; }
   width: 100%;
   padding: 20px 0 40px;
   z-index: 2;
-  margin-top: -180px;
+  margin-top: -140px;
 }
 
 .quick-links__container {
   display: flex;
-  gap: 16px;
+  gap: 10px;
   padding: 0 20px;
   overflow-x: auto;
   scroll-behavior: smooth;
