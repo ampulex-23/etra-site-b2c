@@ -83,7 +83,7 @@ img { max-width: 100%; display: block; }
   right: 0;
   min-height: 100svh;
   z-index: 0;
-  background: url('/images/bg-purple.png') center/cover no-repeat;
+  background: url('/images/bg2.png') center/cover no-repeat;
   background-color: var(--c-bg-deep);
   background-attachment: fixed;
   transform: scaleX(-1);
