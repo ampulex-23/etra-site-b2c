@@ -4,6 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { Hero } from '../../components/Hero'
 import { QuickLinks } from '../../components/QuickLinks'
+import { GetStarted } from '../../components/GetStarted'
 
 export function AboutScreen() {
   return (
@@ -13,6 +14,9 @@ export function AboutScreen() {
 
       {/* ─── QUICK LINKS ─── */}
       <QuickLinks />
+
+      {/* ─── GET STARTED ─── */}
+      <GetStarted />
 
       {/* ─── О НАС ─── */}
       <section id="about" className="landing-section">

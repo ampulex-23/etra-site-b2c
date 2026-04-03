@@ -850,6 +850,226 @@ textarea.inp { resize: vertical; min-height: 80px; }
   }
 }
 
+/* ═══════════════════════════════════════════════════════
+   GET STARTED — Expandable section below QuickLinks
+   ═══════════════════════════════════════════════════════ */
+.get-started-section {
+  position: relative;
+  width: 100%;
+  padding: 20px;
+  z-index: 2;
+}
+
+.get-started {
+  position: relative;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  transition: all 0.4s ease;
+  overflow: hidden;
+}
+
+/* Collapsed state */
+.get-started__collapsed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 32px;
+  max-width: 600px;
+  height: 130px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.get-started__collapsed:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.get-started__header {
+  flex: 1;
+}
+
+.get-started__title {
+  font-family: var(--font-h);
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--c-text);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.get-started__image {
+  flex-shrink: 0;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.get-started__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Expanded state */
+.get-started--expanded {
+  max-width: 800px;
+}
+
+.get-started__expanded {
+  position: relative;
+  padding: 40px;
+  min-height: 400px;
+}
+
+.get-started__expanded::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/images/bg2.png') center/cover no-repeat;
+  opacity: 0.7;
+  z-index: -1;
+  border-radius: 24px;
+}
+
+.get-started__close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: var(--c-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.get-started__close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.get-started__title-expanded {
+  font-family: var(--font-h);
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--c-text);
+  margin: 0 0 24px 0;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.get-started__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.get-started__text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--c-text);
+  text-align: center;
+  margin: 0 0 12px 0;
+}
+
+.get-started__text strong {
+  font-size: 20px;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.get-started__btn {
+  width: 100%;
+  max-width: 400px;
+  padding: 18px 32px;
+  font-family: var(--font-h);
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.get-started__btn--primary {
+  background: linear-gradient(135deg, #6ECAFF 0%, #3BECA0 100%);
+  color: #0A281C;
+  box-shadow: 0 4px 16px rgba(59, 236, 160, 0.3);
+}
+
+.get-started__btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 236, 160, 0.4);
+}
+
+.get-started__btn--secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--c-text);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.get-started__btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+  .get-started__collapsed {
+    padding: 20px 24px;
+    height: 120px;
+  }
+
+  .get-started__title {
+    font-size: 26px;
+  }
+
+  .get-started__image {
+    width: 90px;
+    height: 90px;
+  }
+
+  .get-started__expanded {
+    padding: 32px 24px;
+  }
+
+  .get-started__title-expanded {
+    font-size: 28px;
+  }
+
+  .get-started__text {
+    font-size: 15px;
+  }
+
+  .get-started__btn {
+    font-size: 14px;
+    padding: 16px 28px;
+  }
+}
+
 /* ── Recipes placeholder ── */
 .recipes-stub { text-align: center; padding: 60px 20px; }
 .recipes-stub__icon { font-size: 64px; margin-bottom: 16px; }
