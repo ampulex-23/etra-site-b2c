@@ -48,10 +48,10 @@ export const ShopSettings: GlobalConfig = {
           type: 'select',
           label: 'Провайдер оплаты',
           options: [
-            { label: 'Т-Банк (Tinkoff)', value: 'tbank' },
+            { label: 'Т-Банк (Tinkoff)', value: 'tinkoff' },
             { label: 'ЮKassa', value: 'yokassa' },
           ],
-          defaultValue: 'tbank',
+          defaultValue: 'tinkoff',
           admin: {
             condition: (data) => data?.paymentEnabled,
           },
@@ -59,7 +59,7 @@ export const ShopSettings: GlobalConfig = {
         {
           type: 'row',
           admin: {
-            condition: (data) => data?.paymentEnabled && data?.paymentProvider === 'tbank',
+            condition: (data) => data?.paymentEnabled && data?.paymentProvider === 'tinkoff',
           },
           fields: [
             {
@@ -88,14 +88,14 @@ export const ShopSettings: GlobalConfig = {
           defaultValue: true,
           label: 'Демо-режим (тестовые платежи)',
           admin: {
-            condition: (data) => data?.paymentEnabled && data?.paymentProvider === 'tbank',
+            condition: (data) => data?.paymentEnabled && data?.paymentProvider === 'tinkoff',
             description: 'Включите для тестирования с демо-терминалом',
           },
         },
         {
           type: 'row',
           admin: {
-            condition: (data) => data?.paymentEnabled && data?.paymentProvider === 'tbank' && data?.tbankDemoMode,
+            condition: (data) => data?.paymentEnabled && data?.paymentProvider === 'tinkoff' && data?.tbankDemoMode,
           },
           fields: [
             {
@@ -123,7 +123,7 @@ export const ShopSettings: GlobalConfig = {
           label: 'URL успешной оплаты',
           defaultValue: '/payment/success',
           admin: {
-            condition: (data) => data?.paymentEnabled && data?.paymentProvider === 'tbank',
+            condition: (data) => data?.paymentEnabled && data?.paymentProvider === 'tinkoff',
             description: 'Путь на сайте после успешной оплаты',
           },
         },
@@ -133,7 +133,7 @@ export const ShopSettings: GlobalConfig = {
           label: 'URL неуспешной оплаты',
           defaultValue: '/payment/fail',
           admin: {
-            condition: (data) => data?.paymentEnabled && data?.paymentProvider === 'tbank',
+            condition: (data) => data?.paymentEnabled && data?.paymentProvider === 'tinkoff',
             description: 'Путь на сайте после неуспешной оплаты',
           },
         },
@@ -151,7 +151,7 @@ export const ShopSettings: GlobalConfig = {
           ],
           defaultValue: 'usn_income',
           admin: {
-            condition: (data) => data?.paymentEnabled && data?.paymentProvider === 'tbank',
+            condition: (data) => data?.paymentEnabled && data?.paymentProvider === 'tinkoff',
             description: 'Для фискализации (54-ФЗ)',
           },
         },
