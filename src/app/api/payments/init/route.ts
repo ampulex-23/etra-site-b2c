@@ -3,11 +3,14 @@
  * POST /api/payments/init
  * 
  * Creates a new payment and returns PaymentURL for redirect
+ * Uses settings from Payload CMS ShopSettings global
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import { 
-  initPayment, 
+  initPaymentWithCredentials, 
   rublesToKopecks, 
   generateOrderId,
   type TBankInitParams,
@@ -44,7 +47,7 @@ export async function POST(request: NextRequest) {
       items,
       successUrl,
       failUrl,
-      useDemo = process.env.NODE_ENV !== 'production'
+      useDemo
     } = body
     
     if (!amount || amount <= 0) {
@@ -54,11 +57,54 @@ export async function POST(request: NextRequest) {
       )
     }
     
+    // Get payment settings from Payload CMS
+    const payload = await getPayload({ config })
+    const shopSettings = await payload.findGlobal({
+      slug: 'shop-settings',
+    }) as any // Type will be regenerated after schema change
+    
+    // Check if payments are enabled
+    if (!shopSettings.paymentEnabled) {
+      return NextResponse.json(
+        { error: 'Online payments are disabled' },
+        { status: 400 }
+      )
+    }
+    
+    // Check provider (support both old 'tinkoff' and new 'tbank' values)
+    if (shopSettings.paymentProvider !== 'tbank' && shopSettings.paymentProvider !== 'tinkoff') {
+      return NextResponse.json(
+        { error: 'T-Bank provider not configured' },
+        { status: 400 }
+      )
+    }
+    
+    // Determine if using demo mode
+    const isDemoMode = useDemo !== undefined ? useDemo : (shopSettings.tbankDemoMode ?? true)
+    
+    // Get credentials based on mode
+    const terminalKey = isDemoMode 
+      ? (shopSettings.tbankDemoTerminalKey || process.env.TBANK_DEMO_TERMINAL_KEY)
+      : (shopSettings.tbankTerminalKey || process.env.TBANK_TERMINAL_KEY)
+    
+    const password = isDemoMode
+      ? (shopSettings.tbankDemoPassword || process.env.TBANK_DEMO_PASSWORD)
+      : (shopSettings.tbankPassword || process.env.TBANK_PASSWORD)
+    
+    if (!terminalKey || !password) {
+      return NextResponse.json(
+        { error: 'T-Bank credentials not configured' },
+        { status: 500 }
+      )
+    }
+    
     // Generate order ID if not provided
     const finalOrderId = orderId || generateOrderId('ETRA')
     
     // Build base URL for callbacks
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://etraproject.ru'
+    const tbankSuccessUrl = shopSettings.tbankSuccessUrl || '/payment/success'
+    const tbankFailUrl = shopSettings.tbankFailUrl || '/payment/fail'
     
     // Prepare receipt items if provided
     let receiptItems: TBankReceiptItem[] | undefined
@@ -82,22 +128,23 @@ export async function POST(request: NextRequest) {
       Language: 'ru',
       PayType: 'O', // One-stage payment
       NotificationURL: `${baseUrl}/api/payments/notification`,
-      SuccessURL: successUrl || `${baseUrl}/payment/success?orderId=${finalOrderId}`,
-      FailURL: failUrl || `${baseUrl}/payment/fail?orderId=${finalOrderId}`,
+      SuccessURL: successUrl || `${baseUrl}${tbankSuccessUrl}?orderId=${finalOrderId}`,
+      FailURL: failUrl || `${baseUrl}${tbankFailUrl}?orderId=${finalOrderId}`,
     }
     
     // Add receipt for fiscalization (54-FZ compliance)
+    const taxation = shopSettings.tbankTaxation || 'usn_income'
     if (receiptItems && (customerEmail || customerPhone)) {
       params.Receipt = {
         Email: customerEmail,
         Phone: customerPhone,
-        Taxation: 'usn_income', // УСН доходы - adjust based on your taxation
+        Taxation: taxation as 'osn' | 'usn_income' | 'usn_income_outcome' | 'envd' | 'esn' | 'patent',
         Items: receiptItems,
       }
     }
     
-    // Initialize payment
-    const result = await initPayment(params, useDemo)
+    // Initialize payment with credentials from admin
+    const result = await initPaymentWithCredentials(params, terminalKey, password)
     
     return NextResponse.json({
       success: true,
@@ -105,6 +152,7 @@ export async function POST(request: NextRequest) {
       orderId: result.OrderId,
       paymentUrl: result.PaymentURL,
       amount: result.Amount,
+      demoMode: isDemoMode,
     })
     
   } catch (error) {

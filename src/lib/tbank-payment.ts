@@ -151,6 +151,21 @@ export async function initPayment(
     throw new Error('T-Bank credentials not configured. Set TBANK_TERMINAL_KEY and TBANK_PASSWORD in .env.local')
   }
   
+  return initPaymentWithCredentials(params, terminalKey, password)
+}
+
+/**
+ * Initialize payment with explicit credentials (for use with admin settings)
+ */
+export async function initPaymentWithCredentials(
+  params: TBankInitParams,
+  terminalKey: string,
+  password: string
+): Promise<TBankInitResponse> {
+  if (!terminalKey || !password) {
+    throw new Error('T-Bank credentials not provided')
+  }
+  
   const requestBody: Record<string, unknown> = {
     TerminalKey: terminalKey,
     ...params,
