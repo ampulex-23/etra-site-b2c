@@ -159,9 +159,9 @@ export const ShopSettings: GlobalConfig = {
           name: 'tbankTestStand',
           type: 'ui',
           admin: {
-            condition: (data) => data?.paymentEnabled && data?.paymentProvider === 'tbank',
+            condition: (data) => data?.paymentEnabled && (data?.paymentProvider === 'tbank' || data?.paymentProvider === 'tinkoff'),
             components: {
-              Field: '@/components/admin/PaymentTestStand#PaymentTestStand',
+              Field: '/components/admin/PaymentTestStand#PaymentTestStand',
             },
           },
         },
