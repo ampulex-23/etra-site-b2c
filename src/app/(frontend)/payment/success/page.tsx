@@ -1,22 +1,13 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { CheckCircle, Package, ArrowRight } from 'lucide-react'
+import { CheckCircle, Package, ArrowRight, User } from 'lucide-react'
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
-  const [paymentStatus, setPaymentStatus] = useState<string | null>(null)
-  
-  useEffect(() => {
-    // Optionally verify payment status
-    if (orderId) {
-      // You could fetch order details here
-      setPaymentStatus('confirmed')
-    }
-  }, [orderId])
 
   return (
     <div className="payment-result">
@@ -44,16 +35,31 @@ export default function PaymentSuccessPage() {
         </div>
         
         <div className="payment-result__actions">
-          <Link href="/catalog" className="btn btn--primary">
-            Продолжить покупки
-            <ArrowRight size={18} />
+          <Link href="/account" className="btn btn--primary">
+            <User size={18} />
+            Мои заказы
           </Link>
           
-          <Link href="/" className="btn btn--secondary">
-            На главную
+          <Link href="/catalog" className="btn btn--secondary">
+            Продолжить покупки
+            <ArrowRight size={18} />
           </Link>
         </div>
       </div>
     </div>
+  )
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="payment-result">
+        <div className="payment-result__card">
+          <div style={{ textAlign: 'center', padding: '40px' }}>Загрузка...</div>
+        </div>
+      </div>
+    }>
+      <PaymentSuccessContent />
+    </Suspense>
   )
 }

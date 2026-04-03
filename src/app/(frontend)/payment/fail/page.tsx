@@ -1,11 +1,11 @@
 'use client'
 
-import React from 'react'
+import React, { Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { XCircle, RefreshCw, MessageCircle } from 'lucide-react'
 
-export default function PaymentFailPage() {
+function PaymentFailContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
 
@@ -37,17 +37,31 @@ export default function PaymentFailPage() {
         )}
         
         <div className="payment-result__actions">
-          <Link href="/cart" className="btn btn--primary">
+          <Link href="/account" className="btn btn--primary">
             <RefreshCw size={18} />
-            Попробовать снова
+            Мои заказы
           </Link>
           
-          <Link href="/contacts" className="btn btn--secondary">
+          <Link href="/" className="btn btn--secondary">
             <MessageCircle size={18} />
-            Связаться с нами
+            На главную
           </Link>
         </div>
       </div>
     </div>
+  )
+}
+
+export default function PaymentFailPage() {
+  return (
+    <Suspense fallback={
+      <div className="payment-result">
+        <div className="payment-result__card">
+          <div style={{ textAlign: 'center', padding: '40px' }}>Загрузка...</div>
+        </div>
+      </div>
+    }>
+      <PaymentFailContent />
+    </Suspense>
   )
 }

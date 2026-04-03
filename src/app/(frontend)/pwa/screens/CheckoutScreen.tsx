@@ -6,8 +6,10 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCart } from '../../cart/CartProvider'
 import { useAuth } from '../../auth/AuthProvider'
+import { CreditCard, Banknote, Loader2 } from 'lucide-react'
 
 type DeliveryMethod = 'cdek' | 'pickup'
+type PaymentMethod = 'online' | 'cash'
 type CdekCity = { code: number; city: string; region: string }
 type CdekPvz = {
   code: string; name: string;
@@ -29,11 +31,13 @@ export function CheckoutScreen() {
   const { items, totalPrice, clearCart } = useCart()
 
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('cdek')
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('online')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [comment, setComment] = useState('')
   const [profileLoaded, setProfileLoaded] = useState(false)
+  const [paymentLoading, setPaymentLoading] = useState(false)
 
   // Sync form fields with customer data when it loads (fixes refresh bug)
   useEffect(() => {
@@ -176,6 +180,8 @@ export function CheckoutScreen() {
           ? `${selectedCity?.city}, ПВЗ: ${selectedPvz.name} — ${selectedPvz.location.address}`
           : `${selectedCity?.city}, ${address}`
       }
+      
+      // Create order
       const res = await fetch('/api/shop-orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `JWT ${token}` },
@@ -183,12 +189,59 @@ export function CheckoutScreen() {
           orderNumber, customer: customer.id, items: orderItems, subtotal: totalPrice, deliveryCost,
           total: orderTotal, status: 'new',
           delivery: { method: deliveryMethod, address: deliveryAddress },
-          notes: comment || undefined, payment: { status: 'pending' },
+          notes: comment || undefined, 
+          payment: { 
+            method: paymentMethod === 'online' ? 'tinkoff' : 'cash',
+            status: 'pending' 
+          },
         }),
       })
       if (!res.ok) { const data = await res.json(); throw new Error(data.errors?.[0]?.message || 'Ошибка') }
+      
+      const orderData = await res.json()
+      
+      // If online payment selected, redirect to T-Bank
+      if (paymentMethod === 'online') {
+        setPaymentLoading(true)
+        try {
+          const paymentRes = await fetch('/api/payments/init', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              amount: orderTotal,
+              orderId: orderNumber,
+              description: `Заказ ${orderNumber}`,
+              customerEmail: email,
+              customerPhone: phone,
+              items: items.map(i => ({
+                name: i.title,
+                price: i.price,
+                quantity: i.quantity,
+                tax: 'none'
+              }))
+            })
+          })
+          
+          const paymentData = await paymentRes.json()
+          
+          if (paymentData.error) {
+            throw new Error(paymentData.message || 'Ошибка инициализации платежа')
+          }
+          
+          // Clear cart and redirect to T-Bank payment form
+          clearCart()
+          window.location.href = paymentData.paymentUrl
+          return
+        } catch (payErr) {
+          setPaymentLoading(false)
+          setError(payErr instanceof Error ? payErr.message : 'Ошибка оплаты')
+          return
+        }
+      }
+      
+      // Cash payment - just redirect to account
       clearCart()
-      router.push('/account')
+      router.push('/account?order=' + orderNumber)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Не удалось оформить заказ')
     } finally { setLoading(false) }
@@ -337,10 +390,53 @@ export function CheckoutScreen() {
           )}
         </div>
 
-        {/* 3. Comment */}
+        {/* 3. Payment */}
         <div className="checkout-sec">
           <div className="checkout-sec__head">
             <span className="checkout-sec__num">3</span>
+            <span className="checkout-sec__title">Способ оплаты</span>
+          </div>
+
+          <button 
+            type="button" 
+            className={`del-option ${paymentMethod === 'online' ? 'del-option--active' : ''}`} 
+            onClick={() => setPaymentMethod('online')}
+          >
+            <div className="del-option__radio" />
+            <div className="del-option__info">
+              <div className="del-option__name" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <CreditCard size={18} />
+                Онлайн оплата
+              </div>
+              <div className="del-option__desc">Банковская карта, T-Pay, СБП</div>
+            </div>
+            <div className="del-option__price" style={{ color: 'var(--c-primary)' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+          </button>
+
+          <button 
+            type="button" 
+            className={`del-option ${paymentMethod === 'cash' ? 'del-option--active' : ''}`} 
+            onClick={() => setPaymentMethod('cash')}
+          >
+            <div className="del-option__radio" />
+            <div className="del-option__info">
+              <div className="del-option__name" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Banknote size={18} />
+                При получении
+              </div>
+              <div className="del-option__desc">Наличными или картой курьеру</div>
+            </div>
+          </button>
+        </div>
+
+        {/* 4. Comment */}
+        <div className="checkout-sec">
+          <div className="checkout-sec__head">
+            <span className="checkout-sec__num">4</span>
             <span className="checkout-sec__title">Комментарий</span>
           </div>
           <textarea className="inp" value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Пожелания к заказу (необязательно)" rows={3} />
@@ -377,9 +473,18 @@ export function CheckoutScreen() {
           </div>
         </div>
 
-        <button type="submit" className={`btn btn--primary btn--lg btn--full ${loading ? 'btn--loading' : ''}`} disabled={!customer || loading}>
-          {loading && <span className="btn__spinner" />}
-          Оформить заказ
+        <button 
+          type="submit" 
+          className={`btn btn--primary btn--lg btn--full ${loading || paymentLoading ? 'btn--loading' : ''}`} 
+          disabled={!customer || loading || paymentLoading}
+        >
+          {(loading || paymentLoading) && <Loader2 size={20} className="btn__spinner" style={{ animation: 'spin 1s linear infinite' }} />}
+          {paymentLoading 
+            ? 'Переход к оплате...' 
+            : paymentMethod === 'online' 
+              ? `Оплатить ${orderTotal.toLocaleString('ru-RU')} ₽` 
+              : 'Оформить заказ'
+          }
         </button>
       </form>
     </div>

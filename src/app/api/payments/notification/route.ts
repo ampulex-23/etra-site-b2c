@@ -7,10 +7,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import { verifyNotificationToken, type TBankNotification } from '@/lib/tbank-payment'
-
-const TBANK_PASSWORD = process.env.TBANK_PASSWORD || ''
-const TBANK_DEMO_PASSWORD = process.env.TBANK_DEMO_PASSWORD || ''
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,52 +23,53 @@ export async function POST(request: NextRequest) {
       paymentId: notification.PaymentId,
     })
     
-    // Verify token signature (try both production and demo passwords)
-    const isValidProd = TBANK_PASSWORD && verifyNotificationToken(notification, TBANK_PASSWORD)
-    const isValidDemo = TBANK_DEMO_PASSWORD && verifyNotificationToken(notification, TBANK_DEMO_PASSWORD)
+    // Get passwords from settings or env
+    const payload = await getPayload({ config })
+    const shopSettings = await payload.findGlobal({ slug: 'shop-settings' }) as any
     
-    if (!isValidProd && !isValidDemo) {
+    const passwords = [
+      shopSettings.tbankPassword,
+      shopSettings.tbankDemoPassword,
+      process.env.TBANK_PASSWORD,
+      process.env.TBANK_DEMO_PASSWORD,
+    ].filter(Boolean)
+    
+    // Verify token signature
+    const isValid = passwords.some(pwd => pwd && verifyNotificationToken(notification, pwd))
+    
+    if (!isValid) {
       console.error('T-Bank notification: Invalid token signature')
-      // Still return OK to prevent retries, but log the error
-      // In production, you might want to handle this differently
     }
     
     // Process notification based on status
     switch (notification.Status) {
       case 'AUTHORIZED':
-        // Payment authorized but not yet confirmed (for two-stage payments)
         console.log(`Payment ${notification.PaymentId} authorized for order ${notification.OrderId}`)
-        await handlePaymentAuthorized(notification)
+        await handlePaymentAuthorized(notification, payload)
         break
         
       case 'CONFIRMED':
-        // Payment confirmed and funds captured
         console.log(`Payment ${notification.PaymentId} confirmed for order ${notification.OrderId}`)
-        await handlePaymentConfirmed(notification)
+        await handlePaymentConfirmed(notification, payload)
         break
         
       case 'REVERSED':
-        // Payment reversed (cancelled before confirmation)
         console.log(`Payment ${notification.PaymentId} reversed for order ${notification.OrderId}`)
-        await handlePaymentReversed(notification)
+        await handlePaymentReversed(notification, payload)
         break
         
       case 'REFUNDED':
-        // Full refund
         console.log(`Payment ${notification.PaymentId} refunded for order ${notification.OrderId}`)
-        await handlePaymentRefunded(notification)
+        await handlePaymentRefunded(notification, payload)
         break
         
       case 'PARTIAL_REFUNDED':
-        // Partial refund
         console.log(`Payment ${notification.PaymentId} partially refunded for order ${notification.OrderId}`)
-        await handlePaymentPartialRefunded(notification)
         break
         
       case 'REJECTED':
-        // Payment rejected
         console.log(`Payment ${notification.PaymentId} rejected for order ${notification.OrderId}`)
-        await handlePaymentRejected(notification)
+        await handlePaymentRejected(notification, payload)
         break
         
       default:
@@ -84,8 +84,6 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error('T-Bank notification processing error:', error)
-    // Return OK anyway to prevent infinite retries
-    // Log error for investigation
     return new NextResponse('OK', { 
       status: 200,
       headers: { 'Content-Type': 'text/plain' }
@@ -95,80 +93,131 @@ export async function POST(request: NextRequest) {
 
 /**
  * Handle AUTHORIZED status
- * For one-stage payments, this is followed immediately by CONFIRMED
  */
-async function handlePaymentAuthorized(notification: TBankNotification) {
-  // TODO: Update order status in database
-  // Example with Payload CMS:
-  // await payload.update({
-  //   collection: 'orders',
-  //   where: { orderId: { equals: notification.OrderId } },
-  //   data: { 
-  //     status: 'authorized',
-  //     paymentId: String(notification.PaymentId),
-  //   }
-  // })
+async function handlePaymentAuthorized(notification: TBankNotification, payload: any) {
+  try {
+    const orders = await payload.find({
+      collection: 'orders',
+      where: { orderNumber: { equals: notification.OrderId } },
+      limit: 1,
+    })
+    
+    if (orders.docs.length > 0) {
+      await payload.update({
+        collection: 'orders',
+        id: orders.docs[0].id,
+        data: {
+          'payment.transactionId': String(notification.PaymentId),
+          'payment.status': 'pending',
+        },
+      })
+    }
+  } catch (err) {
+    console.error('handlePaymentAuthorized error:', err)
+  }
 }
 
 /**
  * Handle CONFIRMED status - payment successful
  */
-async function handlePaymentConfirmed(notification: TBankNotification) {
-  // TODO: Update order status and fulfill order
-  // Example:
-  // await payload.update({
-  //   collection: 'orders',
-  //   where: { orderId: { equals: notification.OrderId } },
-  //   data: { 
-  //     status: 'paid',
-  //     paidAt: new Date().toISOString(),
-  //     paymentId: String(notification.PaymentId),
-  //   }
-  // })
-  
-  // Send confirmation email to customer
-  // await sendOrderConfirmationEmail(notification.OrderId)
+async function handlePaymentConfirmed(notification: TBankNotification, payload: any) {
+  try {
+    const orders = await payload.find({
+      collection: 'orders',
+      where: { orderNumber: { equals: notification.OrderId } },
+      limit: 1,
+    })
+    
+    if (orders.docs.length > 0) {
+      const order = orders.docs[0]
+      await payload.update({
+        collection: 'orders',
+        id: order.id,
+        data: {
+          status: order.status === 'new' ? 'processing' : order.status,
+          'payment.status': 'paid',
+          'payment.transactionId': String(notification.PaymentId),
+          'payment.paidAt': new Date().toISOString(),
+        },
+      })
+      console.log(`Order ${notification.OrderId} marked as paid`)
+    }
+  } catch (err) {
+    console.error('handlePaymentConfirmed error:', err)
+  }
 }
 
 /**
  * Handle REVERSED status - payment cancelled
  */
-async function handlePaymentReversed(notification: TBankNotification) {
-  // TODO: Update order status
-  // await payload.update({
-  //   collection: 'orders',
-  //   where: { orderId: { equals: notification.OrderId } },
-  //   data: { status: 'cancelled' }
-  // })
+async function handlePaymentReversed(notification: TBankNotification, payload: any) {
+  try {
+    const orders = await payload.find({
+      collection: 'orders',
+      where: { orderNumber: { equals: notification.OrderId } },
+      limit: 1,
+    })
+    
+    if (orders.docs.length > 0) {
+      await payload.update({
+        collection: 'orders',
+        id: orders.docs[0].id,
+        data: {
+          'payment.status': 'cancelled',
+        },
+      })
+    }
+  } catch (err) {
+    console.error('handlePaymentReversed error:', err)
+  }
 }
 
 /**
  * Handle REFUNDED status - full refund
  */
-async function handlePaymentRefunded(notification: TBankNotification) {
-  // TODO: Update order status
-  // await payload.update({
-  //   collection: 'orders',
-  //   where: { orderId: { equals: notification.OrderId } },
-  //   data: { status: 'refunded' }
-  // })
-}
-
-/**
- * Handle PARTIAL_REFUNDED status
- */
-async function handlePaymentPartialRefunded(notification: TBankNotification) {
-  // TODO: Update order with partial refund info
+async function handlePaymentRefunded(notification: TBankNotification, payload: any) {
+  try {
+    const orders = await payload.find({
+      collection: 'orders',
+      where: { orderNumber: { equals: notification.OrderId } },
+      limit: 1,
+    })
+    
+    if (orders.docs.length > 0) {
+      await payload.update({
+        collection: 'orders',
+        id: orders.docs[0].id,
+        data: {
+          'payment.status': 'refunded',
+        },
+      })
+    }
+  } catch (err) {
+    console.error('handlePaymentRefunded error:', err)
+  }
 }
 
 /**
  * Handle REJECTED status - payment failed
  */
-async function handlePaymentRejected(notification: TBankNotification) {
-  // TODO: Update order status
-  // await payload.update({
-  //   collection: 'orders',
-  //   where: { orderId: { equals: notification.OrderId } },
-  //   data: { status: 'payment_failed' }
-  // })
+async function handlePaymentRejected(notification: TBankNotification, payload: any) {
+  try {
+    const orders = await payload.find({
+      collection: 'orders',
+      where: { orderNumber: { equals: notification.OrderId } },
+      limit: 1,
+    })
+    
+    if (orders.docs.length > 0) {
+      await payload.update({
+        collection: 'orders',
+        id: orders.docs[0].id,
+        data: {
+          'payment.status': 'cancelled',
+        },
+      })
+    }
+  } catch (err) {
+    console.error('handlePaymentRejected error:', err)
+  }
 }
