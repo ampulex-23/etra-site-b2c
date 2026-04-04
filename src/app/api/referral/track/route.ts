@@ -92,15 +92,15 @@ export async function GET(req: NextRequest) {
     }
 
     await payload.create({
-      collection: 'referrals',
+      collection: 'referrals' as any,
       data: {
         referrer: referrer.id,
         product: product?.id || null,
         status: 'click',
-        source: source as any,
+        source: source,
         ipAddress,
         userAgent,
-      },
+      } as any,
     })
 
     return NextResponse.redirect(new URL(redirect, req.url))
