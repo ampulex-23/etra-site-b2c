@@ -94,6 +94,7 @@ export interface Config {
     'course-results': CourseResult;
     'chat-rooms': ChatRoom;
     messages: Message;
+    referrals: Referral;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -127,6 +128,7 @@ export interface Config {
     'course-results': CourseResultsSelect<false> | CourseResultsSelect<true>;
     'chat-rooms': ChatRoomsSelect<false> | ChatRoomsSelect<true>;
     messages: MessagesSelect<false> | MessagesSelect<true>;
+    referrals: ReferralsSelect<false> | ReferralsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -141,12 +143,14 @@ export interface Config {
     'delivery-settings': DeliverySetting;
     'landing-settings': LandingSetting;
     'shop-settings': ShopSetting;
+    'referral-settings': ReferralSetting;
   };
   globalsSelect: {
     'ai-settings': AiSettingsSelect<false> | AiSettingsSelect<true>;
     'delivery-settings': DeliverySettingsSelect<false> | DeliverySettingsSelect<true>;
     'landing-settings': LandingSettingsSelect<false> | LandingSettingsSelect<true>;
     'shop-settings': ShopSettingsSelect<false> | ShopSettingsSelect<true>;
+    'referral-settings': ReferralSettingsSelect<false> | ReferralSettingsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -451,6 +455,14 @@ export interface Order {
   importedAt?: string | null;
   amoCrmDealId?: number | null;
   notes?: string | null;
+  /**
+   * Клиент, по чьей ссылке оформлен заказ
+   */
+  referrer?: (number | null) | Customer;
+  /**
+   * Очки реферу уже начислены
+   */
+  referralPointsAwarded?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -495,6 +507,23 @@ export interface Customer {
   puzzleBotId?: string | null;
   importedAt?: string | null;
   emailVerified?: boolean | null;
+  /**
+   * Уникальный код для реферальных ссылок
+   */
+  referralCode?: string | null;
+  experiencePoints?: number | null;
+  /**
+   * Рассчитывается автоматически
+   */
+  referralLevel?: string | null;
+  /**
+   * Персональная скидка по реферальной программе
+   */
+  referralDiscount?: number | null;
+  referredBy?: (number | null) | Customer;
+  totalReferrals?: number | null;
+  totalReferralOrders?: number | null;
+  totalReferralRevenue?: number | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1443,6 +1472,40 @@ export interface Message {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referrals".
+ */
+export interface Referral {
+  id: number;
+  /**
+   * Клиент, который поделился ссылкой
+   */
+  referrer: number | Customer;
+  /**
+   * Клиент, который перешёл по ссылке и зарегистрировался
+   */
+  referred?: (number | null) | Customer;
+  /**
+   * Заказ, оформленный по реферальной ссылке
+   */
+  order?: (number | null) | Order;
+  /**
+   * Товар, на который была ссылка
+   */
+  product?: (number | null) | Product;
+  status?: ('click' | 'registration' | 'order_placed' | 'order_paid' | 'points_awarded') | null;
+  pointsAwarded?: number | null;
+  /**
+   * Сумма заказа на момент оформления
+   */
+  orderTotal?: number | null;
+  source?: ('telegram' | 'instagram' | 'vk' | 'whatsapp' | 'direct' | 'other') | null;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -1568,6 +1631,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'messages';
         value: number | Message;
+      } | null)
+    | ({
+        relationTo: 'referrals';
+        value: number | Referral;
       } | null);
   globalSlug?: string | null;
   user:
@@ -1815,6 +1882,8 @@ export interface OrdersSelect<T extends boolean = true> {
   importedAt?: T;
   amoCrmDealId?: T;
   notes?: T;
+  referrer?: T;
+  referralPointsAwarded?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1854,6 +1923,14 @@ export interface CustomersSelect<T extends boolean = true> {
   puzzleBotId?: T;
   importedAt?: T;
   emailVerified?: T;
+  referralCode?: T;
+  experiencePoints?: T;
+  referralLevel?: T;
+  referralDiscount?: T;
+  referredBy?: T;
+  totalReferrals?: T;
+  totalReferralOrders?: T;
+  totalReferralRevenue?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -2362,6 +2439,24 @@ export interface MessagesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referrals_select".
+ */
+export interface ReferralsSelect<T extends boolean = true> {
+  referrer?: T;
+  referred?: T;
+  order?: T;
+  product?: T;
+  status?: T;
+  pointsAwarded?: T;
+  orderTotal?: T;
+  source?: T;
+  ipAddress?: T;
+  userAgent?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -2633,14 +2728,87 @@ export interface ShopSetting {
    */
   telegramBotUsername?: string | null;
   paymentEnabled?: boolean | null;
-  paymentProvider?: ('yokassa' | 'tinkoff') | null;
-  paymentApiKey?: string | null;
-  paymentShopId?: string | null;
+  paymentProvider?: ('tinkoff' | 'yokassa') | null;
+  /**
+   * Идентификатор терминала из ЛК T-Bank
+   */
+  tbankTerminalKey?: string | null;
+  /**
+   * Пароль для подписи запросов
+   */
+  tbankPassword?: string | null;
+  /**
+   * Включите для тестирования с демо-терминалом
+   */
+  tbankDemoMode?: boolean | null;
+  /**
+   * Тестовый терминал
+   */
+  tbankDemoTerminalKey?: string | null;
+  tbankDemoPassword?: string | null;
+  /**
+   * Путь на сайте после успешной оплаты
+   */
+  tbankSuccessUrl?: string | null;
+  /**
+   * Путь на сайте после неуспешной оплаты
+   */
+  tbankFailUrl?: string | null;
+  /**
+   * Для фискализации (54-ФЗ)
+   */
+  tbankTaxation?: ('osn' | 'usn_income' | 'usn_income_outcome' | 'envd' | 'esn' | 'patent') | null;
   minOrderAmount?: number | null;
   /**
    * 0 = бесплатная доставка отключена
    */
   freeDeliveryThreshold?: number | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referral-settings".
+ */
+export interface ReferralSetting {
+  id: number;
+  enabled?: boolean | null;
+  /**
+   * Базовое количество очков за каждый оплаченный заказ по реферальной ссылке
+   */
+  pointsPerOrder?: number | null;
+  /**
+   * Дополнительные очки = X% от суммы заказа (0 = отключено)
+   */
+  pointsPercentOfOrder?: number | null;
+  /**
+   * Настройка уровней и скидок. Уровни должны идти по возрастанию очков.
+   */
+  levels?:
+    | {
+        name: string;
+        minPoints: number;
+        discountPercent: number;
+        /**
+         * Цвет для отображения уровня, например #FFD700
+         */
+        color?: string | null;
+        icon?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  shareTitle?: string | null;
+  shareText?: string | null;
+  enabledSources?: ('telegram' | 'vk' | 'whatsapp' | 'copy')[] | null;
+  /**
+   * Сколько дней после клика по ссылке учитывается реферал
+   */
+  cookieLifetimeDays?: number | null;
+  /**
+   * 0 = без ограничений
+   */
+  minOrderAmountForPoints?: number | null;
+  awardOnStatus?: ('paid' | 'delivered' | 'completed') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2783,10 +2951,44 @@ export interface ShopSettingsSelect<T extends boolean = true> {
   telegramBotUsername?: T;
   paymentEnabled?: T;
   paymentProvider?: T;
-  paymentApiKey?: T;
-  paymentShopId?: T;
+  tbankTerminalKey?: T;
+  tbankPassword?: T;
+  tbankDemoMode?: T;
+  tbankDemoTerminalKey?: T;
+  tbankDemoPassword?: T;
+  tbankSuccessUrl?: T;
+  tbankFailUrl?: T;
+  tbankTaxation?: T;
   minOrderAmount?: T;
   freeDeliveryThreshold?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referral-settings_select".
+ */
+export interface ReferralSettingsSelect<T extends boolean = true> {
+  enabled?: T;
+  pointsPerOrder?: T;
+  pointsPercentOfOrder?: T;
+  levels?:
+    | T
+    | {
+        name?: T;
+        minPoints?: T;
+        discountPercent?: T;
+        color?: T;
+        icon?: T;
+        id?: T;
+      };
+  shareTitle?: T;
+  shareText?: T;
+  enabledSources?: T;
+  cookieLifetimeDays?: T;
+  minOrderAmountForPoints?: T;
+  awardOnStatus?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
