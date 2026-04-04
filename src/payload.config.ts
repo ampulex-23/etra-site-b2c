@@ -39,6 +39,8 @@ import { AISettings } from './globals/AISettings'
 import { DeliverySettings } from './globals/DeliverySettings'
 import { LandingSettings } from './globals/LandingSettings'
 import { ShopSettings } from './globals/ShopSettings'
+import { ReferralSettings } from './globals/ReferralSettings'
+import { Referrals } from './collections/Referrals'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -85,6 +87,13 @@ export default buildConfig({
             title: 'Дашборд инфопродуктов',
           },
         },
+        referralProgram: {
+          Component: '@/app/(payload)/admin/referral-program/page',
+          path: '/referral-program',
+          meta: {
+            title: 'Реферальная программа',
+          },
+        },
       },
     },
   },
@@ -115,12 +124,14 @@ export default buildConfig({
     CourseResults,
     ChatRooms,
     Messages,
+    Referrals,
   ],
   globals: [
     AISettings,
     DeliverySettings,
     LandingSettings,
     ShopSettings,
+    ReferralSettings,
   ],
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [...defaultFeatures, AIAssistantFeature()],

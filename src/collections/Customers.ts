@@ -1,8 +1,12 @@
 import type { CollectionConfig } from 'payload'
+import { customerBeforeChange } from '../hooks/customerBeforeChange'
 
 export const Customers: CollectionConfig = {
   slug: 'customers',
   auth: true,
+  hooks: {
+    beforeChange: [customerBeforeChange],
+  },
   labels: {
     singular: 'Клиент',
     plural: 'Клиенты',
@@ -213,6 +217,95 @@ export const Customers: CollectionConfig = {
       defaultValue: false,
       label: 'Email подтверждён',
       admin: { position: 'sidebar' },
+    },
+    {
+      type: 'collapsible',
+      label: 'Реферальная программа',
+      admin: {
+        position: 'sidebar',
+      },
+      fields: [
+        {
+          name: 'referralCode',
+          type: 'text',
+          unique: true,
+          label: 'Реферальный код',
+          admin: {
+            readOnly: true,
+            description: 'Уникальный код для реферальных ссылок',
+          },
+        },
+        {
+          name: 'experiencePoints',
+          type: 'number',
+          defaultValue: 0,
+          min: 0,
+          label: 'Очки опыта',
+          admin: {
+            readOnly: true,
+          },
+        },
+        {
+          name: 'referralLevel',
+          type: 'text',
+          label: 'Уровень',
+          admin: {
+            readOnly: true,
+            description: 'Рассчитывается автоматически',
+          },
+        },
+        {
+          name: 'referralDiscount',
+          type: 'number',
+          defaultValue: 0,
+          min: 0,
+          max: 100,
+          label: 'Скидка (%)',
+          admin: {
+            readOnly: true,
+            description: 'Персональная скидка по реферальной программе',
+          },
+        },
+        {
+          name: 'referredBy',
+          type: 'relationship',
+          relationTo: 'customers',
+          label: 'Приглашён пользователем',
+          admin: {
+            readOnly: true,
+          },
+        },
+        {
+          name: 'totalReferrals',
+          type: 'number',
+          defaultValue: 0,
+          min: 0,
+          label: 'Всего рефералов',
+          admin: {
+            readOnly: true,
+          },
+        },
+        {
+          name: 'totalReferralOrders',
+          type: 'number',
+          defaultValue: 0,
+          min: 0,
+          label: 'Заказов по рефералке',
+          admin: {
+            readOnly: true,
+          },
+        },
+        {
+          name: 'totalReferralRevenue',
+          type: 'number',
+          defaultValue: 0,
+          min: 0,
+          label: 'Сумма заказов по рефералке (₽)',
+          admin: {
+            readOnly: true,
+          },
+        },
+      ],
     },
   ],
 }

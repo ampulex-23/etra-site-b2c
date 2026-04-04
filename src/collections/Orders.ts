@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { orderAfterChange } from '../hooks/orderAfterChange'
 import { orderBeforeChange } from '../hooks/orderBeforeChange'
+import { referralAfterOrderChange } from '../hooks/referralAfterOrderChange'
 
 export const Orders: CollectionConfig = {
   slug: 'orders',
@@ -10,7 +11,7 @@ export const Orders: CollectionConfig = {
   },
   hooks: {
     beforeChange: [orderBeforeChange],
-    afterChange: [orderAfterChange],
+    afterChange: [orderAfterChange, referralAfterOrderChange],
   },
   admin: {
     useAsTitle: 'orderNumber',
@@ -288,6 +289,28 @@ export const Orders: CollectionConfig = {
       name: 'notes',
       type: 'textarea',
       label: 'Комментарий',
+    },
+    {
+      name: 'referrer',
+      type: 'relationship',
+      relationTo: 'customers',
+      label: 'Реферер',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Клиент, по чьей ссылке оформлен заказ',
+      },
+    },
+    {
+      name: 'referralPointsAwarded',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Очки начислены',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Очки реферу уже начислены',
+      },
     },
   ],
 }
