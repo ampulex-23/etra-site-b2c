@@ -6,9 +6,10 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCart } from '../../cart/CartProvider'
 import { useAuth } from '../../auth/AuthProvider'
-import { CreditCard, Banknote, Loader2 } from 'lucide-react'
+import { CreditCard, Banknote, Loader2, Tag, Gift, MapPin, X } from 'lucide-react'
 
 type DeliveryMethod = 'cdek' | 'pickup'
+type DeliveryType = 'pvz' | 'door'
 type PaymentMethod = 'online' | 'cash'
 type CdekCity = { code: number; city: string; region: string }
 type CdekPvz = {
@@ -16,13 +17,25 @@ type CdekPvz = {
   location: { address: string; address_full: string; latitude: number; longitude: number }
   work_time: string; type: string
 }
-type CdekTariff = { tariff_code: number; tariff_name: string; delivery_sum: number; period_min: number; period_max: number }
-type CdekCalcResult = { delivery_sum: number; period_min: number; period_max: number; tariff_code: number; tariff_name: string; available_tariffs?: CdekTariff[]; error?: string }
+type CdekCalcResult = { delivery_sum: number; period_min: number; period_max: number; error?: string }
+
+interface PromoCode {
+  code: string
+  discountType: 'percent' | 'fixed'
+  discountValue: number
+  minOrderAmount?: number
+}
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value)
   useEffect(() => { const t = setTimeout(() => setDebounced(value), delay); return () => clearTimeout(t) }, [value, delay])
   return debounced
+}
+
+declare global {
+  interface Window {
+    ymaps?: any
+  }
 }
 
 export function CheckoutScreen() {
@@ -31,6 +44,7 @@ export function CheckoutScreen() {
   const { items, totalPrice, clearCart } = useCart()
 
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('cdek')
+  const [deliveryType, setDeliveryType] = useState<DeliveryType>('pvz')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('online')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -38,8 +52,40 @@ export function CheckoutScreen() {
   const [comment, setComment] = useState('')
   const [profileLoaded, setProfileLoaded] = useState(false)
   const [paymentLoading, setPaymentLoading] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  // Sync form fields with customer data when it loads (fixes refresh bug)
+  // CDEK state
+  const [cityQuery, setCityQuery] = useState('')
+  const [citySuggestions, setCitySuggestions] = useState<CdekCity[]>([])
+  const [selectedCity, setSelectedCity] = useState<CdekCity | null>(null)
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false)
+  const [address, setAddress] = useState('')
+  const [pvzList, setPvzList] = useState<CdekPvz[]>([])
+  const [selectedPvz, setSelectedPvz] = useState<CdekPvz | null>(null)
+  const [cdekCalc, setCdekCalc] = useState<CdekCalcResult | null>(null)
+  const [calcLoading, setCalcLoading] = useState(false)
+  const [calcError, setCalcError] = useState('')
+  const cityRef = useRef<HTMLDivElement>(null)
+  const debouncedCityQuery = useDebounce(cityQuery, 400)
+
+  // Map state
+  const [showMap, setShowMap] = useState(false)
+  const [mapLoaded, setMapLoaded] = useState(false)
+  const mapRef = useRef<HTMLDivElement>(null)
+  const mapInstanceRef = useRef<any>(null)
+
+  // Promo code state
+  const [promoCode, setPromoCode] = useState('')
+  const [appliedPromo, setAppliedPromo] = useState<PromoCode | null>(null)
+  const [promoLoading, setPromoLoading] = useState(false)
+  const [promoError, setPromoError] = useState('')
+  const [showPromoInput, setShowPromoInput] = useState(false)
+
+  // Referral discount from customer
+  const referralDiscount = customer?.referralDiscount || 0
+
+  // Sync form fields with customer data when it loads
   useEffect(() => {
     if (customer && !profileLoaded) {
       setName(customer.name || '')
@@ -48,24 +94,8 @@ export function CheckoutScreen() {
       setProfileLoaded(true)
     }
   }, [customer, profileLoaded])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
 
-  const [cityQuery, setCityQuery] = useState('')
-  const [citySuggestions, setCitySuggestions] = useState<CdekCity[]>([])
-  const [selectedCity, setSelectedCity] = useState<CdekCity | null>(null)
-  const [showCitySuggestions, setShowCitySuggestions] = useState(false)
-  const [address, setAddress] = useState('')
-  const [pvzList, setPvzList] = useState<CdekPvz[]>([])
-  const [selectedPvz, setSelectedPvz] = useState<CdekPvz | null>(null)
-  const [deliveryType, setDeliveryType] = useState<'pvz' | 'door'>('pvz')
-  const [cdekCalc, setCdekCalc] = useState<CdekCalcResult | null>(null)
-  const [calcLoading, setCalcLoading] = useState(false)
-  const [calcError, setCalcError] = useState('')
-  const [selectedTariff, setSelectedTariff] = useState<CdekTariff | null>(null)
-  const cityRef = useRef<HTMLDivElement>(null)
-  const debouncedCityQuery = useDebounce(cityQuery, 400)
-
+  // City search
   useEffect(() => {
     if (!debouncedCityQuery || debouncedCityQuery.length < 2 || selectedCity) return
     let cancelled = false
@@ -80,6 +110,7 @@ export function CheckoutScreen() {
     return () => { cancelled = true }
   }, [debouncedCityQuery, selectedCity])
 
+  // Load PVZ list
   useEffect(() => {
     if (!selectedCity || deliveryType !== 'pvz') { setPvzList([]); return }
     let cancelled = false
@@ -94,11 +125,11 @@ export function CheckoutScreen() {
     return () => { cancelled = true }
   }, [selectedCity, deliveryType])
 
+  // Calculate delivery (informational only - not included in payment)
   const calculateDelivery = useCallback(async () => {
     if (!selectedCity || deliveryMethod !== 'cdek') { 
       setCdekCalc(null)
       setCalcError('')
-      setSelectedTariff(null)
       return 
     }
     setCalcLoading(true)
@@ -107,35 +138,28 @@ export function CheckoutScreen() {
       const totalWeight = items.reduce((sum, i) => sum + 500 * i.quantity, 0)
       const res = await fetch('/api/cdek/calculate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cityCode: String(selectedCity.code), weight: totalWeight || 500 }),
+        body: JSON.stringify({ 
+          cityCode: String(selectedCity.code), 
+          weight: totalWeight || 500,
+          deliveryType: deliveryType
+        }),
       })
       const data = await res.json()
       if (!res.ok || data.error) { 
         setCdekCalc(null)
-        setSelectedTariff(null)
         setCalcError(data.error || 'Не удалось рассчитать доставку')
         return 
       }
       setCdekCalc(data)
-      // Auto-select the cheapest tariff (already selected by API)
-      if (data.tariff_code) {
-        setSelectedTariff({
-          tariff_code: data.tariff_code,
-          tariff_name: data.tariff_name,
-          delivery_sum: data.delivery_sum,
-          period_min: data.period_min,
-          period_max: data.period_max,
-        })
-      }
     } catch { 
       setCdekCalc(null)
-      setSelectedTariff(null)
       setCalcError('Ошибка расчёта доставки') 
     } finally { setCalcLoading(false) }
-  }, [selectedCity, deliveryMethod, items])
+  }, [selectedCity, deliveryMethod, deliveryType, items])
 
   useEffect(() => { calculateDelivery() }, [calculateDelivery])
 
+  // Close city dropdown on outside click
   useEffect(() => {
     const handle = (e: MouseEvent) => {
       if (cityRef.current && !cityRef.current.contains(e.target as Node)) setShowCitySuggestions(false)
@@ -144,8 +168,134 @@ export function CheckoutScreen() {
     return () => document.removeEventListener('mousedown', handle)
   }, [])
 
-  const deliveryCost = deliveryMethod === 'pickup' ? 0 : (selectedTariff?.delivery_sum || 0)
-  const orderTotal = totalPrice + deliveryCost
+  // Apply promo code
+  const applyPromoCode = async () => {
+    if (!promoCode.trim()) return
+    setPromoLoading(true)
+    setPromoError('')
+    try {
+      const res = await fetch(`/api/promo/validate?code=${encodeURIComponent(promoCode.trim())}&amount=${totalPrice}`)
+      const data = await res.json()
+      if (!res.ok || data.error) {
+        setPromoError(data.error || 'Промокод недействителен')
+        setAppliedPromo(null)
+        return
+      }
+      setAppliedPromo(data)
+      setShowPromoInput(false)
+    } catch {
+      setPromoError('Ошибка проверки промокода')
+    } finally {
+      setPromoLoading(false)
+    }
+  }
+
+  const removePromoCode = () => {
+    setAppliedPromo(null)
+    setPromoCode('')
+    setPromoError('')
+  }
+
+  // Load Yandex Maps
+  useEffect(() => {
+    if (!showMap || mapLoaded) return
+    
+    const existingScript = document.querySelector('script[src*="api-maps.yandex.ru"]')
+    if (existingScript) {
+      if (window.ymaps) {
+        window.ymaps.ready(() => setMapLoaded(true))
+      }
+      return
+    }
+    
+    const script = document.createElement('script')
+    const apiKey = process.env.NEXT_PUBLIC_YANDEX_MAPS_API_KEY || ''
+    script.src = `https://api-maps.yandex.ru/2.1/?apikey=${apiKey}&lang=ru_RU`
+    script.async = true
+    script.onload = () => {
+      window.ymaps?.ready(() => setMapLoaded(true))
+    }
+    document.head.appendChild(script)
+  }, [showMap, mapLoaded])
+
+  // Initialize map when loaded
+  useEffect(() => {
+    if (!mapLoaded || !showMap || !mapRef.current || mapInstanceRef.current) return
+    
+    const ymaps = window.ymaps
+    if (!ymaps) return
+
+    const centerLat = pvzList.length > 0 ? pvzList[0].location.latitude : 55.76
+    const centerLng = pvzList.length > 0 ? pvzList[0].location.longitude : 37.64
+
+    const map = new ymaps.Map(mapRef.current, {
+      center: [centerLat, centerLng],
+      zoom: 12,
+      controls: ['zoomControl', 'searchControl']
+    })
+    
+    mapInstanceRef.current = map
+
+    // Add PVZ markers if in PVZ mode
+    if (deliveryType === 'pvz' && pvzList.length > 0) {
+      const clusterer = new ymaps.Clusterer({
+        preset: 'islands#greenClusterIcons',
+        groupByCoordinates: false
+      })
+
+      const placemarks = pvzList.map(pvz => {
+        const placemark = new ymaps.Placemark(
+          [pvz.location.latitude, pvz.location.longitude],
+          {
+            balloonContentHeader: pvz.name,
+            balloonContentBody: `<p>${pvz.location.address}</p><p>${pvz.work_time}</p>`,
+            hintContent: pvz.name
+          },
+          { preset: 'islands#greenDotIcon' }
+        )
+        
+        placemark.events.add('click', () => {
+          setSelectedPvz(pvz)
+          setShowMap(false)
+        })
+        
+        return placemark
+      })
+
+      clusterer.add(placemarks)
+      map.geoObjects.add(clusterer)
+      
+      if (placemarks.length > 0) {
+        map.setBounds(clusterer.getBounds(), { checkZoomRange: true, zoomMargin: 40 })
+      }
+    }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.destroy()
+        mapInstanceRef.current = null
+      }
+    }
+  }, [mapLoaded, showMap, deliveryType, pvzList])
+
+  // Calculate discounts
+  const promoDiscount = appliedPromo 
+    ? appliedPromo.discountType === 'percent' 
+      ? Math.round(totalPrice * appliedPromo.discountValue / 100)
+      : appliedPromo.discountValue
+    : 0
+  
+  const referralDiscountAmount = referralDiscount > 0 
+    ? Math.round((totalPrice - promoDiscount) * referralDiscount / 100)
+    : 0
+
+  const totalDiscount = promoDiscount + referralDiscountAmount
+  
+  // Delivery is NOT included in payment - customer pays on receipt
+  const orderTotal = totalPrice - totalDiscount
+
+  // Estimated delivery cost (informational only)
+  const estimatedDeliveryCost = deliveryMethod === 'pickup' ? 0 : (cdekCalc?.delivery_sum || 0)
 
   if (items.length === 0) {
     return (
@@ -181,14 +331,29 @@ export function CheckoutScreen() {
           : `${selectedCity?.city}, ${address}`
       }
       
-      // Create order
+      // Create order - delivery cost is NOT included in total (paid on receipt)
       const res = await fetch('/api/shop-orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `JWT ${token}` },
         body: JSON.stringify({
-          orderNumber, customer: customer.id, items: orderItems, subtotal: totalPrice, deliveryCost,
-          total: orderTotal, status: 'new',
-          delivery: { method: deliveryMethod, address: deliveryAddress },
+          orderNumber, 
+          customer: customer.id, 
+          items: orderItems, 
+          subtotal: totalPrice, 
+          deliveryCost: 0, // Delivery paid on receipt
+          estimatedDeliveryCost: estimatedDeliveryCost, // For reference
+          discount: totalDiscount,
+          promoCode: appliedPromo?.code || undefined,
+          referralDiscount: referralDiscountAmount,
+          total: orderTotal, 
+          status: 'new',
+          delivery: { 
+            method: deliveryMethod, 
+            type: deliveryType,
+            address: deliveryAddress,
+            cityCode: selectedCity?.code,
+            pvzCode: selectedPvz?.code,
+          },
           notes: comment || undefined, 
           payment: { 
             method: paymentMethod === 'online' ? 'tinkoff' : 'cash',
@@ -198,7 +363,7 @@ export function CheckoutScreen() {
       })
       if (!res.ok) { const data = await res.json(); throw new Error(data.errors?.[0]?.message || 'Ошибка') }
       
-      const orderData = await res.json()
+      await res.json()
       
       // If online payment selected, redirect to T-Bank
       if (paymentMethod === 'online') {
@@ -215,7 +380,7 @@ export function CheckoutScreen() {
               customerPhone: phone,
               items: items.map(i => ({
                 name: i.title,
-                price: i.price,
+                price: Math.round(i.price * (1 - totalDiscount / totalPrice)),
                 quantity: i.quantity,
                 tax: 'none'
               }))
@@ -228,7 +393,6 @@ export function CheckoutScreen() {
             throw new Error(paymentData.message || 'Ошибка инициализации платежа')
           }
           
-          // Clear cart and redirect to T-Bank payment form
           clearCart()
           window.location.href = paymentData.paymentUrl
           return
@@ -297,7 +461,7 @@ export function CheckoutScreen() {
               <div className="del-option__desc">{cdekCalc ? `${cdekCalc.period_min}–${cdekCalc.period_max} дн.` : 'Курьером или в ПВЗ'}</div>
             </div>
             <div className="del-option__price">
-              {calcLoading ? '...' : selectedTariff ? `${Math.round(selectedTariff.delivery_sum).toLocaleString('ru-RU')} ₽` : calcError ? '—' : 'Рассчитать'}
+              {calcLoading ? '...' : cdekCalc ? `≈ ${Math.round(cdekCalc.delivery_sum).toLocaleString('ru-RU')} ₽` : calcError ? '—' : 'Рассчитать'}
             </div>
           </button>
 
@@ -312,6 +476,21 @@ export function CheckoutScreen() {
 
           {deliveryMethod === 'cdek' && (
             <div className="mt-16 stack">
+              {/* Delivery type: PVZ or Door */}
+              <div>
+                <label className="inp-label mb-8">Способ получения</label>
+                <div className="pill-toggle">
+                  <button type="button" className={`pill-toggle__item ${deliveryType === 'pvz' ? 'pill-toggle__item--active' : ''}`}
+                    onClick={() => { setDeliveryType('pvz'); setSelectedPvz(null) }}>
+                    В пункт выдачи
+                  </button>
+                  <button type="button" className={`pill-toggle__item ${deliveryType === 'door' ? 'pill-toggle__item--active' : ''}`}
+                    onClick={() => { setDeliveryType('door'); setSelectedPvz(null) }}>
+                    До двери
+                  </button>
+                </div>
+              </div>
+
               {calcError && (
                 <div className="auth-card__error" style={{ marginBottom: 12 }}>
                   {calcError}
@@ -319,29 +498,7 @@ export function CheckoutScreen() {
                 </div>
               )}
 
-              {/* Tariff selection - show available tariffs if any */}
-              {cdekCalc?.available_tariffs && cdekCalc.available_tariffs.length > 1 && (
-                <div>
-                  <label className="inp-label mb-8">Тариф доставки</label>
-                  <div className="tariff-list">
-                    {cdekCalc.available_tariffs.map((tariff) => (
-                      <button
-                        key={tariff.tariff_code}
-                        type="button"
-                        className={`tariff-item ${selectedTariff?.tariff_code === tariff.tariff_code ? 'tariff-item--active' : ''}`}
-                        onClick={() => setSelectedTariff(tariff)}
-                      >
-                        <div className="tariff-item__name">{tariff.tariff_name}</div>
-                        <div className="tariff-item__info">
-                          <span>{tariff.period_min}–{tariff.period_max} дн.</span>
-                          <span className="tariff-item__price">{Math.round(tariff.delivery_sum).toLocaleString('ru-RU')} ₽</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
+              {/* City search */}
               <div ref={cityRef} style={{ position: 'relative' }}>
                 <div className="inp-wrap">
                   <label className="inp-label">Город</label>
@@ -361,18 +518,48 @@ export function CheckoutScreen() {
                 )}
               </div>
 
+              {/* PVZ selection */}
               {deliveryType === 'pvz' && selectedCity && pvzList.length > 0 && (
                 <div>
-                  <label className="inp-label mb-12">Пункт выдачи ({pvzList.length})</label>
-                  <div className="pvz-list">
-                    {pvzList.map((pvz) => (
-                      <button key={pvz.code} type="button" className={`pvz-item ${selectedPvz?.code === pvz.code ? 'pvz-item--active' : ''}`}
-                        onClick={() => setSelectedPvz(pvz)}>
-                        <div className="pvz-item__name">{pvz.name} <span className="t-small t-muted">{pvz.type}</span></div>
-                        <div className="pvz-item__addr">{pvz.location.address}</div>
-                      </button>
-                    ))}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <label className="inp-label">Пункт выдачи ({pvzList.length})</label>
+                    <button type="button" className="btn btn--sm btn--outline" onClick={() => setShowMap(true)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <MapPin size={14} /> На карте
+                    </button>
                   </div>
+                  
+                  {selectedPvz && (
+                    <div className="pvz-selected glass" style={{ padding: 12, marginBottom: 12 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                          <div className="t-caption" style={{ fontWeight: 600 }}>{selectedPvz.name}</div>
+                          <div className="t-small t-muted">{selectedPvz.location.address}</div>
+                          <div className="t-small t-muted">{selectedPvz.work_time}</div>
+                        </div>
+                        <button type="button" onClick={() => setSelectedPvz(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                          <X size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {!selectedPvz && (
+                    <div className="pvz-list">
+                      {pvzList.slice(0, 5).map((pvz) => (
+                        <button key={pvz.code} type="button" className="pvz-item"
+                          onClick={() => setSelectedPvz(pvz)}>
+                          <div className="pvz-item__name">{pvz.name} <span className="t-small t-muted">{pvz.type}</span></div>
+                          <div className="pvz-item__addr">{pvz.location.address}</div>
+                        </button>
+                      ))}
+                      {pvzList.length > 5 && (
+                        <button type="button" className="btn btn--sm btn--outline btn--full" onClick={() => setShowMap(true)}>
+                          Показать все {pvzList.length} пунктов на карте
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -380,28 +567,102 @@ export function CheckoutScreen() {
                 <p className="t-caption t-muted">Загрузка пунктов выдачи...</p>
               )}
 
+              {/* Door delivery address */}
               {deliveryType === 'door' && selectedCity && (
                 <div className="inp-wrap">
                   <label className="inp-label">Адрес доставки</label>
                   <input className="inp" value={address} onChange={(e) => setAddress(e.target.value)} required placeholder="ул. Примерная, д. 1, кв. 10" />
                 </div>
               )}
+
+              {/* Delivery info notice */}
+              {selectedCity && cdekCalc && (
+                <div className="glass" style={{ padding: 12, background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                  <p className="t-small" style={{ color: 'var(--c-primary)', margin: 0 }}>
+                    ℹ️ Стоимость доставки ≈ {Math.round(cdekCalc.delivery_sum).toLocaleString('ru-RU')} ₽ — оплачивается при получении. 
+                    Точная сумма будет известна после формирования отправления на складе СДЭК.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* 3. Payment */}
+        {/* 3. Discounts */}
         <div className="checkout-sec">
           <div className="checkout-sec__head">
             <span className="checkout-sec__num">3</span>
+            <span className="checkout-sec__title">Скидки</span>
+          </div>
+
+          {/* Referral discount */}
+          {referralDiscount > 0 && (
+            <div className="discount-badge" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, background: 'rgba(16, 185, 129, 0.1)', borderRadius: 'var(--r-sm)', marginBottom: 12 }}>
+              <Gift size={20} style={{ color: 'var(--c-success)' }} />
+              <div style={{ flex: 1 }}>
+                <div className="t-caption" style={{ fontWeight: 600 }}>Реферальная скидка</div>
+                <div className="t-small t-muted">Ваш уровень: {customer?.referralLevel || 'Новичок'}</div>
+              </div>
+              <div className="t-caption" style={{ fontWeight: 700, color: 'var(--c-success)' }}>−{referralDiscount}%</div>
+            </div>
+          )}
+
+          {/* Applied promo code */}
+          {appliedPromo && (
+            <div className="discount-badge" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, background: 'rgba(139, 92, 246, 0.1)', borderRadius: 'var(--r-sm)', marginBottom: 12 }}>
+              <Tag size={20} style={{ color: 'var(--c-primary)' }} />
+              <div style={{ flex: 1 }}>
+                <div className="t-caption" style={{ fontWeight: 600 }}>Промокод {appliedPromo.code}</div>
+                <div className="t-small t-muted">
+                  {appliedPromo.discountType === 'percent' ? `${appliedPromo.discountValue}% скидка` : `${appliedPromo.discountValue} ₽ скидка`}
+                </div>
+              </div>
+              <button type="button" onClick={removePromoCode} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                <X size={16} />
+              </button>
+            </div>
+          )}
+
+          {/* Promo code input */}
+          {!appliedPromo && (
+            <>
+              {showPromoInput ? (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input 
+                    className="inp" 
+                    value={promoCode} 
+                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    placeholder="Введите промокод"
+                    style={{ flex: 1 }}
+                  />
+                  <button 
+                    type="button" 
+                    className={`btn btn--primary btn--sm ${promoLoading ? 'btn--loading' : ''}`}
+                    onClick={applyPromoCode}
+                    disabled={promoLoading || !promoCode.trim()}
+                  >
+                    {promoLoading ? <Loader2 size={16} className="btn__spinner" /> : 'Применить'}
+                  </button>
+                </div>
+              ) : (
+                <button type="button" className="btn btn--outline btn--sm" onClick={() => setShowPromoInput(true)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Tag size={14} /> У меня есть промокод
+                </button>
+              )}
+              {promoError && <p className="t-small" style={{ color: 'var(--c-danger)', marginTop: 8 }}>{promoError}</p>}
+            </>
+          )}
+        </div>
+
+        {/* 4. Payment */}
+        <div className="checkout-sec">
+          <div className="checkout-sec__head">
+            <span className="checkout-sec__num">4</span>
             <span className="checkout-sec__title">Способ оплаты</span>
           </div>
 
-          <button 
-            type="button" 
-            className={`del-option ${paymentMethod === 'online' ? 'del-option--active' : ''}`} 
-            onClick={() => setPaymentMethod('online')}
-          >
+          <button type="button" className={`del-option ${paymentMethod === 'online' ? 'del-option--active' : ''}`} onClick={() => setPaymentMethod('online')}>
             <div className="del-option__radio" />
             <div className="del-option__info">
               <div className="del-option__name" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -417,11 +678,7 @@ export function CheckoutScreen() {
             </div>
           </button>
 
-          <button 
-            type="button" 
-            className={`del-option ${paymentMethod === 'cash' ? 'del-option--active' : ''}`} 
-            onClick={() => setPaymentMethod('cash')}
-          >
+          <button type="button" className={`del-option ${paymentMethod === 'cash' ? 'del-option--active' : ''}`} onClick={() => setPaymentMethod('cash')}>
             <div className="del-option__radio" />
             <div className="del-option__info">
               <div className="del-option__name" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -433,10 +690,10 @@ export function CheckoutScreen() {
           </button>
         </div>
 
-        {/* 4. Comment */}
+        {/* 5. Comment */}
         <div className="checkout-sec">
           <div className="checkout-sec__head">
-            <span className="checkout-sec__num">4</span>
+            <span className="checkout-sec__num">5</span>
             <span className="checkout-sec__title">Комментарий</span>
           </div>
           <textarea className="inp" value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Пожелания к заказу (необязательно)" rows={3} />
@@ -463,12 +720,36 @@ export function CheckoutScreen() {
             <span className="summary__label">Товары</span>
             <span>{totalPrice.toLocaleString('ru-RU')} ₽</span>
           </div>
+          
+          {promoDiscount > 0 && (
+            <div className="summary__row" style={{ color: 'var(--c-success)' }}>
+              <span className="summary__label">Промокод {appliedPromo?.code}</span>
+              <span>−{promoDiscount.toLocaleString('ru-RU')} ₽</span>
+            </div>
+          )}
+          
+          {referralDiscountAmount > 0 && (
+            <div className="summary__row" style={{ color: 'var(--c-success)' }}>
+              <span className="summary__label">Реферальная скидка ({referralDiscount}%)</span>
+              <span>−{referralDiscountAmount.toLocaleString('ru-RU')} ₽</span>
+            </div>
+          )}
+          
           <div className="summary__row">
             <span className="summary__label">Доставка</span>
-            <span>{deliveryMethod === 'pickup' ? 'Бесплатно' : calcLoading ? '...' : selectedTariff ? `${Math.round(selectedTariff.delivery_sum).toLocaleString('ru-RU')} ₽` : '—'}</span>
+            <span className="t-muted">
+              {deliveryMethod === 'pickup' 
+                ? 'Бесплатно' 
+                : calcLoading 
+                  ? '...' 
+                  : cdekCalc 
+                    ? `≈ ${Math.round(cdekCalc.delivery_sum).toLocaleString('ru-RU')} ₽ (при получении)` 
+                    : '—'}
+            </span>
           </div>
+          
           <div className="summary__row summary__row--total">
-            <span>Итого</span>
+            <span>К оплате</span>
             <span>{orderTotal.toLocaleString('ru-RU')} ₽</span>
           </div>
         </div>
@@ -487,6 +768,27 @@ export function CheckoutScreen() {
           }
         </button>
       </form>
+
+      {/* Map Modal */}
+      {showMap && (
+        <div className="modal-overlay" onClick={() => setShowMap(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 600, height: '80vh', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottom: '1px solid var(--c-border)' }}>
+              <h3 className="t-h3" style={{ margin: 0 }}>Выберите пункт выдачи</h3>
+              <button type="button" onClick={() => setShowMap(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                <X size={24} />
+              </button>
+            </div>
+            <div ref={mapRef} style={{ flex: 1, minHeight: 300 }}>
+              {!mapLoaded && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                  <Loader2 size={32} className="btn__spinner" style={{ animation: 'spin 1s linear infinite' }} />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
