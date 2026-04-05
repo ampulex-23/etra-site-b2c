@@ -246,7 +246,8 @@ export function AccountScreen() {
       <div className="account-header glass">
         <div className="account-avatar">
           {avatarUrl ? (
-            <Image src={avatarUrl} alt="" width={64} height={64} className="account-avatar__img" />
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={avatarUrl} alt="" width={64} height={64} className="account-avatar__img" />
           ) : (
             <span className="account-avatar__initials">{initials}</span>
           )}

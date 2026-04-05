@@ -118,54 +118,73 @@ CREATE INDEX IF NOT EXISTS idx_referrals_created
 ON referrals(created_at DESC);
 
 -- =====================================================
--- 4. НОВАЯ ТАБЛИЦА referral_settings (глобальные настройки)
+-- 4. ТАБЛИЦЫ referral_settings (Payload CMS формат для Global)
 -- =====================================================
 
+-- Удалить старую таблицу если была создана в неправильном формате
+DROP TABLE IF EXISTS referral_settings CASCADE;
+
+-- Основная таблица глобальных настроек
 CREATE TABLE IF NOT EXISTS referral_settings (
     id SERIAL PRIMARY KEY,
-    
-    -- Включена ли программа
     enabled BOOLEAN DEFAULT TRUE,
-    
-    -- Базовое количество очков за заказ
-    points_per_order INTEGER DEFAULT 100,
-    
-    -- Процент от суммы заказа (дополнительные очки)
-    points_percent_of_order INTEGER DEFAULT 5,
-    
-    -- Уровни (JSON массив)
-    levels JSONB DEFAULT '[
-        {"name": "Новичок", "minPoints": 0, "discountPercent": 0, "color": "#9CA3AF"},
-        {"name": "Бронза", "minPoints": 100, "discountPercent": 3, "color": "#CD7F32"},
-        {"name": "Серебро", "minPoints": 500, "discountPercent": 5, "color": "#C0C0C0"},
-        {"name": "Золото", "minPoints": 1500, "discountPercent": 7, "color": "#FFD700"},
-        {"name": "Платина", "minPoints": 5000, "discountPercent": 10, "color": "#E5E4E2"},
-        {"name": "Бриллиант", "minPoints": 15000, "discountPercent": 15, "color": "#B9F2FF"}
-    ]'::jsonb,
-    
-    -- Настройки шеринга
+    points_per_order NUMERIC DEFAULT 100,
+    points_percent_of_order NUMERIC DEFAULT 5,
     share_title VARCHAR(255) DEFAULT 'Посмотри этот товар!',
     share_text TEXT DEFAULT 'Рекомендую этот товар от ЭТРА 🌿',
-    enabled_sources JSONB DEFAULT '["telegram", "vk", "whatsapp", "copy"]'::jsonb,
-    
-    -- Срок жизни реферальной метки (дней)
-    cookie_lifetime_days INTEGER DEFAULT 30,
-    
-    -- Минимальная сумма заказа для начисления очков
-    min_order_amount_for_points INTEGER DEFAULT 0,
-    
-    -- При каком статусе начислять очки
+    cookie_lifetime_days NUMERIC DEFAULT 30,
+    min_order_amount_for_points NUMERIC DEFAULT 0,
     award_on_status VARCHAR(20) DEFAULT 'paid',
-    
-    -- Timestamps
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    updated_at TIMESTAMP(3) WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    created_at TIMESTAMP(3) WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
--- Вставить начальные настройки если таблица пустая
-INSERT INTO referral_settings (id, enabled)
-SELECT 1, TRUE
+-- Таблица уровней (array field "levels")
+CREATE TABLE IF NOT EXISTS referral_settings_levels (
+    _order INTEGER NOT NULL,
+    _parent_id INTEGER NOT NULL REFERENCES referral_settings(id) ON DELETE CASCADE,
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255),
+    min_points NUMERIC,
+    discount_percent NUMERIC,
+    color VARCHAR(255),
+    icon_id INTEGER
+);
+
+CREATE INDEX IF NOT EXISTS idx_referral_settings_levels_order ON referral_settings_levels(_order);
+CREATE INDEX IF NOT EXISTS idx_referral_settings_levels_parent ON referral_settings_levels(_parent_id);
+
+-- Таблица enabledSources (select hasMany field)
+CREATE TABLE IF NOT EXISTS referral_settings_enabled_sources (
+    "order" INTEGER NOT NULL,
+    parent_id INTEGER NOT NULL REFERENCES referral_settings(id) ON DELETE CASCADE,
+    value VARCHAR(255),
+    id SERIAL PRIMARY KEY
+);
+
+CREATE INDEX IF NOT EXISTS idx_referral_settings_enabled_sources_order ON referral_settings_enabled_sources("order");
+CREATE INDEX IF NOT EXISTS idx_referral_settings_enabled_sources_parent ON referral_settings_enabled_sources(parent_id);
+
+-- Вставить начальные настройки
+INSERT INTO referral_settings (id, enabled, points_per_order, points_percent_of_order, share_title, share_text, cookie_lifetime_days, min_order_amount_for_points, award_on_status)
+SELECT 1, TRUE, 100, 5, 'Посмотри этот товар!', 'Рекомендую этот товар от ЭТРА 🌿', 30, 0, 'paid'
 WHERE NOT EXISTS (SELECT 1 FROM referral_settings WHERE id = 1);
+
+-- Вставить уровни по умолчанию
+INSERT INTO referral_settings_levels (_order, _parent_id, name, min_points, discount_percent, color) VALUES
+    (1, 1, 'Новичок', 0, 0, '#9CA3AF'),
+    (2, 1, 'Бронза', 100, 3, '#CD7F32'),
+    (3, 1, 'Серебро', 500, 5, '#C0C0C0'),
+    (4, 1, 'Золото', 1500, 7, '#FFD700'),
+    (5, 1, 'Платина', 5000, 10, '#E5E4E2'),
+    (6, 1, 'Бриллиант', 15000, 15, '#B9F2FF');
+
+-- Вставить источники шеринга по умолчанию
+INSERT INTO referral_settings_enabled_sources ("order", parent_id, value) VALUES
+    (1, 1, 'telegram'),
+    (2, 1, 'vk'),
+    (3, 1, 'whatsapp'),
+    (4, 1, 'copy');
 
 -- =====================================================
 -- 5. ГЕНЕРАЦИЯ РЕФЕРАЛЬНЫХ КОДОВ ДЛЯ СУЩЕСТВУЮЩИХ КЛИЕНТОВ

@@ -28,6 +28,18 @@ const nextConfig = {
         protocol: 'http',
         hostname: 'localhost',
       },
+      {
+        protocol: 'https',
+        hostname: 't.me',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.telegram.org',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn*.telegram.org',
+      },
     ],
   },
   webpack: (webpackConfig) => {
