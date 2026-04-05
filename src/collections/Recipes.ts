@@ -10,6 +10,12 @@ export const Recipes: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'difficulty', 'prepTime', 'status', 'publishedAt'],
     group: 'Контент',
+    livePreview: {
+      url: ({ data }) => {
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+        return data.slug ? `${baseUrl}/recipes/${data.slug}` : ''
+      },
+    },
   },
   access: {
     read: () => true,
