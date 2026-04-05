@@ -147,6 +147,13 @@ export async function POST(req: NextRequest) {
           email: customer.email,
           name: customer.name || telegramName,
           telegramId,
+          telegram: {
+            chatId: telegramId,
+            username: body.username || '',
+            firstName: body.first_name || '',
+            lastName: body.last_name || '',
+            photoUrl: body.photo_url || '',
+          },
         },
       })
     }
@@ -158,6 +165,13 @@ export async function POST(req: NextRequest) {
         email: (loginResult.user as unknown as Record<string, unknown>).email,
         name: (loginResult.user as unknown as Record<string, unknown>).name || telegramName,
         telegramId,
+        telegram: {
+          chatId: telegramId,
+          username: body.username || '',
+          firstName: body.first_name || '',
+          lastName: body.last_name || '',
+          photoUrl: body.photo_url || '',
+        },
       },
     }
     console.log('[Telegram API] Sending success response:', response)

@@ -64,12 +64,26 @@ export function ReferralSection({ customer }: ReferralSectionProps) {
     )
   }
 
-  if (!settings?.enabled || !customer?.referralCode) {
+  if (!settings?.enabled) {
     return (
       <div className="referral-section">
         <div className="empty-state glass">
           <Gift size={48} strokeWidth={1.5} />
           <p>Реферальная программа временно недоступна</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!customer?.referralCode) {
+    return (
+      <div className="referral-section">
+        <div className="empty-state glass">
+          <Gift size={48} strokeWidth={1.5} />
+          <p>Ваш реферальный код генерируется...</p>
+          <p style={{ fontSize: 13, color: '#666', marginTop: 8 }}>
+            Обновите страницу через несколько секунд
+          </p>
         </div>
       </div>
     )

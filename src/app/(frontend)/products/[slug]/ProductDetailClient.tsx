@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/app/(frontend)/cart/CartProvider'
 import { RichText } from '@/app/(frontend)/components/RichText'
+import { ShareButton } from '@/app/(frontend)/pwa/components/ShareButton'
 
 interface ProductImage { url: string }
 interface ProductVariant { name: string; price: number; sku?: string }
@@ -121,7 +122,7 @@ export function ProductDetailClient({ product }: Props) {
         {product.weight && <span className="t-caption t-muted" style={{ marginLeft: 8 }}>{product.weight + ' г'}</span>}
       </div>
 
-      <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
         <div className="qty">
           <button className="qty__btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
             <svg viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
@@ -138,6 +139,15 @@ export function ProductDetailClient({ product }: Props) {
           </svg>
           {added ? 'Добавлено!' : 'В корзину'}
         </button>
+      </div>
+
+      {/* Share Button */}
+      <div style={{ marginBottom: 20 }}>
+        <ShareButton 
+          productSlug={product.slug} 
+          productName={product.title}
+          productImage={product.images[0]?.url}
+        />
       </div>
 
       <div className="pill-toggle mb-12">

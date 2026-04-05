@@ -171,17 +171,27 @@ WHERE NOT EXISTS (SELECT 1 FROM referral_settings WHERE id = 1);
 -- 5. ГЕНЕРАЦИЯ РЕФЕРАЛЬНЫХ КОДОВ ДЛЯ СУЩЕСТВУЮЩИХ КЛИЕНТОВ
 -- =====================================================
 
--- Функция для генерации случайного кода
+-- Включить расширение pgcrypto для генерации случайных байтов
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- Функция для генерации случайного кода с использованием pgcrypto
 CREATE OR REPLACE FUNCTION generate_referral_code() 
 RETURNS VARCHAR(8) AS $$
 DECLARE
-    chars TEXT := 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    result VARCHAR(8) := '';
-    i INTEGER;
+    result VARCHAR(8);
+    code_exists BOOLEAN;
 BEGIN
-    FOR i IN 1..8 LOOP
-        result := result || substr(chars, floor(random() * length(chars) + 1)::integer, 1);
+    LOOP
+        -- Генерируем 4 случайных байта и конвертируем в hex (8 символов)
+        result := upper(encode(gen_random_bytes(4), 'hex'));
+        
+        -- Проверяем уникальность
+        SELECT EXISTS(SELECT 1 FROM customers WHERE referral_code = result) INTO code_exists;
+        
+        -- Выходим если код уникален
+        EXIT WHEN NOT code_exists;
     END LOOP;
+    
     RETURN result;
 END;
 $$ LANGUAGE plpgsql;
@@ -195,6 +205,18 @@ WHERE referral_code IS NULL;
 UPDATE customers 
 SET referral_level = 'Новичок', referral_discount = 0
 WHERE referral_level IS NULL;
+
+-- =====================================================
+-- 6. ОБНОВЛЕНИЕ СЛУЖЕБНЫХ ТАБЛИЦ PAYLOAD
+-- =====================================================
+
+-- Добавить поддержку referrals в таблицу связей для locked documents
+ALTER TABLE payload_locked_documents_rels 
+ADD COLUMN IF NOT EXISTS referrals_id INTEGER REFERENCES referrals(id) ON DELETE CASCADE;
+
+-- Создать индекс для производительности
+CREATE INDEX IF NOT EXISTS idx_payload_locked_documents_rels_referrals 
+ON payload_locked_documents_rels(referrals_id);
 
 -- =====================================================
 -- ГОТОВО!

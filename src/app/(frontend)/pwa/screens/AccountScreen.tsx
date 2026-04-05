@@ -661,13 +661,13 @@ export function AccountScreen() {
         {activeTab === 'referrals' && (
           <ReferralSection 
             customer={customer ? {
-              referralCode: (customer as any).referralCode || '',
-              experiencePoints: (customer as any).experiencePoints || 0,
-              referralLevel: (customer as any).referralLevel || 'Новичок',
-              referralDiscount: (customer as any).referralDiscount || 0,
-              totalReferrals: (customer as any).totalReferrals || 0,
-              totalReferralOrders: (customer as any).totalReferralOrders || 0,
-              totalReferralRevenue: (customer as any).totalReferralRevenue || 0,
+              referralCode: customer.referralCode || '',
+              experiencePoints: customer.experiencePoints || 0,
+              referralLevel: customer.referralLevel || 'Новичок',
+              referralDiscount: customer.referralDiscount || 0,
+              totalReferrals: customer.totalReferrals || 0,
+              totalReferralOrders: customer.totalReferralOrders || 0,
+              totalReferralRevenue: customer.totalReferralRevenue || 0,
             } : null}
           />
         )}
