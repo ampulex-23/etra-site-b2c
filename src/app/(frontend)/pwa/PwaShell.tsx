@@ -9,6 +9,7 @@ import { useAuth } from '../auth/AuthProvider'
 const menuLinks = [
   { href: '#', label: 'О НАС' },
   { href: '/catalog', label: 'КАТАЛОГ' },
+  { href: '/courses', label: 'КУРСЫ' },
   { href: '#', label: 'НОВИНКИ' },
   { href: '#', label: 'МЕСТА' },
   { href: '#', label: 'ЭНЦИКЛОПЕДИЯ' },
@@ -46,6 +47,7 @@ export function PwaShell({ children }: { children: React.ReactNode }) {
 
   const isAbout = pathname === '/'
   const isCatalog = pathname === '/catalog' || pathname.startsWith('/products/')
+  const isCourses = pathname === '/courses' || pathname.startsWith('/courses/')
   const isRecipes = pathname === '/recipes'
   const isCart = pathname === '/cart' || pathname === '/checkout'
 
@@ -165,6 +167,14 @@ export function PwaShell({ children }: { children: React.ReactNode }) {
               <rect x="14" y="14" width="7" height="7" rx="1" />
             </svg>
             <span className="botnav__label">Каталог</span>
+          </Link>
+
+          <Link href="/courses" className={`botnav__item ${isCourses ? 'botnav__item--active' : ''}`}>
+            <svg viewBox="0 0 24 24">
+              <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" />
+              <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
+            </svg>
+            <span className="botnav__label">Курсы</span>
           </Link>
 
           <Link href="/cart" className={`botnav__item ${isCart ? 'botnav__item--active' : ''}`}>

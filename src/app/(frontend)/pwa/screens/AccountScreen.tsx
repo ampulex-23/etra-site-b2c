@@ -7,7 +7,30 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '../../auth/AuthProvider'
 import { ReferralSection } from '../components/ReferralSection'
 
-type Tab = 'profile' | 'orders' | 'addresses' | 'favorites' | 'referrals'
+type Tab = 'profile' | 'orders' | 'addresses' | 'favorites' | 'courses' | 'referrals'
+
+interface MyEnrollment {
+  id: string
+  status: string
+  currentDay: number
+  reportStreak: number
+  missedReports: number
+  enrolledAt: string
+  infoproduct: {
+    id: string
+    title: string
+    slug: string
+    type: string
+    coverImage: string | null
+    durationDays: number
+  } | null
+  cohort: {
+    id: string
+    title: string
+    status: string
+    startDate: string
+  } | null
+}
 
 interface Order {
   id: string
@@ -64,6 +87,8 @@ export function AccountScreen() {
   const [favorites, setFavorites] = useState<Product[]>([])
   const [loadingOrders, setLoadingOrders] = useState(false)
   const [loadingFavorites, setLoadingFavorites] = useState(false)
+  const [enrollments, setEnrollments] = useState<MyEnrollment[]>([])
+  const [loadingEnrollments, setLoadingEnrollments] = useState(false)
   
   // Profile editing
   const [editMode, setEditMode] = useState(false)
@@ -123,12 +148,29 @@ export function AccountScreen() {
     }
   }, [token, customer?.favorites])
 
+  const fetchEnrollments = useCallback(async () => {
+    if (!token) return
+    setLoadingEnrollments(true)
+    try {
+      const res = await fetch('/api/enrollments/my', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setEnrollments(data.enrollments || [])
+      }
+    } catch { /* ignore */ } finally {
+      setLoadingEnrollments(false)
+    }
+  }, [token])
+
   useEffect(() => {
     if (customer && token) {
       if (activeTab === 'orders') fetchOrders()
       if (activeTab === 'favorites') fetchFavorites()
+      if (activeTab === 'courses') fetchEnrollments()
     }
-  }, [customer, token, activeTab, fetchOrders, fetchFavorites])
+  }, [customer, token, activeTab, fetchOrders, fetchFavorites, fetchEnrollments])
 
   const handleSaveProfile = async () => {
     if (!token) return
@@ -317,6 +359,16 @@ export function AccountScreen() {
             <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
           </svg>
           Рефералы
+        </button>
+        <button 
+          className={`account-tab ${activeTab === 'courses' ? 'account-tab--active' : ''}`}
+          onClick={() => setActiveTab('courses')}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+            <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" />
+            <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
+          </svg>
+          Курсы
         </button>
       </div>
 
@@ -653,6 +705,65 @@ export function AccountScreen() {
                     </div>
                   </Link>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Courses Tab */}
+        {activeTab === 'courses' && (
+          <div className="account-courses">
+            {loadingEnrollments ? (
+              <div style={{ textAlign: 'center', padding: 40 }}><div className="spinner" /></div>
+            ) : enrollments.length === 0 ? (
+              <div className="glass" style={{ padding: 32, textAlign: 'center' }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>📚</div>
+                <div className="t-h3" style={{ marginBottom: 8 }}>Нет записей на курсы</div>
+                <p className="t-caption t-sec" style={{ marginBottom: 16 }}>Посмотрите наши программы и запишитесь на курс</p>
+                <Link href="/courses" className="btn btn--primary">Каталог курсов</Link>
+              </div>
+            ) : (
+              <div className="account-courses__list">
+                {enrollments.map((e) => {
+                  const progress = e.infoproduct?.durationDays
+                    ? Math.round((e.currentDay / e.infoproduct.durationDays) * 100)
+                    : 0
+                  return (
+                    <Link
+                      key={e.id}
+                      href={`/courses/my/${e.id}`}
+                      className="account-course-card glass"
+                    >
+                      <div className="account-course-card__info">
+                        <div className="account-course-card__title">
+                          {e.infoproduct?.title || 'Курс'}
+                        </div>
+                        <div className="account-course-card__cohort">
+                          {e.cohort?.title}
+                        </div>
+                        <div className="account-course-card__meta">
+                          <span className={`account-course-card__status account-course-card__status--${e.status}`}>
+                            {e.status === 'active' ? '🟢 Активен' : e.status === 'completed' ? '✅ Завершён' : e.status === 'pending' ? '⏳ Ожидание' : e.status === 'expelled' ? '❌ Исключён' : e.status}
+                          </span>
+                          {e.status === 'active' && (
+                            <span>🔥 {e.reportStreak} дней подряд</span>
+                          )}
+                        </div>
+                        {e.status === 'active' && (
+                          <div className="account-course-card__progress">
+                            <div className="cdash-progress__bar">
+                              <div className="cdash-progress__fill" style={{ width: `${Math.min(progress, 100)}%` }} />
+                            </div>
+                            <span className="account-course-card__progress-text">
+                              День {e.currentDay}/{e.infoproduct?.durationDays || '?'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="account-course-card__arrow">→</div>
+                    </Link>
+                  )
+                })}
               </div>
             )}
           </div>
