@@ -93,7 +93,7 @@ export function CourseDetailScreen() {
   const fetchCourse = async (slug: string) => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/infoproducts/${slug}`)
+      const res = await fetch(`/api/public-infoproducts/${slug}`)
       if (!res.ok) {
         router.replace('/courses')
         return

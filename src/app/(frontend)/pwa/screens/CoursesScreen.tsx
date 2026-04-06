@@ -50,7 +50,7 @@ export function CoursesScreen() {
     try {
       const params = new URLSearchParams()
       if (activeFilter) params.set('type', activeFilter)
-      const res = await fetch(`/api/infoproducts?${params}`)
+      const res = await fetch(`/api/public-infoproducts?${params}`)
       const data = await res.json()
       setCourses(data.docs || [])
     } catch (err) {
