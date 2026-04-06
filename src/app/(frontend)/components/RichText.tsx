@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Image from 'next/image'
 
 interface LexicalNode {
   type: string
@@ -10,7 +11,16 @@ interface LexicalNode {
   tag?: string
   listType?: string
   url?: string
-  fields?: { url?: string; newTab?: boolean }
+  fields?: { 
+    url?: string
+    newTab?: boolean
+    blockType?: string
+    videoUrl?: string
+    [key: string]: any
+  }
+  value?: any
+  relationTo?: string
+  id?: string
 }
 
 interface LexicalRoot {
@@ -62,6 +72,57 @@ function renderNode(node: LexicalNode, index: number): React.ReactNode {
       return <blockquote key={index}>{children}</blockquote>
     case 'linebreak':
       return <br key={index} />
+    case 'upload':
+      // Image upload from Payload
+      if (node.value?.url) {
+        return (
+          <div key={index} className="richtext-image">
+            <Image
+              src={node.value.url}
+              alt={node.value.alt || node.value.filename || ''}
+              width={node.value.width || 800}
+              height={node.value.height || 600}
+              style={{ width: '100%', height: 'auto' }}
+            />
+            {node.value.caption && (
+              <p className="richtext-image-caption">{node.value.caption}</p>
+            )}
+          </div>
+        )
+      }
+      return null
+    case 'block':
+      // Video or other block types
+      if (node.fields?.blockType === 'video') {
+        const videoUrl = node.fields?.videoUrl || node.fields?.url
+        if (videoUrl) {
+          // Check if it's a YouTube/Vimeo embed
+          if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') || videoUrl.includes('vimeo.com')) {
+            return (
+              <div key={index} className="richtext-video">
+                <iframe
+                  src={videoUrl}
+                  width="100%"
+                  height="400"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            )
+          }
+          // Regular video file
+          return (
+            <div key={index} className="richtext-video">
+              <video controls width="100%" style={{ maxWidth: '100%' }}>
+                <source src={videoUrl} />
+                Ваш браузер не поддерживает видео.
+              </video>
+            </div>
+          )
+        }
+      }
+      return null
     default:
       return children ? <>{children}</> : null
   }
