@@ -73,23 +73,47 @@ function renderNode(node: LexicalNode, index: number): React.ReactNode {
     case 'linebreak':
       return <br key={index} />
     case 'upload':
-      // Image upload from Payload
-      if (node.value?.url) {
+      // Image/Video upload from Payload
+      const media = typeof node.value === 'object' && node.value !== null ? node.value : null
+      
+      if (media?.url) {
+        const isVideo = media.mimeType?.startsWith('video/')
+        
+        if (isVideo) {
+          // Render video
+          return (
+            <div key={index} className="richtext-video">
+              <video controls width="100%" style={{ maxWidth: '100%' }}>
+                <source src={media.url} type={media.mimeType} />
+                Ваш браузер не поддерживает видео.
+              </video>
+              {media.caption && (
+                <p className="richtext-image-caption">{media.caption}</p>
+              )}
+            </div>
+          )
+        }
+        
+        // Render image
         return (
           <div key={index} className="richtext-image">
             <Image
-              src={node.value.url}
-              alt={node.value.alt || node.value.filename || ''}
-              width={node.value.width || 800}
-              height={node.value.height || 600}
+              src={media.url}
+              alt={media.alt || media.filename || ''}
+              width={media.width || 800}
+              height={media.height || 600}
               style={{ width: '100%', height: 'auto' }}
             />
-            {node.value.caption && (
-              <p className="richtext-image-caption">{node.value.caption}</p>
+            {media.caption && (
+              <p className="richtext-image-caption">{media.caption}</p>
             )}
           </div>
         )
       }
+      
+      // Fallback: if value is just an ID, we can't render it without fetching
+      // This shouldn't happen if depth is set correctly in the API
+      console.warn('Upload node has no populated media data:', node)
       return null
     case 'block':
       // Video or other block types

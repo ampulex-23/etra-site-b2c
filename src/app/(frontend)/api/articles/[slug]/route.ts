@@ -2,6 +2,49 @@ import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
+// Helper to populate media in Lexical content nodes
+async function populateMediaInContent(content: any, payload: any): Promise<any> {
+  if (!content?.root?.children) return content
+
+  const populateNode = async (node: any): Promise<any> => {
+    // Handle upload nodes with media IDs
+    if (node.type === 'upload' && typeof node.value === 'number') {
+      try {
+        const media = await payload.findByID({
+          collection: 'media',
+          id: node.value,
+        })
+        return { ...node, value: media }
+      } catch (err) {
+        console.error('Failed to populate media:', node.value, err)
+        return node
+      }
+    }
+
+    // Recursively process children
+    if (node.children && Array.isArray(node.children)) {
+      const populatedChildren = await Promise.all(
+        node.children.map((child: any) => populateNode(child))
+      )
+      return { ...node, children: populatedChildren }
+    }
+
+    return node
+  }
+
+  const populatedChildren = await Promise.all(
+    content.root.children.map((child: any) => populateNode(child))
+  )
+
+  return {
+    ...content,
+    root: {
+      ...content.root,
+      children: populatedChildren,
+    },
+  }
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
@@ -17,7 +60,7 @@ export async function GET(
         status: { equals: 'published' },
       },
       limit: 1,
-      depth: 2,
+      depth: 3, // Increased to populate media in content nodes
     })
 
     if (result.docs.length === 0) {
@@ -25,6 +68,9 @@ export async function GET(
     }
 
     const article = result.docs[0] as any
+
+    // Populate media in content nodes
+    const populatedContent = await populateMediaInContent(article.content, payload)
 
     // Fetch related articles (same category, excluding current)
     let relatedArticles: any[] = []
@@ -55,7 +101,7 @@ export async function GET(
         title: article.title,
         slug: article.slug,
         excerpt: article.excerpt,
-        content: article.content,
+        content: populatedContent, // Use populated content with media
         category: article.category,
         author: article.author,
         publishedAt: article.publishedAt,
