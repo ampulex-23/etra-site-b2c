@@ -54,9 +54,17 @@ export const Posts: CollectionConfig = {
     },
     {
       name: 'category',
-      type: 'text',
+      type: 'select',
       label: 'Категория',
       admin: { position: 'sidebar' },
+      options: [
+        { label: '📄 Служебные страницы', value: 'service' },
+        { label: '🌿 Здоровье и питание', value: 'health' },
+        { label: '🧪 Продукция ЭТРА', value: 'products' },
+        { label: '🍽️ Рецепты', value: 'recipes' },
+        { label: '💡 Советы и рекомендации', value: 'tips' },
+        { label: '📚 Энциклопедия', value: 'encyclopedia' },
+      ],
     },
     {
       name: 'tags',
