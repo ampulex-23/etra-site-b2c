@@ -1,5 +1,6 @@
 import { default as default_bc690b908ad95952356aeb62d39e8b03 } from '@/components/admin/InviteManagerButton'
 import { MediaAIAssistant as MediaAIAssistant_0f33a3a30b61a0c506b17ef75c58847f } from '@/components/admin/MediaAIAssistant'
+import { MediaFolderBrowser as MediaFolderBrowser_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6 } from '@/components/admin/MediaFolderBrowser'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -35,6 +36,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 export const importMap = {
   "@/components/admin/InviteManagerButton#default": default_bc690b908ad95952356aeb62d39e8b03,
   "@/components/admin/MediaAIAssistant#MediaAIAssistant": MediaAIAssistant_0f33a3a30b61a0c506b17ef75c58847f,
+  "@/components/admin/MediaFolderBrowser#MediaFolderBrowser": MediaFolderBrowser_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
