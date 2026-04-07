@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 
-export const MediaFolderBrowser: React.FC = () => {
+const MediaFolderBrowserContent: React.FC = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const currentFolder = searchParams.get('folder') || ''
@@ -230,5 +230,13 @@ export const MediaFolderBrowser: React.FC = () => {
         </div>
       )}
     </div>
+  )
+}
+
+export const MediaFolderBrowser: React.FC = () => {
+  return (
+    <Suspense fallback={<div style={{ padding: '1rem' }}>Загрузка браузера папок...</div>}>
+      <MediaFolderBrowserContent />
+    </Suspense>
   )
 }
