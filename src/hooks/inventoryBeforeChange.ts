@@ -10,27 +10,26 @@ export const inventoryBeforeChange: CollectionBeforeChangeHook = async ({ data, 
 
     const productId = typeof item.product === 'object' ? item.product.id : item.product
 
-    // Auto-fill calculatedQty from StockLevels if not set
-    if (item.calculatedQty === undefined || item.calculatedQty === null || item.calculatedQty === 0) {
-      try {
-        const warehouseId = typeof data.warehouse === 'object' ? data.warehouse.id : data.warehouse
-        if (warehouseId) {
-          const stockLevels = await payload.find({
-            collection: 'stock-levels',
-            where: {
-              product: { equals: productId },
-              warehouse: { equals: warehouseId },
-            },
-            limit: 1,
-            req,
-          })
-          if (stockLevels.docs[0]) {
-            item.calculatedQty = stockLevels.docs[0].calculated || 0
-          }
-        }
-      } catch {
-        // keep existing value
+    // Always fill calculatedQty from StockLevels (current stock at inventory time)
+    try {
+      const warehouseId = typeof data.warehouse === 'object' ? data.warehouse.id : data.warehouse
+      if (warehouseId) {
+        const stockLevels = await payload.find({
+          collection: 'stock-levels',
+          where: {
+            product: { equals: productId },
+            warehouse: { equals: warehouseId },
+          },
+          limit: 1,
+          req,
+        })
+        // Set to current stock or 0 if no stock record exists (new product)
+        item.calculatedQty = stockLevels.docs[0]?.calculated ?? 0
+      } else {
+        item.calculatedQty = item.calculatedQty ?? 0
       }
+    } catch {
+      item.calculatedQty = item.calculatedQty ?? 0
     }
 
     // Auto-calculate discrepancy

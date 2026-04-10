@@ -86,11 +86,12 @@ export const Inventories: CollectionConfig = {
         {
           name: 'calculatedQty',
           type: 'number',
-          required: true,
+          required: false,
+          defaultValue: 0,
           label: 'Расчётный остаток',
           admin: {
             readOnly: true,
-            description: 'Из системы на момент инвентаризации',
+            description: 'Из системы на момент инвентаризации (заполняется автоматически)',
           },
         },
         {
