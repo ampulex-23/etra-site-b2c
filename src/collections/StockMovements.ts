@@ -17,7 +17,21 @@ export const StockMovements: CollectionConfig = {
     description: 'Журнал всех операций: производство, перемещение, отправка, списание',
   },
   access: {
-    read: ({ req: { user } }) => Boolean(user),
+    read: () => true,
+    create: ({ req: { user } }) => {
+      if (!user) return false
+      const role = (user as any).role
+      return role === 'admin' || role === 'manager' || role === 'warehouse'
+    },
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      const role = (user as any).role
+      return role === 'admin' || role === 'warehouse'
+    },
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      return (user as any).role === 'admin'
+    },
   },
   fields: [
     {
