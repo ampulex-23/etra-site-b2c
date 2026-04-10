@@ -21,14 +21,6 @@ export const CourseModules: CollectionConfig = {
       }
       return false
     },
-    _originalRead: ({ req: { user } }) => {
-      if (user && user.collection === 'users') return true
-      // Customers can read visible modules (filtered by enrollment in API)
-      if (user && user.collection === 'customers') {
-        return { visible: { equals: true } }
-      }
-      return false
-    },
     create: ({ req: { user } }) => {
       if (!user) return false
       if (user.collection !== 'users') return false

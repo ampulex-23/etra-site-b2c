@@ -21,14 +21,6 @@ export const CourseResults: CollectionConfig = {
       // Anonymous: only published
       return { status: { in: ['published', 'featured'] } }
     },
-    _originalRead: ({ req: { user } }) => {
-      if (user && user.collection === 'users') return true
-      // Customers see published/featured results + their own (any status)
-      // Own results are filtered via API; here we allow published globally
-      if (user && user.collection === 'customers') return true
-      // Anonymous: only published
-      return { status: { in: ['published', 'featured'] } }
-    },
     create: ({ req: { user } }) => {
       if (!user) return false
       // Admin/manager/content from admin panel

@@ -18,12 +18,6 @@ export const Messages: CollectionConfig = {
       if (user && user.collection === 'customers') return true
       return false
     },
-    _originalRead: ({ req: { user } }) => {
-      if (user && user.collection === 'users') return true
-      // Customers can read messages (filtered by chatRoom/cohort in API)
-      if (user && user.collection === 'customers') return true
-      return false
-    },
     create: ({ req: { user } }) => {
       if (!user) return false
       // Admin/manager from admin panel

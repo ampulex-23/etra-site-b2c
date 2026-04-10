@@ -19,12 +19,6 @@ export const ChatRooms: CollectionConfig = {
       if (user && user.collection === 'customers') return true
       return false
     },
-    _originalRead: ({ req: { user } }) => {
-      if (user && user.collection === 'users') return true
-      // Customers can see rooms (filtered by enrollment in API)
-      if (user && user.collection === 'customers') return true
-      return false
-    },
     create: ({ req: { user } }) => {
       if (!user) return false
       if (user.collection !== 'users') return false
