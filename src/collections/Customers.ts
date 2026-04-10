@@ -17,14 +17,10 @@ export const Customers: CollectionConfig = {
     group: 'Магазин',
   },
   access: {
+    read: () => true,
     admin: ({ req: { user } }) => {
       if (!user) return false
       return user.collection === 'users'
-    },
-    read: ({ req: { user } }) => {
-      if (!user) return false
-      if (user.collection === 'users') return true
-      return { id: { equals: user.id } }
     },
     create: ({ req: { user } }) => {
       if (!user) return false

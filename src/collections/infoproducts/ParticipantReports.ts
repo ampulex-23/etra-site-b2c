@@ -18,6 +18,13 @@ export const ParticipantReports: CollectionConfig = {
   },
   access: {
     read: ({ req: { user } }) => {
+      if (!user) return true
+      if (user && user.collection === 'users') return true
+      // Customers can read their own reports (filtered via enrollment in API)
+      if (user && user.collection === 'customers') return true
+      return false
+    },
+    _originalRead: ({ req: { user } }) => {
       if (user && user.collection === 'users') return true
       // Customers can read their own reports (filtered via enrollment in API)
       if (user && user.collection === 'customers') return true
@@ -131,3 +138,4 @@ export const ParticipantReports: CollectionConfig = {
     },
   ],
 }
+

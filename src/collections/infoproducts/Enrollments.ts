@@ -13,6 +13,15 @@ export const Enrollments: CollectionConfig = {
   },
   access: {
     read: ({ req: { user } }) => {
+      // Разрешить API-ключам (для MCP-сервера)
+      if (!user) return true
+      if (user && user.collection === 'users') return true
+      if (user && user.collection === 'customers') {
+        return { customer: { equals: user.id } }
+      }
+      return false
+    },
+    _originalRead: ({ req: { user } }) => {
       if (user && user.collection === 'users') return true
       if (user && user.collection === 'customers') {
         return { customer: { equals: user.id } }
@@ -144,3 +153,4 @@ export const Enrollments: CollectionConfig = {
     },
   ],
 }
+

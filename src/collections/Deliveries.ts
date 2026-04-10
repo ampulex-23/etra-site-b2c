@@ -16,7 +16,21 @@ export const Deliveries: CollectionConfig = {
     group: 'Магазин',
   },
   access: {
-    read: ({ req: { user } }) => Boolean(user),
+    read: () => true,
+    create: ({ req: { user } }) => {
+      if (!user) return false
+      const role = (user as any).role
+      return role === 'admin' || role === 'manager'
+    },
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      const role = (user as any).role
+      return role === 'admin' || role === 'manager'
+    },
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      return (user as any).role === 'admin'
+    },
   },
   fields: [
     {

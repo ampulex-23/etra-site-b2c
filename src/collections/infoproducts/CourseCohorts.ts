@@ -17,6 +17,7 @@ export const CourseCohorts: CollectionConfig = {
   },
   access: {
     read: ({ req: { user } }) => {
+      if (!user) return true
       if (user && user.collection === 'users') return true
       // Customers can see upcoming (for purchase) and active/completed cohorts
       if (user && user.collection === 'customers') {
@@ -107,3 +108,4 @@ export const CourseCohorts: CollectionConfig = {
     },
   ],
 }
+

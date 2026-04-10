@@ -12,6 +12,13 @@ export const Messages: CollectionConfig = {
   },
   access: {
     read: ({ req: { user } }) => {
+      if (!user) return true
+      if (user && user.collection === 'users') return true
+      // Customers can read messages (filtered by chatRoom/cohort in API)
+      if (user && user.collection === 'customers') return true
+      return false
+    },
+    _originalRead: ({ req: { user } }) => {
       if (user && user.collection === 'users') return true
       // Customers can read messages (filtered by chatRoom/cohort in API)
       if (user && user.collection === 'customers') return true
@@ -108,3 +115,4 @@ export const Messages: CollectionConfig = {
     },
   ],
 }
+

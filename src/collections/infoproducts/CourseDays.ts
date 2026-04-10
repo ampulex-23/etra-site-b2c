@@ -13,6 +13,7 @@ export const CourseDays: CollectionConfig = {
   },
   access: {
     read: ({ req: { user } }) => {
+      if (!user) return true
       if (user && user.collection === 'users') return true
       // Customers: handled via API endpoint (needs enrollment check)
       // Allow read if user is a customer — filtered by cohort in API
@@ -155,3 +156,4 @@ export const CourseDays: CollectionConfig = {
     },
   ],
 }
+

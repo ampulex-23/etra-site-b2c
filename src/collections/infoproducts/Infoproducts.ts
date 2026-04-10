@@ -13,6 +13,7 @@ export const Infoproducts: CollectionConfig = {
   },
   access: {
     read: ({ req: { user } }) => {
+      if (!user) return true
       if (user && user.collection === 'users') return true
       return { status: { equals: 'active' } }
     },
@@ -269,3 +270,4 @@ export const Infoproducts: CollectionConfig = {
     },
   ],
 }
+

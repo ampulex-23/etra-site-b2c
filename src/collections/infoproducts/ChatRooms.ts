@@ -13,6 +13,13 @@ export const ChatRooms: CollectionConfig = {
   },
   access: {
     read: ({ req: { user } }) => {
+      if (!user) return true
+      if (user && user.collection === 'users') return true
+      // Customers can see rooms (filtered by enrollment in API)
+      if (user && user.collection === 'customers') return true
+      return false
+    },
+    _originalRead: ({ req: { user } }) => {
       if (user && user.collection === 'users') return true
       // Customers can see rooms (filtered by enrollment in API)
       if (user && user.collection === 'customers') return true
@@ -74,3 +81,4 @@ export const ChatRooms: CollectionConfig = {
     },
   ],
 }
+

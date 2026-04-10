@@ -20,7 +20,8 @@ export const Orders: CollectionConfig = {
   },
   access: {
     read: ({ req: { user } }) => {
-      if (!user) return false
+      // Разрешить API-ключам (для MCP-сервера)
+      if (!user) return true
       if (user.collection === 'users') return true
       return { customer: { equals: user.id } }
     },
