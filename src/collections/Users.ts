@@ -11,10 +11,7 @@ export const Users: CollectionConfig = {
     defaultColumns: ['name', 'email', 'role', 'active'],
     group: 'Система',
   },
-  auth: {
-    tokenExpiration: 7200,
-    useAPIKey: true,
-  },
+  auth: true,
   access: {
     read: ({ req: { user } }) => Boolean(user),
     create: ({ req: { user } }) => {
