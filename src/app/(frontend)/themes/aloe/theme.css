@@ -1,0 +1,503 @@
+/* ============================================
+   ALOE THEME — Fresh, organic, glassmorphism
+   Inspired by: mint green, soft teal, cream, lime
+   ============================================ */
+
+.theme-aloe {
+  /* === Base palette — light organic === */
+  --color-bg-primary: #f8fdf8;
+  --color-bg-secondary: #f0f7f0;
+  --color-bg-card: rgba(255, 255, 255, 0.7);
+  --color-bg-card-hover: rgba(255, 255, 255, 0.85);
+  --color-bg-glass: rgba(255, 255, 255, 0.45);
+  --color-bg-input: rgba(255, 255, 255, 0.8);
+
+  /* === Text — dark greens for contrast === */
+  --color-text-primary: #1a3a2f;
+  --color-text-secondary: #3d5a4c;
+  --color-text-muted: #6b8f7a;
+
+  /* === Accent — vibrant lime === */
+  --color-accent: #65a30d;
+  --color-accent-hover: #84cc16;
+  --color-accent-glow: rgba(132, 204, 22, 0.35);
+  --color-accent-secondary: #22c55e;
+  --color-accent-tertiary: #14b8a6;
+
+  /* === Borders — soft mint === */
+  --color-border: rgba(101, 163, 13, 0.15);
+  --color-border-hover: rgba(101, 163, 13, 0.35);
+  --color-border-card: rgba(255, 255, 255, 0.6);
+
+  /* === Gradients === */
+  --gradient-hero: linear-gradient(180deg, transparent 0%, rgba(248, 253, 248, 0.3) 50%, #f8fdf8 100%);
+  --gradient-card: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(240, 247, 240, 0.6) 100%);
+  --gradient-accent: linear-gradient(135deg, #84cc16, #22c55e);
+  --gradient-section: linear-gradient(180deg, #f8fdf8 0%, #f0f7f0 100%);
+
+  /* === Shadows — soft organic === */
+  --shadow-card: 0 4px 24px rgba(26, 58, 47, 0.08), 0 0 1px rgba(101, 163, 13, 0.1);
+  --shadow-card-hover: 0 12px 48px rgba(26, 58, 47, 0.12), 0 0 24px rgba(101, 163, 13, 0.08);
+  --shadow-glow: 0 0 30px rgba(132, 204, 22, 0.25);
+  --shadow-btn: 0 4px 20px rgba(101, 163, 13, 0.35);
+  --shadow-glass: 0 8px 32px rgba(26, 58, 47, 0.06);
+
+  /* === Spacing === */
+  --section-padding: 100px 0;
+  --container-max: 1200px;
+  --container-padding: 0 24px;
+
+  /* === Border radius === */
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
+  --radius-xl: 36px;
+  --radius-pill: 100px;
+
+  /* === Typography === */
+  --font-display: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* === Transitions === */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+}
+
+/* ============================================
+   GLASSMORPHISM PANELS
+   ============================================ */
+.theme-aloe .glass-panel {
+  background: var(--color-bg-glass);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  border: 1px solid var(--color-border-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-glass);
+}
+
+.theme-aloe .glass-card {
+  background: var(--color-bg-card);
+  backdrop-filter: blur(16px) saturate(1.5);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-base);
+}
+
+.theme-aloe .glass-card:hover {
+  background: var(--color-bg-card-hover);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-4px);
+}
+
+/* ============================================
+   MATTE WHITE SURFACES
+   ============================================ */
+.theme-aloe .matte-surface {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(240, 247, 240, 0.8);
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 12px rgba(26, 58, 47, 0.04);
+}
+
+/* ============================================
+   LIME ACCENT BUTTONS
+   ============================================ */
+.theme-aloe .btn-accent {
+  background: var(--gradient-accent);
+  color: #ffffff;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-btn);
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-aloe .btn-accent::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.theme-aloe .btn-accent:hover::before {
+  transform: translateX(100%);
+}
+
+.theme-aloe .btn-accent:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(101, 163, 13, 0.45);
+}
+
+/* ============================================
+   ORGANIC BORDER GLOW
+   ============================================ */
+.theme-aloe .organic-border {
+  border: 1px solid var(--color-border);
+  box-shadow: inset 0 0 40px rgba(132, 204, 22, 0.03);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.theme-aloe .organic-border:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: inset 0 0 40px rgba(132, 204, 22, 0.06), var(--shadow-glow);
+}
+
+/* ============================================
+   HEADER OVERRIDES
+   ============================================ */
+.theme-aloe .site-header--scrolled {
+  background: rgba(248, 253, 248, 0.85);
+  backdrop-filter: blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.theme-aloe .site-header__logo-icon {
+  background: var(--gradient-accent);
+  color: #ffffff;
+}
+
+.theme-aloe .site-header__cta {
+  background: var(--gradient-accent);
+  color: #ffffff;
+  box-shadow: var(--shadow-btn);
+}
+
+.theme-aloe .site-header__cta:hover {
+  box-shadow: 0 6px 24px rgba(101, 163, 13, 0.4);
+}
+
+.theme-aloe .site-header__cart-badge {
+  background: var(--color-accent);
+  color: #ffffff;
+}
+
+/* ============================================
+   HERO OVERRIDES
+   ============================================ */
+.theme-aloe .hero__overlay {
+  background: linear-gradient(
+    to right,
+    rgba(248, 253, 248, 0.75) 0%,
+    rgba(248, 253, 248, 0.5) 40%,
+    rgba(248, 253, 248, 0.2) 70%,
+    transparent 100%
+  );
+}
+
+.theme-aloe .hero__badge {
+  background: rgba(132, 204, 22, 0.12);
+  border: 1px solid rgba(132, 204, 22, 0.3);
+  color: var(--color-accent);
+  backdrop-filter: blur(12px);
+}
+
+.theme-aloe .hero__badge-dot {
+  background: var(--color-accent);
+}
+
+.theme-aloe .hero__title {
+  color: var(--color-text-primary);
+  text-shadow: none;
+}
+
+.theme-aloe .hero__subtitle {
+  color: var(--color-text-secondary);
+}
+
+.theme-aloe .hero__cta {
+  background: var(--gradient-accent);
+  color: #ffffff;
+  box-shadow: var(--shadow-btn);
+}
+
+.theme-aloe .hero__cta:hover {
+  box-shadow: 0 12px 48px rgba(101, 163, 13, 0.5);
+}
+
+.theme-aloe .hero__cta-secondary {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  backdrop-filter: blur(12px);
+}
+
+.theme-aloe .hero__cta-secondary:hover {
+  border-color: var(--color-accent);
+  background: rgba(132, 204, 22, 0.08);
+}
+
+.theme-aloe .hero__scroll-hint {
+  color: var(--color-text-muted);
+}
+
+.theme-aloe .hero__scroll-line {
+  background: linear-gradient(to bottom, var(--color-accent), transparent);
+}
+
+/* ============================================
+   SECTION OVERRIDES
+   ============================================ */
+.theme-aloe .section__label {
+  color: var(--color-accent);
+}
+
+.theme-aloe .section__label::before {
+  background: var(--color-accent);
+}
+
+.theme-aloe .section-science {
+  background: var(--color-bg-primary);
+}
+
+.theme-aloe .section-science::before {
+  background: radial-gradient(circle, rgba(132, 204, 22, 0.08) 0%, transparent 70%);
+}
+
+.theme-aloe .section-science__image-wrap {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-card);
+}
+
+.theme-aloe .section-science__image-placeholder {
+  background: linear-gradient(135deg, rgba(132, 204, 22, 0.08) 0%, rgba(34, 197, 94, 0.08) 100%);
+}
+
+.theme-aloe .science-feature:hover {
+  background: var(--color-bg-card);
+  border-color: var(--color-border);
+}
+
+.theme-aloe .science-feature__icon {
+  background: rgba(132, 204, 22, 0.1);
+  border: 1px solid rgba(132, 204, 22, 0.2);
+}
+
+.theme-aloe .science-feature:hover .science-feature__icon {
+  background: rgba(132, 204, 22, 0.15);
+  box-shadow: 0 0 24px rgba(132, 204, 22, 0.2);
+}
+
+/* ============================================
+   BENEFITS SECTION
+   ============================================ */
+.theme-aloe .section-benefits {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border);
+}
+
+.theme-aloe .benefit-stat__number {
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.theme-aloe .benefit-stat::after {
+  background: var(--color-border);
+}
+
+/* ============================================
+   FLAVOR CARDS
+   ============================================ */
+.theme-aloe .section-flavors {
+  background: var(--color-bg-primary);
+}
+
+.theme-aloe .flavor-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-card);
+  backdrop-filter: blur(12px);
+}
+
+.theme-aloe .flavor-card:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.theme-aloe .flavor-card__overlay {
+  background: linear-gradient(to top, rgba(248, 253, 248, 0.98) 0%, transparent 60%);
+}
+
+.theme-aloe .flavor-card__tag {
+  background: rgba(132, 204, 22, 0.12);
+  color: var(--color-accent);
+}
+
+.theme-aloe .flavor-card__name {
+  color: var(--color-text-primary);
+}
+
+.theme-aloe .flavor-card__desc {
+  color: var(--color-text-secondary);
+}
+
+.theme-aloe .flavor-card__price {
+  border-color: var(--color-border);
+}
+
+.theme-aloe .flavor-card__price-value {
+  color: var(--color-text-primary);
+}
+
+.theme-aloe .flavor-card__price-btn {
+  background: var(--gradient-accent);
+  color: #ffffff;
+  box-shadow: 0 2px 12px rgba(101, 163, 13, 0.3);
+}
+
+.theme-aloe .flavor-card__price-btn:hover {
+  box-shadow: 0 4px 20px rgba(101, 163, 13, 0.5);
+}
+
+/* ============================================
+   PROCESS SECTION
+   ============================================ */
+.theme-aloe .section-process {
+  background: var(--color-bg-primary);
+}
+
+.theme-aloe .section-process__line {
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-secondary), var(--color-accent-tertiary), var(--color-accent));
+  opacity: 0.25;
+}
+
+.theme-aloe .process-step__number {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  color: var(--color-accent);
+}
+
+.theme-aloe .process-step:hover .process-step__number {
+  background: rgba(132, 204, 22, 0.1);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-glow);
+}
+
+/* ============================================
+   TESTIMONIALS
+   ============================================ */
+.theme-aloe .section-testimonials {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border);
+}
+
+.theme-aloe .testimonial-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-card);
+  backdrop-filter: blur(12px);
+}
+
+.theme-aloe .testimonial-card:hover {
+  border-color: var(--color-border-hover);
+}
+
+.theme-aloe .testimonial-card__avatar {
+  background: rgba(132, 204, 22, 0.1);
+  border: 1px solid var(--color-border);
+  color: var(--color-accent);
+}
+
+/* ============================================
+   JOIN / CTA SECTION
+   ============================================ */
+.theme-aloe .section-join {
+  background: var(--color-bg-primary);
+}
+
+.theme-aloe .section-join__glow {
+  background: radial-gradient(ellipse, rgba(132, 204, 22, 0.12) 0%, transparent 70%);
+}
+
+.theme-aloe .section-join__input {
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.theme-aloe .section-join__input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.theme-aloe .section-join__input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px var(--color-accent-glow);
+}
+
+.theme-aloe .section-join__btn {
+  background: var(--gradient-accent);
+  color: #ffffff;
+  box-shadow: var(--shadow-btn);
+}
+
+.theme-aloe .section-join__btn:hover {
+  box-shadow: 0 8px 36px rgba(101, 163, 13, 0.5);
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.theme-aloe .site-footer {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border);
+}
+
+.theme-aloe .site-footer__social-link {
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.theme-aloe .site-footer__social-link:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: rgba(132, 204, 22, 0.08);
+}
+
+.theme-aloe .site-footer__link:hover {
+  color: var(--color-accent);
+}
+
+.theme-aloe .site-footer__input {
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.theme-aloe .site-footer__input:focus {
+  border-color: var(--color-accent);
+}
+
+.theme-aloe .site-footer__submit {
+  background: var(--gradient-accent);
+  color: #ffffff;
+}
+
+.theme-aloe .site-footer__submit:hover {
+  box-shadow: 0 4px 20px rgba(101, 163, 13, 0.4);
+}
+
+.theme-aloe .site-footer__bottom {
+  border-color: var(--color-border);
+}
+
+/* ============================================
+   MOBILE NAV
+   ============================================ */
+@media (max-width: 768px) {
+  .theme-aloe .site-header__nav {
+    background: rgba(248, 253, 248, 0.95);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+}

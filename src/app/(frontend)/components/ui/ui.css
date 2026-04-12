@@ -32,8 +32,8 @@
   box-shadow: var(--shadow-btn);
 }
 .ui-btn--primary:hover:not(:disabled) {
-  filter: brightness(1.15);
-  box-shadow: 0 6px 24px rgba(56, 189, 248, 0.4);
+  filter: brightness(1.1);
+  box-shadow: 0 6px 24px rgba(101, 163, 13, 0.4);
   transform: translateY(-1px);
 }
 
@@ -53,7 +53,7 @@
   border: 1px solid var(--color-accent);
 }
 .ui-btn--outline:hover:not(:disabled) {
-  background: rgba(56, 189, 248, 0.1);
+  background: rgba(101, 163, 13, 0.1);
 }
 
 .ui-btn--ghost {

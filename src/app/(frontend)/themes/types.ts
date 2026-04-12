@@ -6,6 +6,12 @@ export interface ThemeConfig {
 }
 
 export const THEMES: Record<string, ThemeConfig> = {
+  aloe: {
+    id: 'aloe',
+    name: 'Aloe Fresh',
+    description: 'Свежая органическая тема с эффектом жидкого стекла',
+    cssClass: 'theme-aloe',
+  },
   cyber: {
     id: 'cyber',
     name: 'Cyber Lab',
@@ -26,4 +32,4 @@ export const THEMES: Record<string, ThemeConfig> = {
   },
 }
 
-export const DEFAULT_THEME = 'cyber'
+export const DEFAULT_THEME = 'aloe'

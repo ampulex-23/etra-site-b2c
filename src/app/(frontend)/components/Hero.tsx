@@ -27,13 +27,13 @@ export function Hero({
       {/* Background with cosmic spiral */}
       <div className="hero-section__bg">
         <Image
-          src="/images/bg-purple.png"
+          src="/images/bg-aloe.png"
           alt=""
           fill
           priority
           quality={90}
           sizes="100vw"
-          style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
+          style={{ objectFit: 'cover', objectPosition: 'center center' }}
         />
         <div className="hero-section__overlay" />
       </div>

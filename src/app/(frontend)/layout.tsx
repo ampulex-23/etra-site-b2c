@@ -1,5 +1,7 @@
 import React from 'react'
 import './pwa.css'
+import './themes/aloe/theme.css'
+import './themes/aloe/effects.css'
 import { CartProvider } from './cart/CartProvider'
 import { AuthProvider } from './auth/AuthProvider'
 import { PwaShell } from './pwa/PwaShell'
@@ -16,7 +18,7 @@ export const viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover' as const,
-  themeColor: '#0d0618',
+  themeColor: '#f8fdf8',
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {
