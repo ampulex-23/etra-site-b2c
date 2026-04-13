@@ -106,9 +106,11 @@
     }
     
     .logo img {
-      width: 80%;
-      height: 80%;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
+      object-fit: contain;
+      filter: hue-rotate(285deg) drop-shadow(0px 0px 0px black);
     }
     
     @keyframes float {
@@ -248,7 +250,7 @@
       -webkit-backdrop-filter: url(#liquidGlassFilter) blur(8px);
       border: 1px solid rgba(132, 204, 22, 0.3);
       color: var(--c-primary);
-      box-shadow: 0 2px 12px rgba(101, 163, 13, 0.1);
+      box-shadow: 0 2px 12px rgba(101, 163, 13, 0.1), -2px -4px 10px 2px rgba(255, 255, 250, .6) inset,  -1px -2px 9px 0px rgba(25, 155, 30, .3) inset;
     }
 
     .btn--glass:hover {
@@ -271,14 +273,20 @@
     }
     
     .btn--cta {
-      background: linear-gradient(135deg, var(--c-accent) 0%, #16a34a 100%);
+      background: linear-gradient(314deg, #0dae17ab 0%, #0cbb37b5 100%);
       color: white;
-      box-shadow: 0 4px 20px rgba(34, 197, 94, 0.35);
+      box-shadow: 0 4px 20px rgba(34, 197, 94, 0.35), -2px -1px 7px 0px rgb(252 255 253 / 56%) inset;
+      font-size: 16px !important;
+      font-weight: 500;
+      backdrop-filter: url(#liquidGlassFilter) blur(6px);
+      border: 1px solid #38a71245;
+      height: 80px;
+      box-shadow: 0 4px 20px rgba(34, 197, 94, 0.35) inset, -2px -1px 7px 0px rgb(252 255 253 / 56%) inset;
     }
     
     .btn--cta:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(34, 197, 94, 0.45);
+      box-shadow: 0 4px 20px rgba(34, 197, 94, 0.35) inset, -2px -1px 7px 0px rgb(252 255 253 / 56%) inset;
     }
     
     /* Section headers */
@@ -288,19 +296,20 @@
       justify-content: center;
       gap: 12px;
       padding: 16px 24px;
-      background: var(--c-bg-glass);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, .1);
+      backdrop-filter: url(#liquidGlassFilter) blur(8px);
+      -webkit-backdrop-filter: url(#liquidGlassFilter) blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
       border-radius: var(--r-md) var(--r-md) 0 0;
       border-bottom: none;
       margin-bottom: 0;
+      box-shadow: 0 8px 32px rgba(26, 58, 47, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
     }
     
     .section-header h3 {
       font-family: var(--font-h);
-      font-size: 15px;
-      font-weight: 700;
+      font-size: 13px;
+      font-weight: 600;
       color: var(--c-text);
     }
     
@@ -346,15 +355,9 @@
     
     /* Social panel */
     .social-panel {
-      background: var(--c-bg-glass);
-      backdrop-filter: url(#liquidGlassFilter) blur(8px);
-      -webkit-backdrop-filter: url(#liquidGlassFilter) blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.7);
-      border-radius: var(--r-lg);
       padding: 32px 24px;
       margin-bottom: 32px;
       text-align: center;
-      box-shadow: 0 8px 32px rgba(26, 58, 47, 0.08);
     }
     
     .social-panel__title {
@@ -502,7 +505,7 @@
       <!-- Header -->
       <header class="header">
         <div class="logo">
-          <img src="https://taplink.st/p/1/7/7/1/66619023.webp?0" alt="ЭТРА">
+          <img src="https://etraproject.ru/api/media/file/Stiker%20ETRA%20LOGO%20-%20Main%202025%20V2-5.png" alt="ЭТРА">
         </div>
         <h1 class="title">ЭНЗИМНЫЙ ТРЕНД <b>РА</b>ССИИ</h1>
         <p class="subtitle">Мы нашли самый короткий путь к чистоте — как без диет и жестких ограничений вернуть природное здоровье!</p>
@@ -594,21 +597,24 @@
         <!-- Rutube -->
         <a href="https://rutube.ru/channel/41320233/" class="social-link" title="Rutube">
           <svg viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"
+            style="fill:brown;"/>
           </svg>
         </a>
         
         <!-- YouTube -->
         <a href="https://www.youtube.com/@KirillSerebrjansky" class="social-link" title="YouTube">
           <svg viewBox="0 0 24 24">
-            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
+            style="fill: red;"/>
           </svg>
         </a>
         
         <!-- Telegram -->
         <a href="https://t.me/enzyme_trend_russia" class="social-link" title="Telegram">
           <svg viewBox="0 0 24 24">
-            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"
+            style="fill: #2a8eff"/>
           </svg>
         </a>
         </div>
