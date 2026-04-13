@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ЭТРА — Энзимный тренд России</title>
+  <meta name="description" content="Живые ферменты и пробиотики. Мы нашли самый короткий путь к чистоте — как без диет и жестких ограничений вернуть природное здоровье!">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Unbounded:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="/images/logo.png">
+  
+  <style>
+    :root {
+      /* Aloe Fresh Palette */
+      --c-bg: #f8fdf8;
+      --c-bg-glass: rgba(255, 255, 255, 0.7);
+      --c-bg-glass-strong: rgba(255, 255, 255, 0.85);
+      --c-primary: #65a30d;
+      --c-primary-bright: #84cc16;
+      --c-accent: #22c55e;
+      --c-text: #1a3a2f;
+      --c-text-sec: #4a6b5d;
+      --c-text-muted: #7a9b8d;
+      --c-border: rgba(101, 163, 13, 0.2);
+      --c-glow: rgba(132, 204, 22, 0.3);
+      
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-h: 'Unbounded', 'Inter', sans-serif;
+      
+      --r-sm: 12px;
+      --r-md: 20px;
+      --r-lg: 28px;
+      --r-full: 100px;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    body {
+      font-family: var(--font);
+      color: var(--c-text);
+      background: var(--c-bg);
+      min-height: 100vh;
+      line-height: 1.6;
+      background-image: url('/images/bg-aloe.png');
+      background-size: cover;
+      background-position: center 0;
+      background-attachment: scroll;
+      background-repeat: no-repeat;
+      will-change: background-position;
+    }
+    
+    /* Main wrapper with gradient overlay */
+    .landing {
+      position: relative;
+      padding: 40px 0 60px;
+      background: linear-gradient(
+        180deg,
+        rgba(248, 253, 248, 0.75) 0%,
+        rgba(248, 253, 248, 0.5) 30%,
+        rgba(248, 253, 248, 0.6) 70%,
+        rgba(248, 253, 248, 0.95) 100%
+      );
+    }
+    
+    /* Container */
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .logo {
+      width: auto;
+      max-width: 400px;
+      height: auto;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      overflow: hidden;
+      
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: float 4s ease-in-out infinite;
+    }
+    
+    .logo img {
+      width: 80%;
+      height: 80%;
+      object-fit: contain;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    
+    .title {
+      font-family: var(--font-h);
+      font-size: 28px;
+      font-weight: 400;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+    
+    .subtitle {
+      font-size: 15px;
+      color: var(--c-text-sec);
+      max-width: 340px;
+      margin: 0 auto;
+    }
+    
+    /* Glass Card - Liquid Glass */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: url(#liquidGlassFilter) blur(8px);
+      -webkit-backdrop-filter: url(#liquidGlassFilter) blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: var(--r-lg);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow:
+        0 8px 32px rgba(26, 58, 47, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+    
+    .glass-card h2 {
+      font-family: var(--font-h);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--c-text);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .glass-card h2 .icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-accent) 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .glass-card h2 .icon svg {
+      width: 16px;
+      height: 16px;
+      stroke: white;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    
+    .glass-card p {
+      font-size: 14px;
+      color: var(--c-text-sec);
+      line-height: 1.7;
+    }
+    
+    .glass-card p strong {
+      color: var(--c-text);
+      font-weight: 600;
+    }
+    
+    .glass-card p + p {
+      margin-top: 12px;
+    }
+    
+    /* Buttons */
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px 24px;
+      border-radius: var(--r-full);
+      font-family: var(--font-h);
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      flex-shrink: 0;
+    }
+    
+    .btn--primary {
+      background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-primary-bright) 100%);
+      color: white;
+      box-shadow: 0 4px 20px var(--c-glow);
+    }
+    
+    .btn--primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px var(--c-glow);
+    }
+    
+    .btn--primary:active {
+      transform: translateY(0);
+    }
+    
+    .btn--glass {
+      background: linear-gradient(135deg, rgba(132, 204, 22, 0.15) 0%, rgba(101, 163, 13, 0.1) 100%);
+      backdrop-filter: url(#liquidGlassFilter) blur(8px);
+      -webkit-backdrop-filter: url(#liquidGlassFilter) blur(8px);
+      border: 1px solid rgba(132, 204, 22, 0.3);
+      color: var(--c-primary);
+      box-shadow: 0 2px 12px rgba(101, 163, 13, 0.1);
+    }
+
+    .btn--glass:hover {
+      background: linear-gradient(135deg, rgba(132, 204, 22, 0.25) 0%, rgba(101, 163, 13, 0.2) 100%);
+      border-color: var(--c-primary-bright);
+      color: var(--c-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(101, 163, 13, 0.2);
+    }
+    
+    .btn--accent {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      color: #1a3a2f;
+      box-shadow: 0 4px 20px rgba(251, 191, 36, 0.35);
+    }
+    
+    .btn--accent:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(251, 191, 36, 0.45);
+    }
+    
+    .btn--cta {
+      background: linear-gradient(135deg, var(--c-accent) 0%, #16a34a 100%);
+      color: white;
+      box-shadow: 0 4px 20px rgba(34, 197, 94, 0.35);
+    }
+    
+    .btn--cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(34, 197, 94, 0.45);
+    }
+    
+    /* Section headers */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px 24px;
+      background: var(--c-bg-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: var(--r-md) var(--r-md) 0 0;
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    
+    .section-header h3 {
+      font-family: var(--font-h);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--c-text);
+    }
+    
+    .section-header svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--c-primary);
+      stroke-width: 2;
+      fill: none;
+      animation: bounce 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(4px); }
+    }
+    
+    /* Video embed */
+    .video-wrap {
+      margin-bottom: 24px;
+    }
+    
+    .video-container {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%;
+      border-radius: 0 0 var(--r-md) var(--r-md);
+      overflow: hidden;
+      background: var(--c-bg-glass);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-top: none;
+      box-shadow: 0 4px 24px rgba(26, 58, 47, 0.08);
+    }
+    
+    .video-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    
+    /* Social panel */
+    .social-panel {
+      background: var(--c-bg-glass);
+      backdrop-filter: url(#liquidGlassFilter) blur(8px);
+      -webkit-backdrop-filter: url(#liquidGlassFilter) blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: var(--r-lg);
+      padding: 32px 24px;
+      margin-bottom: 32px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(26, 58, 47, 0.08);
+    }
+    
+    .social-panel__title {
+      font-family: var(--font-h);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--c-text);
+      margin-bottom: 24px;
+    }
+    
+    .socials {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+    }
+    
+    .social-link {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--c-bg-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s ease;
+      box-shadow: 0 2px 12px rgba(26, 58, 47, 0.05);
+    }
+    
+    .social-link:hover {
+      transform: translateY(-4px) scale(1.05);
+      box-shadow: 0 8px 24px rgba(26, 58, 47, 0.1);
+      border-color: var(--c-primary);
+    }
+    
+    .social-link svg {
+      width: 26px;
+      height: 26px;
+      fill: var(--c-text);
+      transition: fill 0.25s ease;
+    }
+    
+    .social-link:hover svg {
+      fill: var(--c-primary);
+    }
+    
+    /* QR Section */
+    .qr-section {
+      text-align: center;
+      padding: 24px 0;
+    }
+    
+    .qr-section img {
+      width: 140px;
+      height: 140px;
+      border-radius: var(--r-sm);
+      margin-bottom: 12px;
+    }
+    
+    .qr-section p {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--c-text-sec);
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding-top: 32px;
+      font-size: 12px;
+      color: var(--c-text-muted);
+    }
+    
+    .footer a {
+      color: var(--c-primary);
+      text-decoration: none;
+    }
+    
+    /* Decorative elements */
+    .leaf-decor {
+      position: fixed;
+      pointer-events: none;
+      opacity: 0.15;
+      z-index: -1;
+    }
+    
+    .leaf-decor--1 {
+      top: 10%;
+      right: -50px;
+      width: 200px;
+      transform: rotate(15deg);
+    }
+    
+    .leaf-decor--2 {
+      bottom: 20%;
+      left: -60px;
+      width: 180px;
+      transform: rotate(-20deg);
+    }
+    
+    /* Responsive */
+    @media (max-width: 480px) {
+      .title {
+        font-size: 24px;
+      }
+      
+      .glass-card {
+        padding: 20px;
+      }
+      
+      .btn {
+        padding: 14px 20px;
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Liquid Glass SVG Filter -->
+  <svg style="position: absolute; width: 0; height: 0; overflow: hidden;">
+    <defs>
+      <filter id="liquidGlassFilter" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+        <feImage 
+          href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAECElEQVR42u2bV3PbQAyE76e99957793+g8lwOOvbLIHjmaKdZHgP+yJRtvbDAqAkMoyNjf0assJP/JPx8aiJiXbx8f8tADY7OVlraqrW9LQvHIPXMJR/HoCaZrMzM7VmZ9uFYxnKd8EIfRpn02x4bq7W/HzUwkJT/Dxeo0AYRh8gRgZgGYdpNru4GLW05IuPYygMQ0H8FQCoumccpmFsebnWysqfWl1tPoZjGQpgWCBGSUPoah5VTxmH4cpkpbW1qPX1pvh5vAZAUiCQhi4QQtfIo+pq3DINgxsbtTY3feEYhqIwFATS0KUlwlfNI/KoOlccxmGaDW9t1drebheOVSCAUf0fTgTSwC3ROwCYR+RRdY46G1fTOzu1dnej9vai+HEca8EACG4NpIFbIhdC6Greqjobh2k1u79f6+CgKTynUBgGQFhp6AIh9GGeq87G1fDhYdTRUVP8vAJhEJyGUSGEnGmPnlfziDxXnY2zaZg8Pq51ctIUnlMggAEQnAZuCYWAwZjaDqEv81x1GGfTMHl6WuvsrCk8x0AYRvV3OQ19QAg50ce0t8wj8lp1Ns6Gz8+jLi6i+HEGwiA0DdwSCgHboa0VwlfNo+ct855xNXx56UuBeCA8CDwTciCE3OhXK4fNI/aWeTbOpq+ual1f+8IxCgMgPAjcDtX7xAlTWyuEr0a/mr6eea06G4fBm5uo29sofpxhAISmwYOAFZmbgpBTfTaP6FeDyDPvGYfZuztfDMQC4UHAduDzhOp9t6UgtFVfo8+rrhpIGns1D+MweH8f9fAQxY8zDICwIKAdeDvoPKjefyoFDQCp6nP0Me1zzavpx8emFEYuBF6RVitoCkwAiL/2vlV9jT56PmWeTT89+WIYKQiYCalWQAp0FnAbBCv+Ovmt6nP0MfDUvFYcJp+ffTEIToRCwGC0WoFToBtB2yB48bcmv1d9RF8rr+Zh8uXFF4NgCJoEbgUrBdZGsNog6PTPjb9XfSv2MA+Tr6++GARD4HbwUpDbBrwNgtX/euJjxV97H9XPNf/21lQuBE6BzgJtAz0x0jnwCcDqf2v6W/G3qu+ZV9Pv7zYIC4KXAm0DaxtYc+ATAAagt/5y4q+DTwGw+cq0J4VgpQCzIKcNvHWIQRjaBmBb/3vxV/MAkDLPELgdACHVBqk5kBqEDQB87q8DMLf/c6r/8dFUTgpy54AOQv5s0AmANQB5/fHq+04AvBK9dYhBOBIAXYF9AOCYpwBwG/QFgFdhSUCZAQkAg90Cgz4PGPyZYPksMPRPg4P/PqB8I1S+EyzfCpffBcovQ+W3wfLrcLk+oFwhUq4RKleJlesEy5Wi5VrhcrV4uV+g3DFS7hkqd42V+wbLnaPl3uFh3D3+G5TWOHu/q396AAAAAElFTkSuQmCC"
+          x="0%" y="0%" width="100%" height="100%"
+          preserveAspectRatio="none"
+          result="displacementMap"
+        />
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="displacementMap"
+          scale="30"
+          xChannelSelector="R"
+          yChannelSelector="G"
+        />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="landing">
+    <div class="container">
+      
+      <!-- Header -->
+      <header class="header">
+        <div class="logo">
+          <img src="https://taplink.st/p/1/7/7/1/66619023.webp?0" alt="ЭТРА">
+        </div>
+        <h1 class="title">ЭНЗИМНЫЙ ТРЕНД <b>РА</b>ССИИ</h1>
+        <p class="subtitle">Мы нашли самый короткий путь к чистоте — как без диет и жестких ограничений вернуть природное здоровье!</p>
+      </header>
+      
+      <!-- About Enzymes -->
+      <div class="glass-card">
+        <h2>
+          <span class="icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/></svg>
+          </span>
+          Что же такое энзимы?
+        </h2>
+        <p>Это ферменты, отвечающие за превращение материи в энергию, именно в них содержится секрет вашей природной силы, здорового микробиома и иммунитета.</p>
+        <p><strong>Энзимы — это ДНК информация продукта.</strong> C помощью нее ваш кишечный микробиом формирует и усваивает нужные вашим клеткам витамины и микроэлементы, а от их чистоты зависит вся ваша жизнь.</p>
+        <p><strong>Мы получаем энзимы за счет ферментации супер сильными растительными бактериями, под давлением в 10 атмосфер.</strong></p>
+        <p>Благодаря таким бактериям идет автоматическое вкусное избавление от паразитов, патогенов и грибков, сразу уходит лишний вес, восстанавливаются гормоны, а наш природный биом занимает свое чистое пространство и в полную силу созидает на благо организма!</p>
+        <p><strong>Смените микробиом — верните силу и энергию навсегда!</strong></p>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="buttons">
+        <a href="https://t.me/PRAEnzyme_bot" class="btn btn--accent">
+          <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          КУПИТЬ НАШИ ПРОДУКТЫ
+        </a>
+        
+        <a href="https://etraproject.ru" class="btn btn--glass">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          НАШ САЙТ
+        </a>
+        
+        <a href="https://t.me/enzyme_trend_russia" class="btn btn--glass">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          НАШЕ СООБЩЕСТВО
+        </a>
+        
+        <a href="https://t.me/enzyme_trend_russia/10552" class="btn btn--glass">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          ВСЕ ОТВЕТЫ
+        </a>
+        
+        <a href="https://taplink.cc/etraproject108" class="btn btn--cta">
+          <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          НАЧАТЬ ЭТРАГЕНЕЗ
+        </a>
+      </div>
+      
+      <!-- Video Section 1 -->
+      <div class="section-header">
+        <h3>ПРО ЭНЗИМЫ КОРОТКО И ЯСНО</h3>
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      </div>
+      
+      <div class="video-wrap">
+        <div class="video-container">
+          <iframe src="https://rutube.ru/play/embed/17bed912b68a955dd17c95d914eae999/" allowfullscreen></iframe>
+        </div>
+      </div>
+      
+      <!-- Video Section 2 -->
+      <div class="section-header">
+        <h3>ГОТОВИМ САМОСТОЯТЕЛЬНО</h3>
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      </div>
+      
+      <div class="video-wrap">
+        <div class="video-container">
+          <iframe src="https://rutube.ru/play/embed/de27fb3e013021af5e54dcc4548bdfb2/" allowfullscreen></iframe>
+        </div>
+      </div>
+      
+      <!-- Video Section 3 -->
+      <div class="section-header">
+        <h3>ЛЕКЦИЯ ПРО МИКРОБИОМ</h3>
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      </div>
+      
+      <div class="video-wrap">
+        <div class="video-container">
+          <iframe src="https://rutube.ru/play/embed/21d1615aa1022d1a909094d72a361a45/" allowfullscreen></iframe>
+        </div>
+      </div>
+      
+      <!-- Social Section -->
+      <div class="social-panel">
+        <h3 class="social-panel__title">МЫ В СОЦСЕТЯХ</h3>
+        <div class="socials">
+        <!-- Rutube -->
+        <a href="https://rutube.ru/channel/41320233/" class="social-link" title="Rutube">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+          </svg>
+        </a>
+        
+        <!-- YouTube -->
+        <a href="https://www.youtube.com/@KirillSerebrjansky" class="social-link" title="YouTube">
+          <svg viewBox="0 0 24 24">
+            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+        </a>
+        
+        <!-- Telegram -->
+        <a href="https://t.me/enzyme_trend_russia" class="social-link" title="Telegram">
+          <svg viewBox="0 0 24 24">
+            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+          </svg>
+        </a>
+        </div>
+      </div>
+      
+      <!-- QR Code -->
+      <div class="qr-section">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://taplink.cc/etraproject&bgcolor=f8fdf8&color=1a3a2f" alt="QR Code">
+        <p>ПОДЕЛИСЬ ИНФОРМАЦИЕЙ О НАС</p>
+      </div>
+      
+      <!-- Footer -->
+      <footer class="footer">
+        <p>© 2024 ЭТРА — Энзимный тренд РАссии</p>
+        <p><a href="https://etraproject.ru">etraproject.ru</a></p>
+      </footer>
+      
+    </div>
+  </div>
+
+  <!-- Parallax Script -->
+  <script>
+    (function() {
+      function updateParallax() {
+        const scrolled = window.scrollY;
+        const parallaxSpeed = 0.3;
+        const yPos = scrolled * parallaxSpeed;
+        document.body.style.backgroundPosition = 'center ' + yPos + 'px';
+      }
+
+      let ticking = false;
+      window.addEventListener('scroll', function() {
+        if (!ticking) {
+          window.requestAnimationFrame(function() {
+            updateParallax();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      });
+
+      updateParallax();
+    })();
+  </script>
+</body>
+</html>
