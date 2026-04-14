@@ -1,9 +1,8 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { FeatureDrops } from './FeatureDrops'
 
 interface HeroProps {
   title?: string
@@ -22,10 +21,36 @@ export function Hero({
   secondaryCtaText = 'Узнать больше',
   secondaryCtaLink = '#science',
 }: HeroProps) {
+  const bgRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!bgRef.current) return
+      const scrolled = window.scrollY
+      const parallaxSpeed = 0.3
+      const yPos = scrolled * parallaxSpeed
+      bgRef.current.style.transform = `scaleX(-1) translateY(${yPos}px)`
+    }
+
+    let ticking = false
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll()
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+
+    window.addEventListener('scroll', onScroll)
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
     <section className="hero-section" id="hero">
-      {/* Background with cosmic spiral */}
-      <div className="hero-section__bg">
+      {/* Background with parallax */}
+      <div className="hero-section__bg" ref={bgRef}>
         <Image
           src="/images/bg-aloe.png"
           alt=""
@@ -40,30 +65,25 @@ export function Hero({
 
       <div className="hero-section__container">
         <div className="hero-section__content">
-        {/* Static bottle - 6x larger, shifted left */}
+        {/* Logo with float animation */}
         <motion.div 
-          className="hero-section__bottle"
+          className="hero-section__logo"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, ease: 'easeOut' }}
         >
-          <div className="hero-section__bottle-float">
+          <div className="hero-section__logo-float">
             <Image
-              src="/images/bottle-hero.png"
-              alt="ЭТРА Закваска"
-              width={448}
-              height={1304}
+              src="https://taplink.st/p/1/7/7/1/66619023.webp?0"
+              alt="ЭТРА"
+              width={400}
+              height={400}
               priority
-              className="hero-section__bottle-img"
+              className="hero-section__logo-img"
             />
-            {/* Glow effect behind bottle */}
-            <div className="hero-section__bottle-glow" />
           </div>
         </motion.div>
       </div>
-
-        {/* Feature drops — outside content to fix backdrop-filter stacking context */}
-        <FeatureDrops />
 
         {/* Scroll indicator */}
         <motion.div 
