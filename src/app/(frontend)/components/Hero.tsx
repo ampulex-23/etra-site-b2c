@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 
@@ -21,47 +21,8 @@ export function Hero({
   secondaryCtaText = 'Узнать больше',
   secondaryCtaLink = '#science',
 }: HeroProps) {
-  const bgRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!bgRef.current) return
-      const scrolled = window.scrollY
-      const parallaxSpeed = 0.3
-      const yPos = scrolled * parallaxSpeed
-      bgRef.current.style.transform = `scaleX(-1) translateY(${yPos}px)`
-    }
-
-    let ticking = false
-    const onScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          handleScroll()
-          ticking = false
-        })
-        ticking = true
-      }
-    }
-
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
   return (
     <section className="hero-section" id="hero">
-      {/* Background with parallax */}
-      <div className="hero-section__bg" ref={bgRef}>
-        <Image
-          src="/images/bg-aloe.png"
-          alt=""
-          fill
-          priority
-          quality={90}
-          sizes="100vw"
-          style={{ objectFit: 'cover', objectPosition: 'center center' }}
-        />
-        <div className="hero-section__overlay" />
-      </div>
 
       <div className="hero-section__container">
         <div className="hero-section__content">
@@ -74,7 +35,7 @@ export function Hero({
         >
           <div className="hero-section__logo-float">
             <Image
-              src="https://taplink.st/p/1/7/7/1/66619023.webp?0"
+              src="https://etraproject.ru/api/media/file/Stiker%20ETRA%20LOGO%20-%20Main%202025%20V2-5.png"
               alt="ЭТРА"
               width={400}
               height={400}
