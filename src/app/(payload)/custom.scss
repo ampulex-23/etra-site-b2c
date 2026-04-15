@@ -393,3 +393,8 @@ body {
     padding: 16px !important;
   }
 }
+
+/* --- Fix for dropdown clipping in array fields (stock movements) --- */
+.array-field__drawer .rs__menu {
+  z-index: 9999 !important;
+}
