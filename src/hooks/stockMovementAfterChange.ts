@@ -140,25 +140,15 @@ async function updateStockLevel(
 
   const available = Math.max(0, calculated - reserved - inTransit)
 
-  // For 'produced' operation, also update 'actual' since production is a verified physical event
-  // This makes sense because: produced goods are physically counted and added to stock
   const updateData: Record<string, any> = {
     calculated,
     inTransit,
     available,
   }
 
-  // Update actual for operations that represent verified physical changes
-  if (operationType === 'produced' || operationType === 'return_to_stock') {
-    // Add to actual (or set if null)
-    updateData.actual = (stockLevel.actual ?? 0) + quantity
-  } else if (operationType === 'shipped_to_customers' || operationType === 'retail_shipment' || 
-             operationType === 'employee_issue' || operationType === 'write_off') {
-    // Subtract from actual (if it was set)
-    if (stockLevel.actual !== null && stockLevel.actual !== undefined) {
-      updateData.actual = Math.max(0, stockLevel.actual - quantity)
-    }
-  }
+  // NOTE: 'actual' is NOT updated here - it should only be set during inventory counts
+  // via the inventoryAfterChange hook. This ensures 'actual' represents real physical counts,
+  // not just document-based calculations.
 
   await payload.update({
     collection: 'stock-levels',
