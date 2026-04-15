@@ -63,6 +63,7 @@ export default buildConfig({
   },
   admin: {
     user: Users.slug,
+    dateFormat: 'yyyy-MM-dd HH:mm',
     importMap: {
       baseDir: path.resolve(dirname),
     },

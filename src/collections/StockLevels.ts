@@ -8,7 +8,7 @@ export const StockLevels: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'product',
-    defaultColumns: ['product', 'warehouse', 'calculated', 'actual', 'reserved', 'updatedAt'],
+    defaultColumns: ['product', 'warehouse', 'calculated', 'actual', 'reserved', 'inTransit', 'available', 'updatedAt'],
     group: 'Склад',
     description: 'Текущие остатки товаров по складам',
   },
@@ -60,6 +60,9 @@ export const StockLevels: CollectionConfig = {
       label: 'Фактический остаток',
       admin: {
         description: 'Заполняется вручную при инвентаризации',
+        components: {
+          Cell: '@/components/admin/NumberCell#NumberCell',
+        },
       },
     },
     {
