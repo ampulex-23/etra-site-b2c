@@ -54,7 +54,6 @@ export function PwaShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       {/* Static background */}
-      <div className="pwa-bg" />
 
       <div className="pwa-shell">
         {/* Top bar */}

@@ -123,6 +123,8 @@ async function updateStockLevel(
       if (targetWarehouseId) {
         await ensureTargetTransitReduced(payload, productId, targetWarehouseId, quantity, req)
       }
+      // Also reduce inTransit on the source warehouse (where the goods were sent from)
+      await reduceSourceWarehouseTransit(payload, productId, warehouseId, quantity, req)
       break
 
     case 'shipped_to_customers':
@@ -219,6 +221,38 @@ async function ensureTargetTransitReduced(
     where: {
       product: { equals: productId },
       warehouse: { equals: warehouseId },
+    },
+    limit: 1,
+    req,
+  })
+
+  if (existing.docs[0]) {
+    const stock = existing.docs[0]
+    const newTransit = Math.max(0, (stock.inTransit || 0) - quantity)
+    await payload.update({
+      collection: 'stock-levels',
+      id: stock.id,
+      data: {
+        inTransit: newTransit,
+        available: Math.max(0, (stock.calculated || 0) - (stock.reserved || 0) - newTransit),
+      },
+      req,
+    })
+  }
+}
+
+async function reduceSourceWarehouseTransit(
+  payload: any,
+  productId: string,
+  sourceWarehouseId: string,
+  quantity: number,
+  req: any,
+) {
+  const existing = await payload.find({
+    collection: 'stock-levels',
+    where: {
+      product: { equals: productId },
+      warehouse: { equals: sourceWarehouseId },
     },
     limit: 1,
     req,

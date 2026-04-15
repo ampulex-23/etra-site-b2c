@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЭТРА — Главная (Dev)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Philosopher:wght@400;700&family=Tenor+Sans&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Variables - Aloe Theme */
+    :root {
+      --font: 'Tenor Sans', sans-serif;
+      --font-h: 'Philosopher', serif;
+      
+      --c-bg: #f8fdf8;
+      --c-bg-glass: rgba(255, 255, 255, 0.45);
+      --c-text: #1a3a2f;
+      --c-text-sec: #4a6b5f;
+      --c-primary: #65a30d;
+      --c-primary-bright: #84cc16;
+      --c-accent: #22c55e;
+      
+      --r-sm: 8px;
+      --r-md: 12px;
+      --r-lg: 16px;
+      --r-xl: 24px;
+      
+      --max-width: 1200px;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html {
+      font-family: var(--font);
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    body {
+      background-image: url('/images/bg-aloe.png');
+      background-size: cover;
+      background-position: center 0;
+      background-attachment: scroll;
+      background-repeat: no-repeat;
+      color: var(--c-text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      will-change: background-position;
+    }
+    
+    /* Top Bar */
+    .topbar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: url(#liquidGlassFilter) blur(12px);
+      -webkit-backdrop-filter: blur(20px) saturate(1.8);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+    }
+    
+    .topbar__logo {
+      height: 40px;
+      width: auto;
+    }
+    
+    .topbar__nav {
+      display: flex;
+      gap: 24px;
+      margin-left: 40px;
+      flex: 1;
+    }
+    
+    .topbar__nav-link {
+      font-family: var(--font-h);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--c-text);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    
+    .topbar__nav-link:hover {
+      color: var(--c-primary);
+    }
+    
+    .topbar__actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .topbar__btn {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .topbar__btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
+    }
+    
+    .topbar__btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--c-text);
+      fill: none;
+      stroke-width: 2;
+    }
+    
+    .topbar__badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 4px;
+      background: var(--c-primary);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Hero Section */
+    .hero-section {
+      position: relative;
+      width: 100%;
+      min-height: calc(100vh - 60px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px 40px;
+    }
+    
+    .hero-section__container {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+    
+    .hero-section__content {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    
+    /* Logo */
+    .hero-section__logo {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    .hero-section__logo-float {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: heroLogoFloat 4s ease-in-out infinite;
+    }
+    
+    .hero-section__logo-img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+    }
+    
+    @keyframes heroLogoFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    
+    /* Quick Links */
+    .quick-links {
+      position: relative;
+      width: 100%;
+      padding: 20px 0 40px;
+      z-index: 2;
+      margin-top: -80px;
+    }
+    
+    .quick-links__container {
+      display: flex;
+      gap: 20px;
+      padding: 0 20px;
+      justify-content: center;
+    }
+    
+    .quick-link {
+      position: relative;
+      flex: 0 0 auto;
+      width: 140px;
+      height: 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 20px;
+      background: rgb(172 120 187 / 20%);
+      border-radius: 160px;
+      box-shadow: 
+        4px 4px 10px rgba(232, 118, 255, 0.5) inset, 
+        -4px -4px 20px rgba(0, 0, 0, .3) inset;
+      backdrop-filter: url(#liquidGlassFilter) blur(6px);
+      -webkit-backdrop-filter: blur(16px) saturate(1.2);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+    }
+    
+    .quick-link:hover {
+      transform: scale(1.1);
+    }
+    
+    .quick-link__icon {
+      width: 48px;
+      height: 48px;
+      stroke: var(--c-text);
+      fill: none;
+      stroke-width: 1.5;
+      filter: drop-shadow(0 0 12px rgba(224, 64, 251, 0.4));
+    }
+    
+    .quick-link__title {
+      font-family: var(--font-h);
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--c-text);
+      margin: 0;
+    }
+    
+    /* Content Section */
+    .content-section {
+      position: relative;
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 60px 20px;
+    }
+    
+    .section-title {
+      font-family: var(--font-h);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--c-text);
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    
+    .section-subtitle {
+      font-size: 18px;
+      color: var(--c-text-sec);
+      text-align: center;
+      margin-bottom: 40px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    /* Glass Card */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: url(#liquidGlassFilter) blur(8px);
+      -webkit-backdrop-filter: url(#liquidGlassFilter) blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: var(--r-lg);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow:
+        0 8px 32px rgba(26, 58, 47, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+    
+    .glass-card h2 {
+      font-family: var(--font-h);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--c-text);
+      margin-bottom: 16px;
+    }
+    
+    .glass-card p {
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    
+    /* Grid */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 40px;
+    }
+    
+    /* Button */
+    .btn {
+      display: inline-block;
+      padding: 16px 32px;
+      font-family: var(--font-h);
+      font-size: 16px;
+      font-weight: 700;
+      text-decoration: none;
+      border-radius: var(--r-md);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+    }
+    
+    .btn--glass {
+      background: linear-gradient(135deg, rgba(132, 204, 22, 0.15) 0%, rgba(101, 163, 13, 0.1) 100%);
+      backdrop-filter: url(#liquidGlassFilter) blur(8px);
+      -webkit-backdrop-filter: url(#liquidGlassFilter) blur(8px);
+      border: 1px solid rgba(132, 204, 22, 0.3);
+      color: var(--c-primary);
+      box-shadow: 
+        0 2px 12px rgba(101, 163, 13, 0.1), 
+        -2px -4px 10px 2px rgba(255, 255, 250, .6) inset,  
+        -1px -2px 9px 0px rgba(25, 155, 30, .3) inset;
+    }
+    
+    .btn--glass:hover {
+      background: linear-gradient(135deg, rgba(132, 204, 22, 0.25) 0%, rgba(101, 163, 13, 0.2) 100%);
+      border-color: var(--c-primary-bright);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(101, 163, 13, 0.2);
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 32px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Liquid Glass SVG Filter -->
+  <svg style="position: absolute; width: 0; height: 0; overflow: hidden;">
+    <defs>
+      <filter id="liquidGlassFilter" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+        <feImage 
+          href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAECElEQVR42u2bV3PbQAyE76e99957793+g8lwOOvbLIHjmaKdZHgP+yJRtvbDAqAkMoyNjf0assJP/JPx8aiJiXbx8f8tADY7OVlraqrW9LQvHIPXMJR/HoCaZrMzM7VmZ9uFYxnKd8EIfRpn02x4bq7W/HzUwkJT/Dxeo0AYRh8gRgZgGYdpNru4GLW05IuPYygMQ0H8FQCoumccpmFsebnWysqfWl1tPoZjGQpgWCBGSUPoah5VTxmH4cpkpbW1qPX1pvh5vAZAUiCQhi4QQtfIo+pq3DINgxsbtTY3feEYhqIwFATS0KUlwlfNI/KoOlccxmGaDW9t1drebheOVSCAUf0fTgTSwC3ROwCYR+RRdY46G1fTOzu1dnej9vai+HEca8EACG4NpIFbIhdC6Greqjobh2k1u79f6+CgKTynUBgGQFhp6AIh9GGeq87G1fDhYdTRUVP8vAJhEJyGUSGEnGmPnlfziDxXnY2zaZg8Pq51ctIUnlMggAEQnAZuCYWAwZjaDqEv81x1GGfTMHl6WuvsrCk8x0AYRvV3OQ19QAg50ce0t8wj8lp1Ns6Gz8+jLi6i+HEGwiA0DdwSCgHboa0VwlfNo+ct855xNXx56UuBeCA8CDwTciCE3OhXK4fNI/aWeTbOpq+ual1f+8IxCgMgPAjcDtX7xAlTWyuEr0a/mr6eea06G4fBm5uo29sofpxhAISmwYOAFZmbgpBTfTaP6FeDyDPvGYfZuztfDMQC4UHAduDzhOp9t6UgtFVfo8+rrhpIGns1D+MweH8f9fAQxY8zDICwIKAdeDvoPKjefyoFDQCp6nP0Me1zzavpx8emFEYuBF6RVitoCkwAiL/2vlV9jT56PmWeTT89+WIYKQiYCalWQAp0FnAbBCv+Ovmt6nP0MfDUvFYcJp+ffTEIToRCwGC0WoFToBtB2yB48bcmv1d9RF8rr+Zh8uXFF4NgCJoEbgUrBdZGsNog6PTPjb9XfSv2MA+Tr6++GARD4HbwUpDbBrwNgtX/euJjxV97H9XPNf/21lQuBE6BzgJtAz0x0jnwCcDqf2v6W/G3qu+ZV9Pv7zYIC4KXAm0DaxtYc+ATAAagt/5y4q+DTwGw+cq0J4VgpQCzIKcNvHWIQRjaBmBb/3vxV/MAkDLPELgdACHVBqk5kBqEDQB87q8DMLf/c6r/8dFUTgpy54AOQv5s0AmANQB5/fHq+04AvBK9dYhBOBIAXYF9AOCYpwBwG/QFgFdhSUCZAQkAg90Cgz4PGPyZYPksMPRPg4P/PqB8I1S+EyzfCpffBcovQ+W3wfLrcLk+oFwhUq4RKleJlesEy5Wi5VrhcrV4uV+g3DFS7hkqd42V+wbLnaPl3uFh3D3+G5TWOHu/q396AAAAAElFTkSuQmCC"
+          x="0%" y="0%" width="100%" height="100%"
+          preserveAspectRatio="none"
+          result="displacementMap"
+        />
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="displacementMap"
+          scale="30"
+          xChannelSelector="R"
+          yChannelSelector="G"
+        />
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <img src="https://etraproject.ru/api/media/file/Stiker%20ETRA%20LOGO%20-%20Main%202025%20V2-5.png" alt="ЭТРА" class="topbar__logo">
+    
+    <nav class="topbar__nav">
+      <a href="/catalog" class="topbar__nav-link">КАТАЛОГ</a>
+      <a href="/retreat" class="topbar__nav-link">КУРСЫ</a>
+      <a href="/info" class="topbar__nav-link">НОВИНКИ</a>
+      <a href="/locations" class="topbar__nav-link">МЕСТА</a>
+      <a href="/encyclopedia" class="topbar__nav-link">ЭНЦИКЛОПЕДИЯ</a>
+      <a href="/production" class="topbar__nav-link">ПРОИЗВОДСТВО ВМЕСТЕ</a>
+      <a href="/about" class="topbar__nav-link">КОМАНДА</a>
+      <a href="/partners" class="topbar__nav-link">ПАРТНЁРАМ</a>
+    </nav>
+    
+    <div class="topbar__actions">
+      <a href="/cart" class="topbar__btn">
+        <svg viewBox="0 0 24 24">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <path d="M16 10a4 4 0 01-8 0" />
+        </svg>
+        <span class="topbar__badge">2</span>
+      </a>
+      <a href="/account" class="topbar__btn">
+        <svg viewBox="0 0 24 24">
+          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-section__container">
+      <div class="hero-section__content">
+        <!-- Logo -->
+        <div class="hero-section__logo">
+          <div class="hero-section__logo-float">
+            <img 
+              src="https://etraproject.ru/api/media/file/Stiker%20ETRA%20LOGO%20-%20Main%202025%20V2-5.png" 
+              alt="ЭТРА" 
+              class="hero-section__logo-img"
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Quick Links (3 кругляшка) -->
+  <section class="quick-links">
+    <div class="quick-links__container">
+      <a href="/catalog?filter=new" class="quick-link">
+        <svg class="quick-link__icon" viewBox="0 0 24 24">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+        <h3 class="quick-link__title">НОВИНКИ</h3>
+      </a>
+      
+      <a href="/locations" class="quick-link">
+        <svg class="quick-link__icon" viewBox="0 0 24 24">
+          <path d="M12 2a7 7 0 017 7c0 5-7 13-7 13S5 14 5 9a7 7 0 017-7z" />
+          <circle cx="12" cy="9" r="2.5" />
+        </svg>
+        <h3 class="quick-link__title">МЕСТА</h3>
+      </a>
+      
+      <a href="/retreat" class="quick-link">
+        <svg class="quick-link__icon" viewBox="0 0 24 24">
+          <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+          <path d="M2 12h20" />
+        </svg>
+        <h3 class="quick-link__title">КУРСЫ</h3>
+      </a>
+    </div>
+  </section>
+
+  <!-- Content Section -->
+  <section class="content-section">
+    <h2 class="section-title">Живые ферменты нового поколения</h2>
+    <p class="section-subtitle">
+      Пробиотики и энзимы в каждой бутылке. Наука, которую можно попробовать на вкус.
+    </p>
+    
+    <div class="card-grid">
+      <div class="glass-card">
+        <h2>Натуральные ингредиенты</h2>
+        <p>Только органическое сырьё, без консервантов и красителей. Каждая партия проходит лабораторный контроль.</p>
+      </div>
+      
+      <div class="glass-card">
+        <h2>Личный подход</h2>
+        <p>Консультируем каждого клиента. Подбираем программу на основе индивидуальных потребностей организма.</p>
+      </div>
+      
+      <div class="glass-card">
+        <h2>Контроль качества</h2>
+        <p>Собственная лаборатория. Все партии проверяются на микробиологическую чистоту и содержание полезных культур.</p>
+      </div>
+    </div>
+    
+    <div class="btn-group">
+      <a href="/catalog" class="btn btn--glass">Смотреть каталог</a>
+      <a href="/info" class="btn btn--glass">Узнать больше</a>
+    </div>
+  </section>
+
+  <!-- Parallax Script -->
+  <script>
+    (function() {
+      function updateParallax() {
+        const scrolled = window.scrollY;
+        const parallaxSpeed = 0.3;
+        const yPos = scrolled * parallaxSpeed;
+        document.body.style.backgroundPosition = 'center ' + yPos + 'px';
+      }
+
+      let ticking = false;
+      window.addEventListener('scroll', function() {
+        if (!ticking) {
+          window.requestAnimationFrame(function() {
+            updateParallax();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      });
+
+      updateParallax();
+    })();
+  </script>
+</body>
+</html>
