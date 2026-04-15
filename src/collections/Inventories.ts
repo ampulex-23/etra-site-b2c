@@ -49,6 +49,12 @@ export const Inventories: CollectionConfig = {
       required: true,
       label: 'Дата инвентаризации',
       defaultValue: () => new Date().toISOString(),
+      admin: {
+        position: 'sidebar',
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
+      },
     },
     {
       name: 'status',

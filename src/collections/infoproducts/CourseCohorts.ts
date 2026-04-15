@@ -79,13 +79,23 @@ export const CourseCohorts: CollectionConfig = {
       type: 'date',
       required: true,
       label: 'Дата старта',
-      admin: { position: 'sidebar' },
+      admin: {
+        position: 'sidebar',
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
+      },
     },
     {
       name: 'endDate',
       type: 'date',
       label: 'Дата окончания',
-      admin: { position: 'sidebar' },
+      admin: {
+        position: 'sidebar',
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
+      },
     },
     {
       name: 'maxParticipants',

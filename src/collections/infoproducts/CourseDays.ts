@@ -57,7 +57,12 @@ export const CourseDays: CollectionConfig = {
       name: 'date',
       type: 'date',
       label: 'Дата',
-      admin: { position: 'sidebar' },
+      admin: {
+        position: 'sidebar',
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
+      },
     },
     {
       name: 'title',

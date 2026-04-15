@@ -111,11 +111,21 @@ export const Payments: CollectionConfig = {
       name: 'paidAt',
       type: 'date',
       label: 'Дата оплаты',
+      admin: {
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
+      },
     },
     {
       name: 'refundedAt',
       type: 'date',
       label: 'Дата возврата',
+      admin: {
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
+      },
     },
     {
       name: 'notes',

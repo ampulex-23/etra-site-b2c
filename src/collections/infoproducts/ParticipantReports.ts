@@ -69,6 +69,11 @@ export const ParticipantReports: CollectionConfig = {
       type: 'date',
       required: true,
       label: 'Дата отчёта',
+      admin: {
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
+      },
     },
     {
       name: 'items',
@@ -127,9 +132,12 @@ export const ParticipantReports: CollectionConfig = {
       label: 'Время подачи',
       admin: {
         position: 'sidebar',
+        readOnly: true,
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
         description: 'Заполняется автоматически',
       },
     },
   ],
 }
-

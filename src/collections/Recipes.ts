@@ -174,7 +174,12 @@ export const Recipes: CollectionConfig = {
       name: 'publishedAt',
       type: 'date',
       label: 'Дата публикации',
-      admin: { position: 'sidebar' },
+      admin: {
+        position: 'sidebar',
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
+      },
     },
     {
       name: 'seo',

@@ -191,11 +191,21 @@ export const Deliveries: CollectionConfig = {
       name: 'estimatedDeliveryDate',
       type: 'date',
       label: 'Ориентировочная дата доставки',
+      admin: {
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
+      },
     },
     {
       name: 'deliveredAt',
       type: 'date',
       label: 'Дата доставки (факт)',
+      admin: {
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
+      },
     },
     {
       name: 'notes',

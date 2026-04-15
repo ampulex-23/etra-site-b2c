@@ -205,6 +205,9 @@ export const Customers: CollectionConfig = {
       admin: {
         position: 'sidebar',
         readOnly: true,
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
       },
     },
     {

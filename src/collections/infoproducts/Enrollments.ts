@@ -92,7 +92,12 @@ export const Enrollments: CollectionConfig = {
       name: 'enrolledAt',
       type: 'date',
       label: 'Дата записи',
-      admin: { position: 'sidebar' },
+      admin: {
+        position: 'sidebar',
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
+      },
     },
     {
       name: 'completedAt',
@@ -101,6 +106,9 @@ export const Enrollments: CollectionConfig = {
       admin: {
         position: 'sidebar',
         condition: (data: any) => data?.status === 'completed',
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
       },
     },
     {

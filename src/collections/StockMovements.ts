@@ -170,7 +170,12 @@ export const StockMovements: CollectionConfig = {
       required: true,
       label: 'Дата операции',
       defaultValue: () => new Date().toISOString(),
-      admin: { position: 'sidebar' },
+      admin: {
+        position: 'sidebar',
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
+      },
     },
   ],
 }

@@ -175,6 +175,11 @@ export const Orders: CollectionConfig = {
           name: 'paidAt',
           type: 'date',
           label: 'Дата оплаты',
+          admin: {
+            date: {
+              displayFormat: 'yyyy-MM-dd',
+            },
+          },
         },
       ],
     },
@@ -278,6 +283,10 @@ export const Orders: CollectionConfig = {
       admin: {
         position: 'sidebar',
         readOnly: true,
+        description: 'Заполняется при импорте из PuzzleBot',
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
       },
     },
     {

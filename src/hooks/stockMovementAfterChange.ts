@@ -113,18 +113,14 @@ async function updateStockLevel(
 
     case 'sent_to_logistics':
       calculated -= quantity
-      if (status === 'in_transit') {
-        inTransit += quantity
-      }
+      // inTransit is increased on the TARGET warehouse, not on the source
+      // See the logic after the switch statement
       break
 
     case 'received_at_logistics':
       calculated += quantity
-      if (targetWarehouseId) {
-        await ensureTargetTransitReduced(payload, productId, targetWarehouseId, quantity, req)
-      }
-      // Also reduce inTransit on the source warehouse (where the goods were sent from)
-      await reduceSourceWarehouseTransit(payload, productId, warehouseId, quantity, req)
+      // Reduce inTransit on the current warehouse (where goods are being received)
+      inTransit = Math.max(0, inTransit - quantity)
       break
 
     case 'shipped_to_customers':

@@ -59,11 +59,21 @@ export const PromoCodes: CollectionConfig = {
       name: 'validFrom',
       type: 'date',
       label: 'Действует с',
+      admin: {
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
+      },
     },
     {
       name: 'validTo',
       type: 'date',
       label: 'Действует до',
+      admin: {
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
+      },
     },
     {
       name: 'active',

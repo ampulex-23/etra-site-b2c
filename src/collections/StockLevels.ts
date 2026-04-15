@@ -97,6 +97,9 @@ export const StockLevels: CollectionConfig = {
       admin: {
         readOnly: true,
         position: 'sidebar',
+        date: {
+          displayFormat: 'yyyy-MM-dd',
+        },
       },
     },
     {
