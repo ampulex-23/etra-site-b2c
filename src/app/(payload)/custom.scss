@@ -1,12 +1,31 @@
 /* Fix for dropdown overflow in array fields and nested groups */
-.array-field__drawer,
-.group-field,
-.collapsible__content {
-  overflow: visible !important;
-}
+/* Only apply to document edit forms, not navigation sidebar */
+.doc-controls__wrapper,
+.render-fields,
+.payload-settings__fields {
+  .array-field__drawer,
+  .group-field {
+    overflow: visible !important;
+  }
 
-.array-field__row {
-  overflow: visible !important;
+  .array-field__row {
+    overflow: visible !important;
+  }
+
+  /* Ensure dropdown menus are not clipped by parent containers */
+  .field-type.select,
+  .field-type.relationship {
+    overflow: visible !important;
+  }
+
+  /* Fix for nested collapsibles in forms */
+  .collapsible {
+    overflow: visible !important;
+  }
+
+  .collapsible__content {
+    overflow: visible !important;
+  }
 }
 
 /* Fix for select dropdowns being cut off */
@@ -18,28 +37,8 @@
   z-index: 101 !important;
 }
 
-/* Ensure dropdown menus are not clipped by parent containers */
-.field-type.select,
-.field-type.relationship {
-  overflow: visible !important;
-}
-
 /* Fix for nested array fields */
 .array-field__drawer .field-type.select .rs__menu,
 .array-field__drawer .field-type.relationship .rs__menu {
   position: fixed !important;
-}
-
-/* Additional overflow fixes for complex forms */
-.render-fields,
-.payload-settings__fields {
-  overflow: visible !important;
-}
-
-.collapsible {
-  overflow: visible !important;
-}
-
-.collapsible__content {
-  overflow: visible !important;
 }
