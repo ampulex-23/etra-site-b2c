@@ -69,33 +69,28 @@ const nextConfig = {
       },
     ],
   },
-  webpack: (webpackConfig, { isServer, dev }) => {
+  webpack: (webpackConfig, { isServer }) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],
       '.js': ['.ts', '.tsx', '.js', '.jsx'],
       '.mjs': ['.mts', '.mjs'],
     }
 
-    // Enable filesystem cache for faster rebuilds
-    if (!dev) {
-      webpackConfig.cache = {
-        type: 'filesystem',
-        buildDependencies: {
-          config: [import.meta.url],
-        },
-        compression: 'gzip',
-      }
-    }
-
+    // Disable cache to prevent OOM
+    webpackConfig.cache = false
+    
+    // Reduce memory pressure
     webpackConfig.optimization = {
       ...webpackConfig.optimization,
       moduleIds: 'deterministic',
-      minimize: true,
-      splitChunks: isServer ? false : {
-        chunks: 'all',
-        maxSize: 200000,
-      },
+      minimize: !isServer, // Only minimize client bundle
+      removeAvailableModules: false,
+      removeEmptyChunks: false,
+      splitChunks: false, // Disable chunking to save memory
     }
+    
+    // Reduce parallelism
+    webpackConfig.parallelism = 1
 
     return webpackConfig
   },
