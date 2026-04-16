@@ -50,11 +50,20 @@ const nextConfig = {
       },
     ],
   },
-  webpack: (webpackConfig) => {
+  webpack: (webpackConfig, { isServer }) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],
       '.js': ['.ts', '.tsx', '.js', '.jsx'],
       '.mjs': ['.mts', '.mjs'],
+    }
+
+    webpackConfig.optimization = {
+      ...webpackConfig.optimization,
+      moduleIds: 'deterministic',
+      splitChunks: isServer ? false : {
+        chunks: 'all',
+        maxSize: 200000,
+      },
     }
 
     return webpackConfig
