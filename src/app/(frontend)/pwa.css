@@ -83,7 +83,7 @@ html {
 }
 
 body {
-  background-image: url('/images/bg-aloe.png');
+  background-image: url('/images/bg-aloe.webp');
   background-size: cover;
   background-position: center 0;
   background-attachment: scroll;
@@ -127,7 +127,7 @@ img {
   right: 0;
   min-height: 100svh;
   z-index: 0;
-  background: url('/images/bg-aloe.png') center/cover no-repeat;
+  background: url('/images/bg-aloe.webp') center/cover no-repeat;
   background-color: var(--c-bg-deep);
   background-attachment: fixed;
 }
