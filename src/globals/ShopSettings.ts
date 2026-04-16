@@ -38,10 +38,31 @@ export const ShopSettings: GlobalConfig = {
       label: 'Оплата',
       fields: [
         {
+          name: 'paymentOnlineEnabled',
+          type: 'checkbox',
+          defaultValue: true,
+          label: 'Онлайн-оплата включена',
+          admin: {
+            description: 'Разрешить оплату картой онлайн при оформлении заказа',
+          },
+        },
+        {
+          name: 'paymentCashEnabled',
+          type: 'checkbox',
+          defaultValue: false,
+          label: 'Оплата наличными при получении включена',
+          admin: {
+            description: 'Разрешить оплату наличными курьеру при получении',
+          },
+        },
+        {
           name: 'paymentEnabled',
           type: 'checkbox',
           defaultValue: false,
-          label: 'Онлайн-оплата включена',
+          label: 'Интеграция с платёжной системой включена',
+          admin: {
+            description: 'Включить интеграцию с Т-Банк или ЮKassa для приёма онлайн-платежей',
+          },
         },
         {
           name: 'paymentProvider',

@@ -43,6 +43,9 @@ export function CheckoutScreen() {
   const { customer, token } = useAuth()
   const { items, totalPrice, clearCart } = useCart()
 
+  // Settings from admin
+  const [settings, setSettings] = useState({ delivery: { pickupEnabled: true, cdekEnabled: true }, payment: { onlineEnabled: true, cashEnabled: false } })
+  
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('cdek')
   const [deliveryType, setDeliveryType] = useState<DeliveryType>('pvz')
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('online')
@@ -84,6 +87,24 @@ export function CheckoutScreen() {
 
   // Referral discount from customer
   const referralDiscount = customer?.referralDiscount || 0
+
+  // Load settings from admin
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        setSettings(data)
+        // Auto-select first available delivery method
+        if (!data.delivery.cdekEnabled && data.delivery.pickupEnabled) {
+          setDeliveryMethod('pickup')
+        }
+        // Auto-select first available payment method
+        if (!data.payment.onlineEnabled && data.payment.cashEnabled) {
+          setPaymentMethod('cash')
+        }
+      })
+      .catch(err => console.error('Failed to load settings:', err))
+  }, [])
 
   // Sync form fields with customer data when it loads
   useEffect(() => {
@@ -454,25 +475,29 @@ export function CheckoutScreen() {
             <span className="checkout-sec__title">Доставка</span>
           </div>
 
-          <button type="button" className={`del-option ${deliveryMethod === 'cdek' ? 'del-option--active' : ''}`} onClick={() => setDeliveryMethod('cdek')}>
-            <div className="del-option__radio" />
-            <div className="del-option__info">
-              <div className="del-option__name">СДЭК</div>
-              <div className="del-option__desc">{cdekCalc ? `${cdekCalc.period_min}–${cdekCalc.period_max} дн.` : 'Курьером или в ПВЗ'}</div>
-            </div>
-            <div className="del-option__price">
-              {calcLoading ? '...' : cdekCalc ? `≈ ${Math.round(cdekCalc.delivery_sum).toLocaleString('ru-RU')} ₽` : calcError ? '—' : 'Рассчитать'}
-            </div>
-          </button>
+          {settings.delivery.cdekEnabled && (
+            <button type="button" className={`del-option ${deliveryMethod === 'cdek' ? 'del-option--active' : ''}`} onClick={() => setDeliveryMethod('cdek')}>
+              <div className="del-option__radio" />
+              <div className="del-option__info">
+                <div className="del-option__name">СДЭК</div>
+                <div className="del-option__desc">{cdekCalc ? `${cdekCalc.period_min}–${cdekCalc.period_max} дн.` : 'Курьером или в ПВЗ'}</div>
+              </div>
+              <div className="del-option__price">
+                {calcLoading ? '...' : cdekCalc ? `≈ ${Math.round(cdekCalc.delivery_sum).toLocaleString('ru-RU')} ₽` : calcError ? '—' : 'Рассчитать'}
+              </div>
+            </button>
+          )}
 
-          <button type="button" className={`del-option ${deliveryMethod === 'pickup' ? 'del-option--active' : ''}`} onClick={() => setDeliveryMethod('pickup')}>
-            <div className="del-option__radio" />
-            <div className="del-option__info">
-              <div className="del-option__name">Самовывоз</div>
-              <div className="del-option__desc">Москва</div>
-            </div>
-            <div className="del-option__price" style={{ color: 'var(--c-success)' }}>Бесплатно</div>
-          </button>
+          {settings.delivery.pickupEnabled && (
+            <button type="button" className={`del-option ${deliveryMethod === 'pickup' ? 'del-option--active' : ''}`} onClick={() => setDeliveryMethod('pickup')}>
+              <div className="del-option__radio" />
+              <div className="del-option__info">
+                <div className="del-option__name">Самовывоз</div>
+                <div className="del-option__desc">Москва</div>
+              </div>
+              <div className="del-option__price" style={{ color: 'var(--c-success)' }}>Бесплатно</div>
+            </button>
+          )}
 
           {deliveryMethod === 'cdek' && (
             <div className="mt-16 stack">
@@ -662,32 +687,36 @@ export function CheckoutScreen() {
             <span className="checkout-sec__title">Способ оплаты</span>
           </div>
 
-          <button type="button" className={`del-option ${paymentMethod === 'online' ? 'del-option--active' : ''}`} onClick={() => setPaymentMethod('online')}>
-            <div className="del-option__radio" />
-            <div className="del-option__info">
-              <div className="del-option__name" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <CreditCard size={18} />
-                Онлайн оплата
+          {settings.payment.onlineEnabled && (
+            <button type="button" className={`del-option ${paymentMethod === 'online' ? 'del-option--active' : ''}`} onClick={() => setPaymentMethod('online')}>
+              <div className="del-option__radio" />
+              <div className="del-option__info">
+                <div className="del-option__name" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <CreditCard size={18} />
+                  Онлайн оплата
+                </div>
+                <div className="del-option__desc">Банковская карта, T-Pay, СБП</div>
               </div>
-              <div className="del-option__desc">Банковская карта, T-Pay, СБП</div>
-            </div>
-            <div className="del-option__price" style={{ color: 'var(--c-primary)' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              </svg>
-            </div>
-          </button>
+              <div className="del-option__price" style={{ color: 'var(--c-primary)' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </div>
+            </button>
+          )}
 
-          <button type="button" className={`del-option ${paymentMethod === 'cash' ? 'del-option--active' : ''}`} onClick={() => setPaymentMethod('cash')}>
-            <div className="del-option__radio" />
-            <div className="del-option__info">
-              <div className="del-option__name" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Banknote size={18} />
-                При получении
+          {settings.payment.cashEnabled && (
+            <button type="button" className={`del-option ${paymentMethod === 'cash' ? 'del-option--active' : ''}`} onClick={() => setPaymentMethod('cash')}>
+              <div className="del-option__radio" />
+              <div className="del-option__info">
+                <div className="del-option__name" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Banknote size={18} />
+                  При получении
+                </div>
+                <div className="del-option__desc">Наличными или картой курьеру</div>
               </div>
-              <div className="del-option__desc">Наличными или картой курьеру</div>
-            </div>
-          </button>
+            </button>
+          )}
         </div>
 
         {/* 5. Comment */}
