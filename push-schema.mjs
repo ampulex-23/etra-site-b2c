@@ -351,6 +351,8 @@ try {
         "id" serial PRIMARY KEY,
         "telegram_bot_token" varchar,
         "telegram_bot_username" varchar,
+        "payment_online_enabled" boolean DEFAULT true,
+        "payment_cash_enabled" boolean DEFAULT false,
         "payment_enabled" boolean DEFAULT false,
         "payment_provider" varchar,
         "payment_api_key" varchar,
@@ -367,6 +369,8 @@ try {
     await addColumnsIfMissing('shop_settings', [
       { name: 'telegram_bot_token', definition: 'varchar' },
       { name: 'telegram_bot_username', definition: 'varchar' },
+      { name: 'payment_online_enabled', definition: 'boolean DEFAULT true' },
+      { name: 'payment_cash_enabled', definition: 'boolean DEFAULT false' },
       { name: 'payment_enabled', definition: 'boolean DEFAULT false' },
       { name: 'payment_provider', definition: 'varchar' },
       { name: 'payment_api_key', definition: 'varchar' },
