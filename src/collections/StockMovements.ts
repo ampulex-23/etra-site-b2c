@@ -11,8 +11,21 @@ export const StockMovements: CollectionConfig = {
     afterChange: [stockMovementAfterChange],
   },
   admin: {
-    useAsTitle: 'operationType',
-    defaultColumns: ['operationType', 'warehouse', 'status', 'operator', 'createdAt'],
+    useAsTitle: ((doc: any) => {
+      const typeLabels: Record<string, string> = {
+        produced: '🟢 Произведено',
+        sent_to_logistics: '🔵 Отправлено в СДЭК',
+        received_at_logistics: '✅ Принято в СДЭК',
+        shipped_to_customers: '📦 Отправлено клиентам',
+        retail_shipment: '🏪 Реализация',
+        employee_issue: '👤 Выдача сотруднику',
+        write_off: '❌ Списание',
+        return_to_stock: '📥 Возврат на склад',
+        inventory_adjustment: '📋 Корректировка',
+      }
+      return typeLabels[doc.operationType] || '—'
+    }) as any,
+    defaultColumns: ['operationType', 'warehouse', 'items', 'status', 'operator', 'createdAt'],
     group: 'Склад',
     description: 'Журнал всех операций: производство, перемещение, отправка, списание',
   },
@@ -60,6 +73,9 @@ export const StockMovements: CollectionConfig = {
       labels: { singular: 'Позиция', plural: 'Позиции' },
       admin: {
         description: 'Товары и количество для этой операции. Наборы раскладываются автоматически.',
+        components: {
+          Cell: '/components/admin/StockMovementItemsCell#StockMovementItemsCell',
+        },
       },
       fields: [
         {
