@@ -71,16 +71,8 @@ const nextConfig = {
       '.mjs': ['.mts', '.mjs'],
     }
 
-    // Reduce memory usage
+    // Reduce memory usage during build
     webpackConfig.cache = false
-    
-    // Optimize Three.js - only include what we need
-    if (!isServer) {
-      webpackConfig.resolve.alias = {
-        ...webpackConfig.resolve.alias,
-        'three': 'three/src/Three.js',
-      }
-    }
 
     webpackConfig.optimization = {
       ...webpackConfig.optimization,
@@ -89,14 +81,6 @@ const nextConfig = {
       splitChunks: isServer ? false : {
         chunks: 'all',
         maxSize: 200000,
-        cacheGroups: {
-          three: {
-            test: /[\\/]node_modules[\\/](three|@react-three)[\\/]/,
-            name: 'three-vendor',
-            chunks: 'all',
-            priority: 10,
-          },
-        },
       },
     }
 
