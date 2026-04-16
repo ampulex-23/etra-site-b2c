@@ -6,7 +6,6 @@ const nextConfig = {
   
   // Memory optimization for build
   productionBrowserSourceMaps: false,
-  swcMinify: true,
   
   eslint: {
     ignoreDuringBuilds: true,
