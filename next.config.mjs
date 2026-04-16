@@ -4,7 +4,7 @@ import { withPayload } from '@payloadcms/next/withPayload'
 const nextConfig = {
   output: 'standalone',
   
-  // Memory optimization for build
+  // Speed optimizations
   productionBrowserSourceMaps: false,
   
   eslint: {
@@ -14,10 +14,16 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   
-  // Disable static generation - render everything at runtime
+  // Reduce build overhead
   experimental: {
     workerThreads: false,
     cpus: 1,
+  },
+  
+  // Disable telemetry
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
   },
   async rewrites() {
     return [
@@ -63,15 +69,23 @@ const nextConfig = {
       },
     ],
   },
-  webpack: (webpackConfig, { isServer }) => {
+  webpack: (webpackConfig, { isServer, dev }) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],
       '.js': ['.ts', '.tsx', '.js', '.jsx'],
       '.mjs': ['.mts', '.mjs'],
     }
 
-    // Reduce memory usage during build
-    webpackConfig.cache = false
+    // Enable filesystem cache for faster rebuilds
+    if (!dev) {
+      webpackConfig.cache = {
+        type: 'filesystem',
+        buildDependencies: {
+          config: [import.meta.url],
+        },
+        compression: 'gzip',
+      }
+    }
 
     webpackConfig.optimization = {
       ...webpackConfig.optimization,
