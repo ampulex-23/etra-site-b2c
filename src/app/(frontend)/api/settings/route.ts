@@ -11,15 +11,18 @@ export async function GET() {
       payload.findGlobal({ slug: 'shop-settings' }),
     ])
 
+    const delivery = deliverySettings as any
+    const shop = shopSettings as any
+
     return NextResponse.json({
       delivery: {
-        pickupEnabled: deliverySettings.deliveryPickupEnabled ?? true,
-        cdekEnabled: deliverySettings.cdekEnabled ?? false,
-        russianPostEnabled: deliverySettings.russianPostEnabled ?? false,
+        pickupEnabled: delivery.deliveryPickupEnabled ?? true,
+        cdekEnabled: delivery.cdekEnabled ?? false,
+        russianPostEnabled: delivery.russianPostEnabled ?? false,
       },
       payment: {
-        onlineEnabled: shopSettings.paymentOnlineEnabled ?? true,
-        cashEnabled: shopSettings.paymentCashEnabled ?? false,
+        onlineEnabled: shop.paymentOnlineEnabled ?? true,
+        cashEnabled: shop.paymentCashEnabled ?? false,
       },
     })
   } catch (error) {
