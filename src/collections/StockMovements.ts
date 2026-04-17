@@ -49,11 +49,6 @@ export const StockMovements: CollectionConfig = {
         { label: '📥 Возврат на склад', value: 'return_to_stock' },
         { label: '📋 Корректировка (инвентаризация)', value: 'inventory_adjustment' },
       ],
-      admin: {
-        components: {
-          Cell: '/components/admin/OperationTypeCell#OperationTypeCell',
-        },
-      },
     },
     {
       name: 'items',
@@ -64,9 +59,6 @@ export const StockMovements: CollectionConfig = {
       labels: { singular: 'Позиция', plural: 'Позиции' },
       admin: {
         description: 'Товары и количество для этой операции. Наборы раскладываются автоматически.',
-        components: {
-          Cell: '/components/admin/StockMovementItemsCell#StockMovementItemsCell',
-        },
       },
       fields: [
         {
