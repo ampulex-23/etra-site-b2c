@@ -3,7 +3,6 @@
 import React from 'react'
 import Link from 'next/link'
 import { Hero } from '../../components/Hero'
-import { QuickLinks } from '../../components/QuickLinks'
 import { GetStarted } from '../../components/GetStarted'
 
 export function AboutScreen() {
@@ -11,9 +10,6 @@ export function AboutScreen() {
     <div className="pwa-screen pwa-screen--flush">
       {/* ─── HERO ─── */}
       <Hero />
-
-      {/* ─── QUICK LINKS ─── */}
-      <QuickLinks />
 
       {/* ─── GET STARTED ─── */}
       <GetStarted />

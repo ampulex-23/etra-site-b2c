@@ -10,10 +10,8 @@ const menuLinks = [
   { href: '#', label: 'О НАС' },
   { href: '/catalog', label: 'КАТАЛОГ' },
   { href: '/courses', label: 'КУРСЫ' },
-  { href: '#', label: 'НОВИНКИ' },
   { href: '#', label: 'МЕСТА' },
   { href: '#', label: 'ЭНЦИКЛОПЕДИЯ' },
-  { href: '#', label: 'ПРОИЗВОДСТВО ВМЕСТЕ' },
   { href: '#', label: 'КОМАНДА' },
   { href: '#', label: 'ПАРТНЁРЫ' },
 ]
