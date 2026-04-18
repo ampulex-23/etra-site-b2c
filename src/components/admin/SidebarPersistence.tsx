@@ -45,39 +45,53 @@ function findScroller(): HTMLElement | null {
 
 export function SidebarPersistence() {
   useEffect(() => {
-    let savedGroups: Record<string, boolean> = {}
-    try {
-      savedGroups = JSON.parse(localStorage.getItem(GROUPS_KEY) || '{}')
-    } catch {
-      savedGroups = {}
+    const readGroups = (): Record<string, boolean> => {
+      try {
+        return JSON.parse(localStorage.getItem(GROUPS_KEY) || '{}')
+      } catch {
+        return {}
+      }
     }
-    const savedScroll = Number(localStorage.getItem(SCROLL_KEY) || '0') || 0
-    const savedNavClosed = localStorage.getItem(NAV_KEY)
-
-    let scroller: HTMLElement | null = null
-    let scrollListenerAttached = false
-    let template: Element | null = null
-    let templateObserver: MutationObserver | null = null
-    const groupObservers = new WeakMap<Element, MutationObserver>()
-
-    const saveGroups = () => {
-      const state: Record<string, boolean> = {}
-      document.querySelectorAll('.nav-group').forEach((group) => {
-        const label = getLabel(group)
-        if (!label) return
-        state[label] = isGroupCollapsed(group)
-      })
-      savedGroups = state
+    const readScroll = (): number => Number(localStorage.getItem(SCROLL_KEY) || '0') || 0
+    const writeScroll = (v: number) => {
+      try {
+        localStorage.setItem(SCROLL_KEY, String(v))
+      } catch {}
+    }
+    const writeGroups = (state: Record<string, boolean>) => {
       try {
         localStorage.setItem(GROUPS_KEY, JSON.stringify(state))
       } catch {}
     }
 
-    const applyGroups = () => {
+    let currentScroller: HTMLElement | null = null
+    let currentScrollFn: ((e: Event) => void) | null = null
+    let templateObserver: MutationObserver | null = null
+    const groupObservers = new WeakMap<Element, MutationObserver>()
+    const appliedGroups = new WeakSet<Element>()
+
+    const saveGroups = () => {
+      // Объединяем текущее DOM-состояние с уже сохранённым:
+      // так мы компенсируем баг Payload, который перезаписывает groups только одной кликнутой группой.
+      const prev = readGroups()
+      const state: Record<string, boolean> = { ...prev }
       document.querySelectorAll('.nav-group').forEach((group) => {
         const label = getLabel(group)
         if (!label) return
-        const desired = savedGroups[label]
+        state[label] = isGroupCollapsed(group)
+      })
+      writeGroups(state)
+    }
+
+    const applyGroups = () => {
+      const saved = readGroups()
+      if (!Object.keys(saved).length) return
+      document.querySelectorAll('.nav-group').forEach((group) => {
+        if (appliedGroups.has(group)) return
+        const label = getLabel(group)
+        if (!label) return
+        appliedGroups.add(group)
+        const desired = saved[label]
         if (desired === undefined) return
         const current = isGroupCollapsed(group)
         if (desired !== current) {
@@ -100,30 +114,41 @@ export function SidebarPersistence() {
       })
     }
 
-    const attachScroll = () => {
-      if (scrollListenerAttached) return
-      scroller = findScroller()
+    const ensureScroll = () => {
+      const scroller = findScroller()
       if (!scroller) return
-      scroller.scrollTop = savedScroll
-      const onScroll = () => {
-        if (!scroller) return
-        try {
-          localStorage.setItem(SCROLL_KEY, String(scroller.scrollTop))
-        } catch {}
+      const saved = readScroll()
+      if (scroller !== currentScroller) {
+        if (currentScroller && currentScrollFn) {
+          currentScroller.removeEventListener('scroll', currentScrollFn)
+        }
+        currentScroller = scroller
+        const fn = () => {
+          if (!currentScroller) return
+          const v = currentScroller.scrollTop
+          // Не перезаписываем сохранённое значение нулём, если раньше было значение:
+          // так мы защищаемся от сброса scrollTop=0 при SPA-перерендере Payload.
+          if (v === 0 && readScroll() > 0) return
+          writeScroll(v)
+        }
+        currentScrollFn = fn
+        scroller.addEventListener('scroll', fn, { passive: true })
+        if (saved > 0) scroller.scrollTop = saved
+      } else if (saved > 0 && scroller.scrollTop === 0) {
+        // Тот же скроллер, но Payload сбросил scrollTop: восстанавливаем.
+        scroller.scrollTop = saved
       }
-      scroller.addEventListener('scroll', onScroll, { passive: true })
-      scrollListenerAttached = true
     }
 
     const attachTemplate = () => {
       if (templateObserver) return
-      template = document.querySelector('.template-default') || document.body
+      const template = (document.querySelector('.template-default') as HTMLElement | null) || document.body
       if (!template) return
+      const savedNavClosed = localStorage.getItem(NAV_KEY)
       if (savedNavClosed === 'true') template.classList.add('nav-closed')
       templateObserver = new MutationObserver(() => {
-        const isClosed = template!.classList.contains('nav-closed')
         try {
-          localStorage.setItem(NAV_KEY, String(isClosed))
+          localStorage.setItem(NAV_KEY, String(template.classList.contains('nav-closed')))
         } catch {}
       })
       templateObserver.observe(template, { attributes: true, attributeFilter: ['class'] })
@@ -133,19 +158,31 @@ export function SidebarPersistence() {
       if (document.querySelectorAll('.nav-group').length > 0) {
         applyGroups()
         attachGroupObservers()
-        attachScroll()
+        ensureScroll()
         attachTemplate()
       }
     }
 
-    // Первый запуск + наблюдение за изменениями DOM (SPA-переходы).
     tick()
     const bodyObserver = new MutationObserver(() => tick())
     bodyObserver.observe(document.body, { childList: true, subtree: true })
 
+    // Перед выгрузкой страницы зафиксировать текущий scrollTop (на случай жёсткой навигации).
+    const onBeforeUnload = () => {
+      if (currentScroller) writeScroll(currentScroller.scrollTop)
+      saveGroups()
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    window.addEventListener('pagehide', onBeforeUnload)
+
     return () => {
       bodyObserver.disconnect()
       templateObserver?.disconnect()
+      if (currentScroller && currentScrollFn) {
+        currentScroller.removeEventListener('scroll', currentScrollFn)
+      }
+      window.removeEventListener('beforeunload', onBeforeUnload)
+      window.removeEventListener('pagehide', onBeforeUnload)
     }
   }, [])
 
