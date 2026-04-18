@@ -989,7 +989,6 @@ try {
   }
 
   // Удаляем старые глобалы, которые не соответствуют новой схеме
-  // (Payload мигрирует оставшиеся поля автоматически при push:true)
   if (await tableExists('referral_settings')) {
     await dropColumnIfExists('referral_settings', 'points_per_order')
     await dropColumnIfExists('referral_settings', 'points_percent_of_order')
@@ -999,6 +998,445 @@ try {
   if (await tableExists('referral_settings_levels')) {
     await pool.query('DROP TABLE IF EXISTS "referral_settings_levels" CASCADE')
     console.log('[migrate] Dropped old referral_settings_levels table')
+  }
+
+  // ==========================================
+  // REFERRAL PROGRAM v2 — создание новых таблиц/колонок
+  // ==========================================
+
+  // ---- customers: новые поля привязки к партнёру + ЦК ----
+  if (await tableExists('customers')) {
+    await addColumnsIfMissing('customers', [
+      { name: 'attributed_partner_id', definition: 'integer' },
+      { name: 'attributed_at', definition: 'timestamp(3) with time zone' },
+      { name: 'first_purchase_completed', definition: 'boolean DEFAULT false' },
+      { name: 'total_spent6_months', definition: 'numeric DEFAULT 0' },
+      { name: 'cooperative_account_id', definition: 'varchar' },
+      { name: 'cooperative_member_since', definition: 'timestamp(3) with time zone' },
+      { name: 'cooperative_status', definition: 'varchar' },
+      { name: 'last_m_l_m_qualification_check', definition: 'timestamp(3) with time zone' },
+    ])
+  }
+
+  // ---- orders: новые поля рефералки v2 ----
+  if (await tableExists('orders')) {
+    await addColumnsIfMissing('orders', [
+      { name: 'referral_partner_id', definition: 'integer' },
+      { name: 'promo_code_applied', definition: 'varchar' },
+      { name: 'customer_discount_applied', definition: 'numeric DEFAULT 0' },
+      { name: 'is_partner_purchase', definition: 'boolean DEFAULT false' },
+      { name: 'partner_discount_applied', definition: 'numeric DEFAULT 0' },
+      { name: 'referral_commissions_created', definition: 'boolean DEFAULT false' },
+    ])
+  }
+
+  // ---- products: поля партнёрской цены ----
+  if (await tableExists('products')) {
+    await addColumnsIfMissing('products', [
+      { name: 'partner_price_override', definition: 'numeric' },
+      { name: 'partner_discount_percent_override', definition: 'numeric' },
+      { name: 'exclude_from_partner_discount', definition: 'boolean DEFAULT false' },
+    ])
+  }
+
+  // ---- referral_partners ----
+  if (!(await tableExists('referral_partners'))) {
+    await pool.query(`
+      CREATE TABLE "referral_partners" (
+        "id" serial PRIMARY KEY,
+        "customer_id" integer NOT NULL,
+        "type" varchar DEFAULT 'client',
+        "status" varchar DEFAULT 'active',
+        "promo_code" varchar NOT NULL,
+        "balance" numeric DEFAULT 0,
+        "total_earned" numeric DEFAULT 0,
+        "total_paid" numeric DEFAULT 0,
+        "avg_views" numeric,
+        "paid_per_video" numeric DEFAULT 0,
+        "platform" varchar,
+        "marketing_fund_eligible" boolean DEFAULT false,
+        "requirements" varchar,
+        "sponsor_id" integer,
+        "invitation_source" varchar,
+        "invitation_code" varchar,
+        "entry_type" varchar,
+        "entry_order_id" integer,
+        "joined_m_l_m_at" timestamp(3) with time zone,
+        "partner_price_enabled" boolean DEFAULT true,
+        "cached_level1_count" numeric DEFAULT 0,
+        "cached_level2_count" numeric DEFAULT 0,
+        "cached_level3_count" numeric DEFAULT 0,
+        "cooperative_member_role" varchar,
+        "cooperative_agreement_id" varchar,
+        "admin_notes" varchar,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS "referral_partners_promo_code_idx" ON "referral_partners" ("promo_code")')
+    await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS "referral_partners_customer_idx" ON "referral_partners" ("customer_id")')
+    console.log('[migrate] Created referral_partners table')
+  }
+
+  // ---- referral_partners_social_links (array) ----
+  if (!(await tableExists('referral_partners_social_links'))) {
+    await pool.query(`
+      CREATE TABLE "referral_partners_social_links" (
+        "_order" integer NOT NULL,
+        "_parent_id" integer NOT NULL,
+        "id" varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        "platform" varchar,
+        "url" varchar
+      )
+    `)
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE "referral_partners_social_links"
+          ADD CONSTRAINT "referral_partners_social_links_parent_id_fk"
+          FOREIGN KEY ("_parent_id") REFERENCES "referral_partners"("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "referral_partners_social_links_order_idx" ON "referral_partners_social_links" ("_order")')
+    await pool.query('CREATE INDEX IF NOT EXISTS "referral_partners_social_links_parent_id_idx" ON "referral_partners_social_links" ("_parent_id")')
+    console.log('[migrate] Created referral_partners_social_links table')
+  }
+
+  // ---- referral_partners_cooperative_c_p_p_links (array) ----
+  if (!(await tableExists('referral_partners_cooperative_c_p_p_links'))) {
+    await pool.query(`
+      CREATE TABLE "referral_partners_cooperative_c_p_p_links" (
+        "_order" integer NOT NULL,
+        "_parent_id" integer NOT NULL,
+        "id" varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        "cpp_name" varchar,
+        "cpp_id" varchar,
+        "joined_at" timestamp(3) with time zone
+      )
+    `)
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE "referral_partners_cooperative_c_p_p_links"
+          ADD CONSTRAINT "referral_partners_cooperative_c_p_p_links_parent_id_fk"
+          FOREIGN KEY ("_parent_id") REFERENCES "referral_partners"("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "referral_partners_cooperative_c_p_p_links_order_idx" ON "referral_partners_cooperative_c_p_p_links" ("_order")')
+    await pool.query('CREATE INDEX IF NOT EXISTS "referral_partners_cooperative_c_p_p_links_parent_id_idx" ON "referral_partners_cooperative_c_p_p_links" ("_parent_id")')
+    console.log('[migrate] Created referral_partners_cooperative_c_p_p_links table')
+  }
+
+  // ---- commissions ----
+  if (!(await tableExists('commissions'))) {
+    await pool.query(`
+      CREATE TABLE "commissions" (
+        "id" serial PRIMARY KEY,
+        "recipient_id" integer NOT NULL,
+        "recipient_customer_id" integer,
+        "order_id" integer NOT NULL,
+        "buyer_id" integer NOT NULL,
+        "type" varchar NOT NULL,
+        "percent" numeric NOT NULL,
+        "base_amount" numeric NOT NULL,
+        "amount" numeric NOT NULL,
+        "status" varchar DEFAULT 'pending',
+        "month" varchar NOT NULL,
+        "payout_id" integer,
+        "notes" varchar,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "commissions_month_idx" ON "commissions" ("month")')
+    await pool.query('CREATE INDEX IF NOT EXISTS "commissions_recipient_idx" ON "commissions" ("recipient_id")')
+    await pool.query('CREATE INDEX IF NOT EXISTS "commissions_order_idx" ON "commissions" ("order_id")')
+    console.log('[migrate] Created commissions table')
+  }
+
+  // ---- referral_payouts ----
+  if (!(await tableExists('referral_payouts'))) {
+    await pool.query(`
+      CREATE TABLE "referral_payouts" (
+        "id" serial PRIMARY KEY,
+        "partner_id" integer NOT NULL,
+        "partner_customer_id" integer,
+        "amount" numeric NOT NULL,
+        "method" varchar NOT NULL,
+        "status" varchar DEFAULT 'requested',
+        "payment_details_card_number" varchar,
+        "payment_details_bank_name" varchar,
+        "payment_details_phone" varchar,
+        "payment_details_recipient_full_name" varchar,
+        "payment_details_inn" varchar,
+        "requested_at" timestamp(3) with time zone,
+        "approved_at" timestamp(3) with time zone,
+        "paid_at" timestamp(3) with time zone,
+        "external_tx_id" varchar,
+        "reject_reason" varchar,
+        "admin_notes" varchar,
+        "cooperative_document_id" varchar,
+        "cooperative_blockchain_hash" varchar,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    console.log('[migrate] Created referral_payouts table')
+  }
+
+  // ---- referral_payouts_rels (hasMany: includedCommissions) ----
+  if (!(await tableExists('referral_payouts_rels'))) {
+    await pool.query(`
+      CREATE TABLE "referral_payouts_rels" (
+        "id" serial PRIMARY KEY,
+        "order" integer,
+        "parent_id" integer NOT NULL,
+        "path" varchar NOT NULL,
+        "commissions_id" integer
+      )
+    `)
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE "referral_payouts_rels"
+          ADD CONSTRAINT "referral_payouts_rels_parent_fk"
+          FOREIGN KEY ("parent_id") REFERENCES "referral_payouts"("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "referral_payouts_rels_parent_idx" ON "referral_payouts_rels" ("parent_id")')
+    console.log('[migrate] Created referral_payouts_rels table')
+  }
+
+  // ---- mlm_invitations ----
+  if (!(await tableExists('mlm_invitations'))) {
+    await pool.query(`
+      CREATE TABLE "mlm_invitations" (
+        "id" serial PRIMARY KEY,
+        "code" varchar NOT NULL,
+        "issued_by_id" integer NOT NULL,
+        "issued_by_customer_id" integer,
+        "status" varchar DEFAULT 'active',
+        "used_by_id" integer,
+        "used_at" timestamp(3) with time zone,
+        "expires_at" timestamp(3) with time zone,
+        "note" varchar,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS "mlm_invitations_code_idx" ON "mlm_invitations" ("code")')
+    console.log('[migrate] Created mlm_invitations table')
+  }
+
+  // ---- team_turnover ----
+  if (!(await tableExists('team_turnover'))) {
+    await pool.query(`
+      CREATE TABLE "team_turnover" (
+        "id" serial PRIMARY KEY,
+        "partner_id" integer NOT NULL,
+        "partner_customer_id" integer,
+        "month" varchar NOT NULL,
+        "personal_sales" numeric DEFAULT 0,
+        "level1_turnover" numeric DEFAULT 0,
+        "level2_turnover" numeric DEFAULT 0,
+        "level3_turnover" numeric DEFAULT 0,
+        "total_team_turnover" numeric DEFAULT 0,
+        "team_bonus_awarded" boolean DEFAULT false,
+        "team_bonus_amount" numeric DEFAULT 0,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "team_turnover_month_idx" ON "team_turnover" ("month")')
+    await pool.query('CREATE INDEX IF NOT EXISTS "team_turnover_partner_idx" ON "team_turnover" ("partner_id")')
+    console.log('[migrate] Created team_turnover table')
+  }
+
+  // ---- partner_applications ----
+  if (!(await tableExists('partner_applications'))) {
+    await pool.query(`
+      CREATE TABLE "partner_applications" (
+        "id" serial PRIMARY KEY,
+        "application_type" varchar NOT NULL,
+        "status" varchar DEFAULT 'new',
+        "customer_id" integer,
+        "created_partner_id" integer,
+        "contact_name" varchar NOT NULL,
+        "contact_email" varchar,
+        "contact_phone" varchar,
+        "contact_telegram" varchar,
+        "avg_views" numeric,
+        "audience_topic" varchar,
+        "invitation_code" varchar,
+        "message" varchar,
+        "admin_notes" varchar,
+        "reject_reason" varchar,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    console.log('[migrate] Created partner_applications table')
+  }
+
+  // ---- partner_applications_social_links (array) ----
+  if (!(await tableExists('partner_applications_social_links'))) {
+    await pool.query(`
+      CREATE TABLE "partner_applications_social_links" (
+        "_order" integer NOT NULL,
+        "_parent_id" integer NOT NULL,
+        "id" varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        "url" varchar,
+        "description" varchar
+      )
+    `)
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE "partner_applications_social_links"
+          ADD CONSTRAINT "partner_applications_social_links_parent_id_fk"
+          FOREIGN KEY ("_parent_id") REFERENCES "partner_applications"("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "partner_applications_social_links_order_idx" ON "partner_applications_social_links" ("_order")')
+    await pool.query('CREATE INDEX IF NOT EXISTS "partner_applications_social_links_parent_id_idx" ON "partner_applications_social_links" ("_parent_id")')
+    console.log('[migrate] Created partner_applications_social_links table')
+  }
+
+  // ---- referral_events ----
+  if (!(await tableExists('referral_events'))) {
+    await pool.query(`
+      CREATE TABLE "referral_events" (
+        "id" serial PRIMARY KEY,
+        "partner_id" integer NOT NULL,
+        "event_type" varchar NOT NULL,
+        "customer_id" integer,
+        "order_id" integer,
+        "promo_code" varchar,
+        "source" varchar,
+        "ip_address" varchar,
+        "user_agent" varchar,
+        "referer" varchar,
+        "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+        "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      )
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "referral_events_partner_idx" ON "referral_events" ("partner_id")')
+    await pool.query('CREATE INDEX IF NOT EXISTS "referral_events_event_type_idx" ON "referral_events" ("event_type")')
+    console.log('[migrate] Created referral_events table')
+  }
+
+  // ---- referral_settings: поля новой схемы ----
+  if (await tableExists('referral_settings')) {
+    await addColumnsIfMissing('referral_settings', [
+      { name: 'enabled', definition: 'boolean DEFAULT true' },
+      { name: 'promo_code_pattern', definition: "varchar DEFAULT 'uppercase_name'" },
+      { name: 'commission_first_purchase', definition: 'numeric DEFAULT 10' },
+      { name: 'commission_repeat_purchase', definition: 'numeric DEFAULT 9' },
+      { name: 'customer_discount_first_purchase', definition: 'numeric DEFAULT 10' },
+      { name: 'attribution_lifetime', definition: "varchar DEFAULT 'lifetime'" },
+      { name: 'attribution_days', definition: 'numeric DEFAULT 30' },
+      { name: 'award_on_order_status', definition: "varchar DEFAULT 'paid'" },
+      { name: 'min_order_amount_for_commission', definition: 'numeric DEFAULT 0' },
+      { name: 'mlm_enabled', definition: 'boolean DEFAULT true' },
+      { name: 'level1_commission', definition: 'numeric DEFAULT 9' },
+      { name: 'level2_commission', definition: 'numeric DEFAULT 9' },
+      { name: 'level3_commission', definition: 'numeric DEFAULT 3' },
+      { name: 'team_bonus_enabled', definition: 'boolean DEFAULT true' },
+      { name: 'team_bonus_percent', definition: 'numeric DEFAULT 3' },
+      { name: 'team_bonus_threshold', definition: 'numeric DEFAULT 500000' },
+      { name: 'partner_discount_percent', definition: 'numeric DEFAULT 21' },
+      { name: 'auto_qualify_enabled', definition: 'boolean DEFAULT true' },
+      { name: 'auto_qualify_threshold', definition: 'numeric DEFAULT 60000' },
+      { name: 'auto_qualify_period_months', definition: 'numeric DEFAULT 6' },
+      { name: 'min_order_for_m_l_m_entry', definition: 'numeric DEFAULT 7000' },
+      { name: 'invitation_expiry_days', definition: 'numeric DEFAULT 90' },
+      { name: 'marketing_fund_enabled', definition: 'boolean DEFAULT false' },
+      { name: 'marketing_fund_percent', definition: 'numeric DEFAULT 1' },
+      { name: 'marketing_fund_min_turnover', definition: 'numeric DEFAULT 100000' },
+      { name: 'min_payout_amount', definition: 'numeric DEFAULT 500' },
+      { name: 'payout_request_cooldown_days', definition: 'numeric DEFAULT 0' },
+      { name: 'share_title', definition: "varchar DEFAULT 'Рекомендую ЭТРА!'" },
+      { name: 'share_text', definition: 'varchar' },
+      { name: 'cooperative_enabled', definition: 'boolean DEFAULT false' },
+      { name: 'cooperative_id', definition: 'varchar' },
+      { name: 'cooperative_provider_url', definition: 'varchar' },
+      { name: 'cooperative_api_key', definition: 'varchar' },
+      { name: 'cooperative_c_p_p_referral_id', definition: 'varchar' },
+      { name: 'cooperative_c_p_p_m_l_m_id', definition: 'varchar' },
+    ])
+  }
+
+  // ---- referral_settings_payout_methods (hasMany select) ----
+  if (!(await tableExists('referral_settings_payout_methods'))) {
+    await pool.query(`
+      CREATE TABLE "referral_settings_payout_methods" (
+        "order" integer NOT NULL,
+        "parent_id" integer NOT NULL,
+        "value" varchar,
+        "id" varchar PRIMARY KEY DEFAULT gen_random_uuid()
+      )
+    `)
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE "referral_settings_payout_methods"
+          ADD CONSTRAINT "referral_settings_payout_methods_parent_fk"
+          FOREIGN KEY ("parent_id") REFERENCES "referral_settings"("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "referral_settings_payout_methods_parent_idx" ON "referral_settings_payout_methods" ("parent_id")')
+    console.log('[migrate] Created referral_settings_payout_methods table')
+  }
+
+  // ---- referral_settings_rels (hasMany relationship: starterKitProducts) ----
+  if (!(await tableExists('referral_settings_rels'))) {
+    await pool.query(`
+      CREATE TABLE "referral_settings_rels" (
+        "id" serial PRIMARY KEY,
+        "order" integer,
+        "parent_id" integer NOT NULL,
+        "path" varchar NOT NULL,
+        "products_id" integer
+      )
+    `)
+    await pool.query(`
+      DO $$ BEGIN
+        ALTER TABLE "referral_settings_rels"
+          ADD CONSTRAINT "referral_settings_rels_parent_fk"
+          FOREIGN KEY ("parent_id") REFERENCES "referral_settings"("id") ON DELETE CASCADE;
+      EXCEPTION WHEN duplicate_object THEN null;
+      END $$
+    `)
+    await pool.query('CREATE INDEX IF NOT EXISTS "referral_settings_rels_parent_idx" ON "referral_settings_rels" ("parent_id")')
+    console.log('[migrate] Created referral_settings_rels table')
+  }
+
+  // ---- payload_locked_documents_rels: drop old, add new FK columns ----
+  if (await tableExists('payload_locked_documents_rels')) {
+    await dropColumnIfExists('payload_locked_documents_rels', 'referrals_id')
+    await addColumnsIfMissing('payload_locked_documents_rels', [
+      { name: 'referral_partners_id', definition: 'integer' },
+      { name: 'commissions_id', definition: 'integer' },
+      { name: 'referral_payouts_id', definition: 'integer' },
+      { name: 'mlm_invitations_id', definition: 'integer' },
+      { name: 'team_turnover_id', definition: 'integer' },
+      { name: 'partner_applications_id', definition: 'integer' },
+      { name: 'referral_events_id', definition: 'integer' },
+    ])
+  }
+
+  // ---- payload_preferences_rels: те же FK для сохранения предпочтений пользователя ----
+  if (await tableExists('payload_preferences_rels')) {
+    await dropColumnIfExists('payload_preferences_rels', 'referrals_id')
+    await addColumnsIfMissing('payload_preferences_rels', [
+      { name: 'referral_partners_id', definition: 'integer' },
+      { name: 'commissions_id', definition: 'integer' },
+      { name: 'referral_payouts_id', definition: 'integer' },
+      { name: 'mlm_invitations_id', definition: 'integer' },
+      { name: 'team_turnover_id', definition: 'integer' },
+      { name: 'partner_applications_id', definition: 'integer' },
+      { name: 'referral_events_id', definition: 'integer' },
+    ])
   }
 
   console.log('[migrate] Done')
