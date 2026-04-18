@@ -6,6 +6,7 @@ import { CartProvider } from './cart/CartProvider'
 import { AuthProvider } from './auth/AuthProvider'
 import { PwaShell } from './pwa/PwaShell'
 import { ParallaxBackground } from './components/ParallaxBackground'
+import { SupportFab } from './components/support/SupportFab'
 
 export const metadata = {
   title: 'ЭТРА — Ферментированные напитки',
@@ -66,6 +67,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         <AuthProvider>
           <CartProvider>
             <PwaShell>{children}</PwaShell>
+            <SupportFab />
           </CartProvider>
         </AuthProvider>
       </body>

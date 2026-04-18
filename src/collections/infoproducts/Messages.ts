@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { messageAfterChange } from '../../hooks/messageAfterChange'
 
 export const Messages: CollectionConfig = {
   slug: 'messages',
@@ -9,6 +10,9 @@ export const Messages: CollectionConfig = {
   admin: {
     defaultColumns: ['chatRoom', 'senderType', 'text', 'createdAt'],
     group: '💬 Мессенджер',
+  },
+  hooks: {
+    afterChange: [messageAfterChange],
   },
   access: {
     read: ({ req: { user } }) => {
@@ -99,6 +103,16 @@ export const Messages: CollectionConfig = {
           required: true,
         },
       ],
+    },
+    {
+      name: 'readAt',
+      type: 'date',
+      label: 'Прочитано',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Когда другая сторона прочитала сообщение',
+      },
     },
     {
       name: 'isDeleted',

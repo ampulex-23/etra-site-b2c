@@ -35,6 +35,8 @@ import { default as default_2f4e9f17f67b8b6f11b774f711f563f5 } from '@/component
 import { default as default_b17af65241567dbdca9ebd308f8303a8 } from '@/components/admin/SidebarPersistence'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { default as default_74bba8b01d61ace1a841a3ac317270b5 } from '@/components/admin/InfproductsDashboard'
+import { default as default_supportroomchat } from '@/components/admin/SupportRoomChat'
+import { default as default_supportinboxbadge } from '@/components/admin/SupportInboxBadge'
 import { default as default_d086c48c8a1bae08e5058bad48e2c060 } from '@/app/(payload)/admin/referral-dashboard/page'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
@@ -76,6 +78,8 @@ export const importMap = {
   "@/components/admin/SidebarPersistence#default": default_b17af65241567dbdca9ebd308f8303a8,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "@/components/admin/InfproductsDashboard#default": default_74bba8b01d61ace1a841a3ac317270b5,
+  "@/components/admin/SupportRoomChat#default": default_supportroomchat,
+  "@/components/admin/SupportInboxBadge#default": default_supportinboxbadge,
   "@/app/(payload)/admin/referral-dashboard/page#default": default_d086c48c8a1bae08e5058bad48e2c060,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

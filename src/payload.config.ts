@@ -85,7 +85,11 @@ export default buildConfig({
         Logo: '@/components/admin/Logo',
         Icon: '@/components/admin/Icon',
       },
-      afterNavLinks: ['@/components/admin/NavIcons', '@/components/admin/SidebarPersistence'],
+      afterNavLinks: [
+        '@/components/admin/NavIcons',
+        '@/components/admin/SidebarPersistence',
+        '@/components/admin/SupportInboxBadge',
+      ],
       views: {
         infoproductsDashboard: {
           Component: '@/components/admin/InfproductsDashboard',

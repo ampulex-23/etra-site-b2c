@@ -370,6 +370,16 @@ export function AccountScreen() {
           </svg>
           Курсы
         </button>
+        <Link
+          href="/account/support"
+          className="account-tab"
+          prefetch={false}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+            <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V5a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+          </svg>
+          Поддержка
+        </Link>
       </div>
 
       {/* Tab content */}

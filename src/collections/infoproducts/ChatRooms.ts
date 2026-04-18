@@ -1,4 +1,60 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Access } from 'payload'
+
+const isStaff = (user: any) => user && user.collection === 'users'
+const isCustomer = (user: any) => user && user.collection === 'customers'
+const staffRole = (user: any): string | undefined => (isStaff(user) ? user?.role : undefined)
+
+/**
+ * Support rooms visibility for customers:
+ * - staff: full read
+ * - customer: rooms where type !== 'support' OR they are the owner
+ * - anonymous: no (true kept for server-side unauthenticated ops if any)
+ */
+const readAccess: Access = ({ req: { user } }) => {
+  if (!user) return true
+  if (isStaff(user)) return true
+  if (isCustomer(user)) {
+    return {
+      or: [
+        { type: { not_equals: 'support' } },
+        { customer: { equals: (user as any).id } },
+      ],
+    }
+  }
+  return false
+}
+
+const createAccess: Access = ({ req: { user }, data }) => {
+  if (!user) return false
+  if (isStaff(user)) {
+    const role = staffRole(user)
+    return role === 'admin' || role === 'manager'
+  }
+  if (isCustomer(user)) {
+    // customers may only create their own support rooms
+    const t = (data as any)?.type ?? 'support'
+    const owner = (data as any)?.customer
+    const cohort = (data as any)?.cohort
+    if (t !== 'support') return false
+    if (cohort) return false
+    if (owner && String(owner) !== String((user as any).id)) return false
+    return true
+  }
+  return false
+}
+
+const updateAccess: Access = ({ req: { user } }) => {
+  if (!user) return false
+  if (!isStaff(user)) return false
+  const role = staffRole(user)
+  return role === 'admin' || role === 'manager'
+}
+
+const deleteAccess: Access = ({ req: { user } }) => {
+  if (!user) return false
+  if (!isStaff(user)) return false
+  return staffRole(user) === 'admin'
+}
 
 export const ChatRooms: CollectionConfig = {
   slug: 'chat-rooms',
@@ -8,42 +64,69 @@ export const ChatRooms: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'cohort', 'type', 'createdAt'],
+    defaultColumns: [
+      'title',
+      'type',
+      'customer',
+      'lastMessageText',
+      'unreadByStaff',
+      'status',
+      'lastMessageAt',
+    ],
+    listSearchableFields: ['title'],
     group: '💬 Мессенджер',
   },
   access: {
-    read: ({ req: { user } }) => {
-      if (!user) return true
-      if (user && user.collection === 'users') return true
-      // Customers can see rooms (filtered by enrollment in API)
-      if (user && user.collection === 'customers') return true
-      return false
-    },
-    create: ({ req: { user } }) => {
-      if (!user) return false
-      if (user.collection !== 'users') return false
-      const role = (user as any).role
-      return role === 'admin' || role === 'manager'
-    },
-    update: ({ req: { user } }) => {
-      if (!user) return false
-      if (user.collection !== 'users') return false
-      const role = (user as any).role
-      return role === 'admin' || role === 'manager'
-    },
-    delete: ({ req: { user } }) => {
-      if (!user) return false
-      if (user.collection !== 'users') return false
-      return (user as any).role === 'admin'
-    },
+    read: readAccess,
+    create: createAccess,
+    update: updateAccess,
+    delete: deleteAccess,
+  },
+  hooks: {
+    beforeChange: [
+      async ({ data, req, operation, originalDoc }) => {
+        const user = req.user as any
+        // Force support-room invariants when a customer creates/updates a room
+        if (user && user.collection === 'customers') {
+          data.type = 'support'
+          data.customer = user.id
+          data.cohort = null
+          if (operation === 'create') data.status = data.status || 'open'
+        }
+        // Maintain closedAt when status toggles (any actor)
+        if (operation === 'update') {
+          const prevStatus = (originalDoc as any)?.status
+          if (data.status && data.status !== prevStatus) {
+            if (data.status === 'closed') data.closedAt = new Date().toISOString()
+            if (data.status === 'open') data.closedAt = null
+          }
+        } else if (operation === 'create' && data.status === 'closed' && !data.closedAt) {
+          data.closedAt = new Date().toISOString()
+        }
+        return data
+      },
+    ],
   },
   fields: [
+    {
+      name: 'supportChatUI',
+      type: 'ui',
+      admin: {
+        condition: (data: any) => data?.type === 'support',
+        components: {
+          Field: '@/components/admin/SupportRoomChat',
+        },
+      },
+    },
     {
       name: 'cohort',
       type: 'relationship',
       relationTo: 'course-cohorts' as any,
-      required: true,
+      required: false,
       label: 'Поток',
+      admin: {
+        condition: (data: any) => data?.type !== 'support',
+      },
     },
     {
       name: 'title',
@@ -67,6 +150,85 @@ export const ChatRooms: CollectionConfig = {
       admin: { position: 'sidebar' },
     },
     {
+      name: 'customer',
+      type: 'relationship',
+      relationTo: 'customers',
+      label: 'Клиент (обращение)',
+      index: true,
+      admin: {
+        condition: (data: any) => data?.type === 'support',
+        description: 'Владелец support-обращения',
+      },
+    },
+    {
+      name: 'assignee',
+      type: 'relationship',
+      relationTo: 'users',
+      label: 'Менеджер',
+      admin: {
+        position: 'sidebar',
+        condition: (data: any) => data?.type === 'support',
+      },
+    },
+    {
+      name: 'status',
+      type: 'select',
+      defaultValue: 'open',
+      label: 'Статус',
+      options: [
+        { label: 'Открыто', value: 'open' },
+        { label: 'Закрыто', value: 'closed' },
+      ],
+      index: true,
+      admin: {
+        position: 'sidebar',
+        condition: (data: any) => data?.type === 'support',
+      },
+    },
+    {
+      name: 'closedAt',
+      type: 'date',
+      label: 'Закрыто',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        condition: (data: any) => data?.type === 'support',
+      },
+    },
+    {
+      name: 'lastMessageText',
+      type: 'text',
+      label: 'Последнее сообщение',
+      admin: { readOnly: true },
+    },
+    {
+      name: 'lastMessageAt',
+      type: 'date',
+      label: 'Время последнего сообщения',
+      index: true,
+      admin: { readOnly: true },
+    },
+    {
+      name: 'lastMessageSenderType',
+      type: 'text',
+      admin: { readOnly: true, hidden: true },
+    },
+    {
+      name: 'unreadByStaff',
+      type: 'number',
+      defaultValue: 0,
+      label: 'Новых для команды',
+      index: true,
+      admin: { readOnly: true },
+    },
+    {
+      name: 'unreadByCustomer',
+      type: 'number',
+      defaultValue: 0,
+      label: 'Новых для клиента',
+      admin: { readOnly: true },
+    },
+    {
       name: 'isActive',
       type: 'checkbox',
       defaultValue: true,
@@ -75,4 +237,3 @@ export const ChatRooms: CollectionConfig = {
     },
   ],
 }
-
