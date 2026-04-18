@@ -2,7 +2,7 @@ import type { GlobalConfig } from 'payload'
 
 export const ReferralSettings: GlobalConfig = {
   slug: 'referral-settings',
-  label: 'Реферальная программа',
+  label: 'Реферальная программа и МЛМ',
   admin: {
     group: 'Настройки',
   },
@@ -11,6 +11,7 @@ export const ReferralSettings: GlobalConfig = {
     update: ({ req: { user } }) => Boolean(user && user.collection === 'users'),
   },
   fields: [
+    // ================= ОСНОВНОЕ =================
     {
       name: 'enabled',
       type: 'checkbox',
@@ -18,99 +19,309 @@ export const ReferralSettings: GlobalConfig = {
       label: 'Реферальная программа включена',
     },
     {
-      name: 'pointsPerOrder',
-      type: 'number',
-      defaultValue: 100,
-      min: 0,
-      label: 'Очков за заказ (базовое)',
-      admin: {
-        description: 'Базовое количество очков за каждый оплаченный заказ по реферальной ссылке',
-        condition: (data) => data?.enabled,
-      },
-    },
-    {
-      name: 'pointsPercentOfOrder',
-      type: 'number',
-      defaultValue: 5,
-      min: 0,
-      max: 100,
-      label: 'Процент от суммы заказа',
-      admin: {
-        description: 'Дополнительные очки = X% от суммы заказа (0 = отключено)',
-        condition: (data) => data?.enabled,
-      },
-    },
-    {
-      name: 'levels',
-      type: 'array',
-      label: 'Уровни опыта',
-      admin: {
-        description: 'Настройка уровней и скидок. Уровни должны идти по возрастанию очков.',
-        condition: (data) => data?.enabled,
-      },
-      defaultValue: [
-        { name: 'Новичок', minPoints: 0, discountPercent: 0, color: '#9CA3AF' },
-        { name: 'Бронза', minPoints: 100, discountPercent: 3, color: '#CD7F32' },
-        { name: 'Серебро', minPoints: 500, discountPercent: 5, color: '#C0C0C0' },
-        { name: 'Золото', minPoints: 1500, discountPercent: 7, color: '#FFD700' },
-        { name: 'Платина', minPoints: 5000, discountPercent: 10, color: '#E5E4E2' },
-        { name: 'Бриллиант', minPoints: 15000, discountPercent: 15, color: '#B9F2FF' },
+      name: 'promoCodePattern',
+      type: 'select',
+      defaultValue: 'uppercase_name',
+      label: 'Шаблон промокода',
+      options: [
+        { label: 'Имя заглавными + случайные цифры (MARIA24)', value: 'uppercase_name' },
+        { label: 'Случайные 6 символов', value: 'random_6' },
+        { label: 'Пользовательский (задаётся вручную)', value: 'custom' },
       ],
+    },
+
+    // ================= РЕФЕРАЛКА =================
+    {
+      type: 'collapsible',
+      label: '📣 Реферальная программа',
+      admin: {
+        initCollapsed: false,
+        condition: (data) => data?.enabled,
+      },
       fields: [
         {
-          name: 'name',
-          type: 'text',
-          required: true,
-          label: 'Название уровня',
-        },
-        {
-          name: 'minPoints',
+          name: 'commissionFirstPurchase',
           type: 'number',
-          required: true,
-          min: 0,
-          label: 'Минимум очков',
-        },
-        {
-          name: 'discountPercent',
-          type: 'number',
-          required: true,
+          defaultValue: 10,
           min: 0,
           max: 100,
-          label: 'Скидка (%)',
+          label: 'Комиссия с первой покупки реферала (%)',
         },
         {
-          name: 'color',
-          type: 'text',
-          label: 'Цвет (HEX)',
+          name: 'commissionRepeatPurchase',
+          type: 'number',
+          defaultValue: 9,
+          min: 0,
+          max: 100,
+          label: 'Комиссия с повторных покупок (%)',
+        },
+        {
+          name: 'customerDiscountFirstPurchase',
+          type: 'number',
+          defaultValue: 10,
+          min: 0,
+          max: 100,
+          label: 'Скидка клиенту при первой покупке (%)',
+        },
+        {
+          name: 'attributionLifetime',
+          type: 'select',
+          defaultValue: 'lifetime',
+          label: 'Тип привязки клиента к партнёру',
+          options: [
+            { label: 'Пожизненно', value: 'lifetime' },
+            { label: 'На N дней', value: 'days' },
+          ],
+        },
+        {
+          name: 'attributionDays',
+          type: 'number',
+          defaultValue: 30,
+          min: 1,
+          max: 3650,
+          label: 'Срок привязки (дней)',
           admin: {
-            description: 'Цвет для отображения уровня, например #FFD700',
+            condition: (data) => data?.attributionLifetime === 'days',
           },
         },
         {
-          name: 'icon',
-          type: 'upload',
-          relationTo: 'media',
-          label: 'Иконка уровня',
+          name: 'awardOnOrderStatus',
+          type: 'select',
+          defaultValue: 'paid',
+          label: 'Когда начислять комиссию',
+          options: [
+            { label: 'Оплачен', value: 'paid' },
+            { label: 'Доставлен', value: 'delivered' },
+            { label: 'Завершён', value: 'completed' },
+          ],
+        },
+        {
+          name: 'minOrderAmountForCommission',
+          type: 'number',
+          defaultValue: 0,
+          min: 0,
+          label: 'Мин. сумма заказа для комиссии (₽)',
+          admin: { description: '0 = без ограничений' },
         },
       ],
     },
+
+    // ================= МЛМ =================
     {
       type: 'collapsible',
-      label: 'Настройки шеринга',
+      label: '💼 МЛМ-система',
       admin: {
+        initCollapsed: false,
+        condition: (data) => data?.enabled,
+      },
+      fields: [
+        {
+          name: 'mlmEnabled',
+          type: 'checkbox',
+          defaultValue: true,
+          label: 'МЛМ включён',
+        },
+        {
+          name: 'level1Commission',
+          type: 'number',
+          defaultValue: 9,
+          min: 0,
+          max: 100,
+          label: 'Комиссия 1 уровня (%)',
+        },
+        {
+          name: 'level2Commission',
+          type: 'number',
+          defaultValue: 9,
+          min: 0,
+          max: 100,
+          label: 'Комиссия 2 уровня (%)',
+        },
+        {
+          name: 'level3Commission',
+          type: 'number',
+          defaultValue: 3,
+          min: 0,
+          max: 100,
+          label: 'Комиссия 3 уровня (%)',
+        },
+        {
+          name: 'teamBonusEnabled',
+          type: 'checkbox',
+          defaultValue: true,
+          label: 'Командный бонус включён',
+        },
+        {
+          name: 'teamBonusPercent',
+          type: 'number',
+          defaultValue: 3,
+          min: 0,
+          max: 100,
+          label: 'Командный бонус (%)',
+        },
+        {
+          name: 'teamBonusThreshold',
+          type: 'number',
+          defaultValue: 500000,
+          min: 0,
+          label: 'Порог оборота команды для бонуса (₽/мес)',
+        },
+        {
+          name: 'partnerDiscountPercent',
+          type: 'number',
+          defaultValue: 21,
+          min: 0,
+          max: 100,
+          label: 'Партнёрская скидка (%)',
+          admin: {
+            description: 'Скидка от розницы для МЛМ-партнёров. Можно переопределить на уровне товара.',
+          },
+        },
+        {
+          name: 'autoQualifyEnabled',
+          type: 'checkbox',
+          defaultValue: true,
+          label: 'Автоквалификация в МЛМ',
+          admin: {
+            description: 'Автоматически давать статус МЛМ-партнёра клиентам с большими закупками',
+          },
+        },
+        {
+          name: 'autoQualifyThreshold',
+          type: 'number',
+          defaultValue: 60000,
+          min: 0,
+          label: 'Порог автоквалификации (₽)',
+        },
+        {
+          name: 'autoQualifyPeriodMonths',
+          type: 'number',
+          defaultValue: 6,
+          min: 1,
+          max: 36,
+          label: 'Период автоквалификации (месяцев)',
+        },
+        {
+          name: 'starterKitProducts',
+          type: 'relationship',
+          relationTo: 'products',
+          hasMany: true,
+          label: 'Товары стартового набора',
+          admin: {
+            description: 'Какие товары считаются "партнёрским стартовым набором"',
+          },
+        },
+        {
+          name: 'minOrderForMLMEntry',
+          type: 'number',
+          defaultValue: 7000,
+          min: 0,
+          label: 'Мин. сумма заказа для входа в МЛМ (₽)',
+        },
+        {
+          name: 'invitationExpiryDays',
+          type: 'number',
+          defaultValue: 90,
+          min: 1,
+          max: 3650,
+          label: 'Срок действия инвайт-кода (дней)',
+        },
+      ],
+    },
+
+    // ================= ФОНД МАРКЕТИНГА =================
+    {
+      type: 'collapsible',
+      label: '🎯 Фонд маркетинга',
+      admin: {
+        initCollapsed: true,
+        condition: (data) => data?.enabled,
+      },
+      fields: [
+        {
+          name: 'marketingFundEnabled',
+          type: 'checkbox',
+          defaultValue: false,
+          label: 'Фонд маркетинга включён',
+        },
+        {
+          name: 'marketingFundPercent',
+          type: 'number',
+          defaultValue: 1,
+          min: 0,
+          max: 100,
+          label: 'Процент от прибыли в фонд (%)',
+        },
+        {
+          name: 'marketingFundMinTurnover',
+          type: 'number',
+          defaultValue: 100000,
+          min: 0,
+          label: 'Мин. оборот партнёра для доли в фонде (₽/мес)',
+        },
+      ],
+    },
+
+    // ================= ВЫПЛАТЫ =================
+    {
+      type: 'collapsible',
+      label: '💰 Выплаты',
+      admin: {
+        initCollapsed: true,
+        condition: (data) => data?.enabled,
+      },
+      fields: [
+        {
+          name: 'minPayoutAmount',
+          type: 'number',
+          defaultValue: 500,
+          min: 0,
+          label: 'Минимальная сумма выплаты (₽)',
+        },
+        {
+          name: 'payoutMethods',
+          type: 'select',
+          hasMany: true,
+          defaultValue: ['bank_card', 'sbp'],
+          label: 'Доступные методы выплаты',
+          options: [
+            { label: 'Банковская карта', value: 'bank_card' },
+            { label: 'СБП (по телефону)', value: 'sbp' },
+            { label: 'Самозанятый (через сервис)', value: 'self_employed_service' },
+            { label: 'Кооперативная выплата (через ЦК)', value: 'cooperative_payout' },
+            { label: 'На баланс (пополнение)', value: 'balance_credit' },
+          ],
+        },
+        {
+          name: 'payoutRequestCooldownDays',
+          type: 'number',
+          defaultValue: 0,
+          min: 0,
+          label: 'Задержка между заявками (дней)',
+          admin: { description: '0 = без задержки' },
+        },
+      ],
+    },
+
+    // ================= ШЕРИНГ =================
+    {
+      type: 'collapsible',
+      label: '📢 Шеринг',
+      admin: {
+        initCollapsed: true,
         condition: (data) => data?.enabled,
       },
       fields: [
         {
           name: 'shareTitle',
           type: 'text',
-          defaultValue: 'Посмотри этот товар!',
+          defaultValue: 'Рекомендую ЭТРА!',
           label: 'Заголовок для шеринга',
         },
         {
           name: 'shareText',
           type: 'textarea',
-          defaultValue: 'Рекомендую этот товар от ЭТРА 🌿',
+          defaultValue: 'Попробуй натуральные продукты ЭТРА — для микробиома и здоровья кишечника. Скидка 10% по моему промокоду 🌿',
           label: 'Текст для шеринга',
         },
         {
@@ -128,44 +339,47 @@ export const ReferralSettings: GlobalConfig = {
         },
       ],
     },
+
+    // ================= ПОДГОТОВКА К ЦК =================
     {
       type: 'collapsible',
-      label: 'Дополнительные настройки',
+      label: '🏛 Цифровой Кооператив (будущая интеграция)',
       admin: {
-        condition: (data) => data?.enabled,
+        initCollapsed: true,
+        description: 'Настройки для интеграции с Цифровым Кооперативом. Сейчас не используются.',
       },
       fields: [
         {
-          name: 'cookieLifetimeDays',
-          type: 'number',
-          defaultValue: 30,
-          min: 1,
-          max: 365,
-          label: 'Срок жизни реферальной метки (дней)',
-          admin: {
-            description: 'Сколько дней после клика по ссылке учитывается реферал',
-          },
+          name: 'cooperativeEnabled',
+          type: 'checkbox',
+          defaultValue: false,
+          label: 'Интеграция с ЦК включена',
         },
         {
-          name: 'minOrderAmountForPoints',
-          type: 'number',
-          defaultValue: 0,
-          min: 0,
-          label: 'Минимальная сумма заказа для начисления очков (₽)',
-          admin: {
-            description: '0 = без ограничений',
-          },
+          name: 'cooperativeId',
+          type: 'text',
+          label: 'ID кооператива в COOPOS',
         },
         {
-          name: 'awardOnStatus',
-          type: 'select',
-          defaultValue: 'paid',
-          label: 'Начислять очки при статусе заказа',
-          options: [
-            { label: 'Оплачен', value: 'paid' },
-            { label: 'Доставлен', value: 'delivered' },
-            { label: 'Завершён', value: 'completed' },
-          ],
+          name: 'cooperativeProviderUrl',
+          type: 'text',
+          label: 'URL провайдера ЦК',
+        },
+        {
+          name: 'cooperativeApiKey',
+          type: 'text',
+          label: 'API ключ ЦК',
+          admin: { description: 'Хранится в глобале для удобства; в проде лучше в env' },
+        },
+        {
+          name: 'cooperativeCPPReferralId',
+          type: 'text',
+          label: 'ID ЦПП "Рефералка ЭТРА"',
+        },
+        {
+          name: 'cooperativeCPPMLMId',
+          type: 'text',
+          label: 'ID ЦПП "МЛМ ЭТРА"',
         },
       ],
     },

@@ -3,105 +3,94 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { cookies } from 'next/headers'
 
-const REFERRAL_COOKIE_NAME = 'ref_code'
-const REFERRAL_PRODUCT_COOKIE = 'ref_product'
-const REFERRAL_SOURCE_COOKIE = 'ref_source'
+const PROMO_COOKIE = 'etra_promo'
+const SOURCE_COOKIE = 'etra_ref_source'
 
+/**
+ * GET /api/referral/track?ref=PROMOCODE&source=telegram&redirect=/
+ * Устанавливает куку с промокодом и редиректит на страницу.
+ */
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
-    const refCode = searchParams.get('ref')
-    const productSlug = searchParams.get('product')
+    const ref = (searchParams.get('ref') || '').toUpperCase()
     const source = searchParams.get('source') || 'direct'
     const redirect = searchParams.get('redirect') || '/'
 
-    if (!refCode) {
+    if (!ref) {
       return NextResponse.redirect(new URL(redirect, req.url))
     }
 
     const payload = await getPayload({ config })
-
-    const referralSettings = await payload.findGlobal({
+    const settings = (await payload.findGlobal({
       slug: 'referral-settings' as any,
-    }) as any
+    })) as any
 
-    if (!referralSettings?.enabled) {
+    if (!settings?.enabled) {
       return NextResponse.redirect(new URL(redirect, req.url))
     }
 
-    const customers = await payload.find({
-      collection: 'customers',
+    // Поиск партнёра по промокоду
+    const partners = await payload.find({
+      collection: 'referral-partners' as any,
       where: {
-        referralCode: { equals: refCode },
+        promoCode: { equals: ref },
+        status: { equals: 'active' },
       },
       limit: 1,
     })
 
-    if (customers.docs.length === 0) {
+    if (partners.docs.length === 0) {
       return NextResponse.redirect(new URL(redirect, req.url))
     }
 
-    const referrer = customers.docs[0]
+    const partner = partners.docs[0] as any
+    const attributionLifetime = settings.attributionLifetime || 'lifetime'
+    const attributionDays = Number(settings.attributionDays ?? 30)
+    const maxAge = attributionLifetime === 'lifetime'
+      ? 365 * 24 * 60 * 60 * 10 // ~10 лет
+      : attributionDays * 24 * 60 * 60
 
     const cookieStore = await cookies()
-    const cookieLifetime = (referralSettings.cookieLifetimeDays || 30) * 24 * 60 * 60
-
-    cookieStore.set(REFERRAL_COOKIE_NAME, refCode, {
-      maxAge: cookieLifetime,
+    cookieStore.set(PROMO_COOKIE, ref, {
+      maxAge,
+      httpOnly: false, // Доступ из JS для отображения
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    })
+    cookieStore.set(SOURCE_COOKIE, source, {
+      maxAge,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
     })
 
-    if (productSlug) {
-      cookieStore.set(REFERRAL_PRODUCT_COOKIE, productSlug, {
-        maxAge: cookieLifetime,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
+    // Создать событие клика
+    try {
+      const ipAddress =
+        req.headers.get('x-forwarded-for')?.split(',')[0] ||
+        req.headers.get('x-real-ip') ||
+        'unknown'
+      const userAgent = req.headers.get('user-agent') || ''
+      const referer = req.headers.get('referer') || ''
+
+      await payload.create({
+        collection: 'referral-events' as any,
+        data: {
+          partner: partner.id,
+          eventType: 'click',
+          promoCode: ref,
+          source,
+          ipAddress,
+          userAgent,
+          referer,
+        } as any,
       })
+    } catch (err) {
+      console.error('[referral/track] failed to record click:', err)
     }
-
-    cookieStore.set(REFERRAL_SOURCE_COOKIE, source, {
-      maxAge: cookieLifetime,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-    })
-
-    const ipAddress = req.headers.get('x-forwarded-for')?.split(',')[0] || 
-                      req.headers.get('x-real-ip') || 
-                      'unknown'
-    const userAgent = req.headers.get('user-agent') || ''
-
-    let product = null
-    if (productSlug) {
-      const products = await payload.find({
-        collection: 'products',
-        where: {
-          slug: { equals: productSlug },
-        },
-        limit: 1,
-      })
-      if (products.docs.length > 0) {
-        product = products.docs[0]
-      }
-    }
-
-    await payload.create({
-      collection: 'referrals' as any,
-      data: {
-        referrer: referrer.id,
-        product: product?.id || null,
-        status: 'click',
-        source: source,
-        ipAddress,
-        userAgent,
-      } as any,
-    })
 
     return NextResponse.redirect(new URL(redirect, req.url))
   } catch (error) {
@@ -111,44 +100,49 @@ export async function GET(req: NextRequest) {
   }
 }
 
+/**
+ * POST /api/referral/track
+ * Проверяет привязку из куки и возвращает информацию о партнёре.
+ */
 export async function POST(req: NextRequest) {
   try {
     const payload = await getPayload({ config })
     const cookieStore = await cookies()
-    
-    const refCode = cookieStore.get(REFERRAL_COOKIE_NAME)?.value
-    const productSlug = cookieStore.get(REFERRAL_PRODUCT_COOKIE)?.value
-    const source = cookieStore.get(REFERRAL_SOURCE_COOKIE)?.value || 'direct'
 
-    if (!refCode) {
-      return NextResponse.json({ referrer: null })
+    const promoCode = cookieStore.get(PROMO_COOKIE)?.value
+    const source = cookieStore.get(SOURCE_COOKIE)?.value || 'direct'
+
+    if (!promoCode) {
+      return NextResponse.json({ partner: null })
     }
 
-    const customers = await payload.find({
-      collection: 'customers',
+    const partners = await payload.find({
+      collection: 'referral-partners' as any,
       where: {
-        referralCode: { equals: refCode },
+        promoCode: { equals: promoCode.toUpperCase() },
+        status: { equals: 'active' },
       },
+      depth: 1,
       limit: 1,
     })
 
-    if (customers.docs.length === 0) {
-      return NextResponse.json({ referrer: null })
+    if (partners.docs.length === 0) {
+      return NextResponse.json({ partner: null })
     }
 
-    const referrer = customers.docs[0]
+    const partner = partners.docs[0] as any
+    const customer = partner.customer as any
 
     return NextResponse.json({
-      referrer: {
-        id: referrer.id,
-        name: referrer.name,
-        referralCode: refCode,
+      partner: {
+        promoCode: partner.promoCode,
+        name: customer?.name || null,
+        type: partner.type,
       },
-      productSlug,
       source,
     })
   } catch (error) {
     console.error('Referral check error:', error)
-    return NextResponse.json({ referrer: null })
+    return NextResponse.json({ partner: null })
   }
 }

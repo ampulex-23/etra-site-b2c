@@ -83,8 +83,6 @@ export interface Config {
     'stock-movements': StockMovement;
     'stock-levels': StockLevel;
     inventories: Inventory;
-    reviews: Review;
-    comments: Comment;
     infoproducts: Infoproduct;
     'course-cohorts': CourseCohort;
     'course-modules': CourseModule;
@@ -94,7 +92,13 @@ export interface Config {
     'course-results': CourseResult;
     'chat-rooms': ChatRoom;
     messages: Message;
-    referrals: Referral;
+    'referral-partners': ReferralPartner;
+    commissions: Commission;
+    'referral-payouts': ReferralPayout;
+    'mlm-invitations': MlmInvitation;
+    'team-turnover': TeamTurnover;
+    'partner-applications': PartnerApplication;
+    'referral-events': ReferralEvent;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -117,8 +121,6 @@ export interface Config {
     'stock-movements': StockMovementsSelect<false> | StockMovementsSelect<true>;
     'stock-levels': StockLevelsSelect<false> | StockLevelsSelect<true>;
     inventories: InventoriesSelect<false> | InventoriesSelect<true>;
-    reviews: ReviewsSelect<false> | ReviewsSelect<true>;
-    comments: CommentsSelect<false> | CommentsSelect<true>;
     infoproducts: InfoproductsSelect<false> | InfoproductsSelect<true>;
     'course-cohorts': CourseCohortsSelect<false> | CourseCohortsSelect<true>;
     'course-modules': CourseModulesSelect<false> | CourseModulesSelect<true>;
@@ -128,7 +130,13 @@ export interface Config {
     'course-results': CourseResultsSelect<false> | CourseResultsSelect<true>;
     'chat-rooms': ChatRoomsSelect<false> | ChatRoomsSelect<true>;
     messages: MessagesSelect<false> | MessagesSelect<true>;
-    referrals: ReferralsSelect<false> | ReferralsSelect<true>;
+    'referral-partners': ReferralPartnersSelect<false> | ReferralPartnersSelect<true>;
+    commissions: CommissionsSelect<false> | CommissionsSelect<true>;
+    'referral-payouts': ReferralPayoutsSelect<false> | ReferralPayoutsSelect<true>;
+    'mlm-invitations': MlmInvitationsSelect<false> | MlmInvitationsSelect<true>;
+    'team-turnover': TeamTurnoverSelect<false> | TeamTurnoverSelect<true>;
+    'partner-applications': PartnerApplicationsSelect<false> | PartnerApplicationsSelect<true>;
+    'referral-events': ReferralEventsSelect<false> | ReferralEventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -216,6 +224,9 @@ export interface User {
   inviteExpires?: string | null;
   updatedAt: string;
   createdAt: string;
+  enableAPIKey?: boolean | null;
+  apiKey?: string | null;
+  apiKeyIndex?: string | null;
   email: string;
   resetPasswordToken?: string | null;
   resetPasswordExpiration?: string | null;
@@ -239,6 +250,10 @@ export interface User {
  */
 export interface Media {
   id: number;
+  /**
+   * Путь к папке в S3 (например: products/bottles или articles/covers)
+   */
+  folder?: string | null;
   alt: string;
   caption?: string | null;
   prefix?: string | null;
@@ -370,6 +385,18 @@ export interface Product {
   inStock?: boolean | null;
   featured?: boolean | null;
   status?: ('active' | 'hidden' | 'archived') | null;
+  /**
+   * Если задано — используется вместо глобального % скидки. Оставьте пустым для расчёта по глобальному %
+   */
+  partnerPriceOverride?: number | null;
+  /**
+   * Переопределение глобального % партнёрской скидки для этого товара
+   */
+  partnerDiscountPercentOverride?: number | null;
+  /**
+   * Товар всегда продаётся по розничной цене даже партнёрам
+   */
+  excludeFromPartnerDiscount?: boolean | null;
   amoCrmId?: number | null;
   seo?: {
     title?: string | null;
@@ -452,17 +479,27 @@ export interface Order {
    * Внутренний ID заказа из PuzzleBot
    */
   puzzleBotOrderId?: string | null;
+  /**
+   * Заполняется при импорте из PuzzleBot
+   */
   importedAt?: string | null;
   amoCrmDealId?: number | null;
   notes?: string | null;
   /**
-   * Клиент, по чьей ссылке оформлен заказ
+   * Партнёр, к которому привязан клиент
    */
-  referrer?: (number | null) | Customer;
+  referralPartner?: (number | null) | ReferralPartner;
+  promoCodeApplied?: string | null;
+  customerDiscountApplied?: number | null;
   /**
-   * Очки реферу уже начислены
+   * Заказ по партнёрской цене (для последующей перепродажи)
    */
-  referralPointsAwarded?: boolean | null;
+  isPartnerPurchase?: boolean | null;
+  partnerDiscountApplied?: number | null;
+  /**
+   * Комиссии уже рассчитаны по этому заказу
+   */
+  referralCommissionsCreated?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -508,22 +545,25 @@ export interface Customer {
   importedAt?: string | null;
   emailVerified?: boolean | null;
   /**
-   * Уникальный код для реферальных ссылок
+   * Партнёр, получающий комиссию с покупок этого клиента (пожизненно)
    */
-  referralCode?: string | null;
-  experiencePoints?: number | null;
+  attributedPartner?: (number | null) | ReferralPartner;
+  attributedAt?: string | null;
   /**
-   * Рассчитывается автоматически
+   * Используется для различения первой/повторной комиссии
    */
-  referralLevel?: string | null;
+  firstPurchaseCompleted?: boolean | null;
   /**
-   * Персональная скидка по реферальной программе
+   * Для автоквалификации в МЛМ (порог 60k+)
    */
-  referralDiscount?: number | null;
-  referredBy?: (number | null) | Customer;
-  totalReferrals?: number | null;
-  totalReferralOrders?: number | null;
-  totalReferralRevenue?: number | null;
+  totalSpent6Months?: number | null;
+  lastMLMQualificationCheck?: string | null;
+  /**
+   * 12-символьный идентификатор пайщика
+   */
+  cooperativeAccountId?: string | null;
+  cooperativeMemberSince?: string | null;
+  cooperativeStatus?: ('not_member' | 'consumer' | 'promoter' | 'organizer') | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -542,6 +582,70 @@ export interface Customer {
     | null;
   password?: string | null;
   collection: 'customers';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referral-partners".
+ */
+export interface ReferralPartner {
+  id: number;
+  customer: number | Customer;
+  type: 'client' | 'blogger_paid' | 'blogger_barter' | 'mlm_partner';
+  status: 'pending' | 'active' | 'paused' | 'banned';
+  /**
+   * Уникальный промокод партнёра (генерируется автоматически)
+   */
+  promoCode: string;
+  balance?: number | null;
+  totalEarned?: number | null;
+  totalPaid?: number | null;
+  socialLinks?:
+    | {
+        platform?: ('instagram' | 'youtube' | 'tiktok' | 'telegram' | 'vk' | 'other') | null;
+        url?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  avgViews?: number | null;
+  /**
+   * 0 для бартера
+   */
+  paidPerVideo?: number | null;
+  platform?: ('blogerito' | 'unpacks' | 'ugc-market' | 'direct') | null;
+  /**
+   * Партнёр с высокими охватами получает долю от прибыли
+   */
+  marketingFundEligible?: boolean | null;
+  requirements?: string | null;
+  /**
+   * Партнёр вышестоящего уровня
+   */
+  sponsor?: (number | null) | ReferralPartner;
+  invitationSource?: ('invite' | 'auto_qualified' | 'admin') | null;
+  invitationCode?: string | null;
+  entryType?: ('starter_kit' | 'free_amount' | 'auto') | null;
+  entryOrder?: (number | null) | Order;
+  joinedMLMAt?: string | null;
+  partnerPriceEnabled?: boolean | null;
+  cachedLevel1Count?: number | null;
+  cachedLevel2Count?: number | null;
+  cachedLevel3Count?: number | null;
+  cooperativeMemberRole?: ('promoter' | 'organizer') | null;
+  cooperativeAgreementId?: string | null;
+  cooperativeCPPLinks?:
+    | {
+        cppName?: string | null;
+        cppId?: string | null;
+        joinedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Внутренние заметки, не видны партнёру
+   */
+  adminNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -859,7 +963,7 @@ export interface Post {
     [k: string]: unknown;
   };
   coverImage?: (number | null) | Media;
-  category?: string | null;
+  category?: ('service' | 'health' | 'products' | 'recipes' | 'tips' | 'encyclopedia') | null;
   tags?:
     | {
         tag: string;
@@ -1093,9 +1197,9 @@ export interface Inventory {
   items: {
     product: number | Product;
     /**
-     * Из системы на момент инвентаризации
+     * Из системы на момент инвентаризации (заполняется автоматически)
      */
-    calculatedQty: number;
+    calculatedQty?: number | null;
     /**
      * Посчитанное количество
      */
@@ -1108,77 +1212,6 @@ export interface Inventory {
     id?: string | null;
   }[];
   notes?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "reviews".
- */
-export interface Review {
-  id: number;
-  /**
-   * Краткий заголовок отзыва (необязательно)
-   */
-  title?: string | null;
-  text: string;
-  /**
-   * От 1 до 5
-   */
-  rating: number;
-  /**
-   * Менеджер может выбрать любого покупателя
-   */
-  customer: number | Customer;
-  /**
-   * Если отзыв на конкретный товар. Пусто — общий отзыв о магазине
-   */
-  product?: (number | null) | Product;
-  /**
-   * Привязка к заказу (если отзыв после покупки)
-   */
-  order?: (number | null) | Order;
-  status: 'pending' | 'published' | 'rejected';
-  /**
-   * Ответ на отзыв от имени магазина
-   */
-  adminReply?: string | null;
-  source?: ('site' | 'product_page' | 'account' | 'post_order' | 'admin') | null;
-  featured?: boolean | null;
-  publishedAt?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "comments".
- */
-export interface Comment {
-  id: number;
-  text: string;
-  author?: {
-    /**
-     * Если комментарий от покупателя
-     */
-    customer?: (number | null) | Customer;
-    /**
-     * Если комментарий от менеджера/администратора
-     */
-    user?: (number | null) | User;
-    /**
-     * Заполняется автоматически из профиля автора
-     */
-    displayName?: string | null;
-  };
-  contentType: 'post' | 'recipe';
-  post?: (number | null) | Post;
-  recipe?: (number | null) | Recipe;
-  /**
-   * Если это ответ на другой комментарий
-   */
-  parent?: (number | null) | Comment;
-  status: 'pending' | 'approved' | 'rejected';
-  likes?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1471,36 +1504,191 @@ export interface Message {
   createdAt: string;
 }
 /**
+ * Все комиссии партнёров (рефералка + МЛМ)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "referrals".
+ * via the `definition` "commissions".
  */
-export interface Referral {
+export interface Commission {
   id: number;
+  recipient: number | ReferralPartner;
   /**
-   * Клиент, который поделился ссылкой
+   * Денормализованная ссылка для удобства фильтрации (= customer у partner)
    */
-  referrer: number | Customer;
+  recipientCustomer?: (number | null) | Customer;
+  order: number | Order;
+  buyer: number | Customer;
+  type:
+    | 'referral_first'
+    | 'referral_repeat'
+    | 'mlm_level_1'
+    | 'mlm_level_2'
+    | 'mlm_level_3'
+    | 'team_bonus'
+    | 'marketing_fund';
+  percent: number;
   /**
-   * Клиент, который перешёл по ссылке и зарегистрировался
+   * Сумма, от которой считается процент (обычно = сумма заказа)
    */
-  referred?: (number | null) | Customer;
+  baseAmount: number;
+  amount: number;
+  status: 'pending' | 'approved' | 'paid' | 'cancelled';
   /**
-   * Заказ, оформленный по реферальной ссылке
+   * Для агрегации оборотов по месяцам
    */
+  month: string;
+  /**
+   * Заполняется при включении в пакет выплаты
+   */
+  payout?: (number | null) | ReferralPayout;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referral-payouts".
+ */
+export interface ReferralPayout {
+  id: number;
+  partner: number | ReferralPartner;
+  /**
+   * Денормализованная ссылка (= customer у partner)
+   */
+  partnerCustomer?: (number | null) | Customer;
+  amount: number;
+  method: 'bank_card' | 'sbp' | 'self_employed_service' | 'cooperative_payout' | 'balance_credit';
+  status: 'requested' | 'approved' | 'processing' | 'paid' | 'rejected';
+  paymentDetails?: {
+    cardNumber?: string | null;
+    bankName?: string | null;
+    phone?: string | null;
+    recipientFullName?: string | null;
+    inn?: string | null;
+  };
+  requestedAt?: string | null;
+  approvedAt?: string | null;
+  paidAt?: string | null;
+  /**
+   * ID в банке/СБП/сервисе/ЦК
+   */
+  externalTxId?: string | null;
+  /**
+   * Какие комиссии входят в эту выплату
+   */
+  includedCommissions?: (number | Commission)[] | null;
+  rejectReason?: string | null;
+  adminNotes?: string | null;
+  /**
+   * ID акта распределения в Цифровом Кооперативе
+   */
+  cooperativeDocumentId?: string | null;
+  cooperativeBlockchainHash?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "mlm-invitations".
+ */
+export interface MlmInvitation {
+  id: number;
+  code: string;
+  issuedBy: number | ReferralPartner;
+  /**
+   * Денормализация для фильтрации доступа
+   */
+  issuedByCustomer?: (number | null) | Customer;
+  status: 'active' | 'used' | 'expired' | 'revoked';
+  usedBy?: (number | null) | Customer;
+  usedAt?: string | null;
+  expiresAt?: string | null;
+  /**
+   * Для кого выпущен (имя, контакт)
+   */
+  note?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Агрегация оборота команды по месяцам (для командного бонуса)
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "team-turnover".
+ */
+export interface TeamTurnover {
+  id: number;
+  partner: number | ReferralPartner;
+  partnerCustomer?: (number | null) | Customer;
+  month: string;
+  personalSales?: number | null;
+  level1Turnover?: number | null;
+  level2Turnover?: number | null;
+  level3Turnover?: number | null;
+  /**
+   * Сумма всех уровней
+   */
+  totalTeamTurnover?: number | null;
+  teamBonusAwarded?: boolean | null;
+  teamBonusAmount?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Заявки от блогеров / клиентов на вступление в реферальную программу
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "partner-applications".
+ */
+export interface PartnerApplication {
+  id: number;
+  applicationType: 'client' | 'blogger_paid' | 'blogger_barter' | 'mlm_partner';
+  status: 'new' | 'reviewing' | 'approved' | 'rejected';
+  /**
+   * Если заявку подал уже зарегистрированный клиент
+   */
+  customer?: (number | null) | Customer;
+  /**
+   * Заполняется после одобрения
+   */
+  createdPartner?: (number | null) | ReferralPartner;
+  contactName: string;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  contactTelegram?: string | null;
+  socialLinks?:
+    | {
+        url: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  avgViews?: number | null;
+  audienceTopic?: string | null;
+  invitationCode?: string | null;
+  message?: string | null;
+  adminNotes?: string | null;
+  rejectReason?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Журнал событий: клики, регистрации, использование промокодов
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referral-events".
+ */
+export interface ReferralEvent {
+  id: number;
+  partner: number | ReferralPartner;
+  eventType: 'click' | 'promo_applied' | 'registration' | 'attribution' | 'order_placed';
+  customer?: (number | null) | Customer;
   order?: (number | null) | Order;
-  /**
-   * Товар, на который была ссылка
-   */
-  product?: (number | null) | Product;
-  status?: ('click' | 'registration' | 'order_placed' | 'order_paid' | 'points_awarded') | null;
-  pointsAwarded?: number | null;
-  /**
-   * Сумма заказа на момент оформления
-   */
-  orderTotal?: number | null;
-  source?: ('telegram' | 'instagram' | 'vk' | 'whatsapp' | 'direct' | 'other') | null;
+  promoCode?: string | null;
+  source?: ('telegram' | 'instagram' | 'vk' | 'whatsapp' | 'youtube' | 'tiktok' | 'direct' | 'other') | null;
   ipAddress?: string | null;
   userAgent?: string | null;
+  referer?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1589,14 +1777,6 @@ export interface PayloadLockedDocument {
         value: number | Inventory;
       } | null)
     | ({
-        relationTo: 'reviews';
-        value: number | Review;
-      } | null)
-    | ({
-        relationTo: 'comments';
-        value: number | Comment;
-      } | null)
-    | ({
         relationTo: 'infoproducts';
         value: number | Infoproduct;
       } | null)
@@ -1633,8 +1813,32 @@ export interface PayloadLockedDocument {
         value: number | Message;
       } | null)
     | ({
-        relationTo: 'referrals';
-        value: number | Referral;
+        relationTo: 'referral-partners';
+        value: number | ReferralPartner;
+      } | null)
+    | ({
+        relationTo: 'commissions';
+        value: number | Commission;
+      } | null)
+    | ({
+        relationTo: 'referral-payouts';
+        value: number | ReferralPayout;
+      } | null)
+    | ({
+        relationTo: 'mlm-invitations';
+        value: number | MlmInvitation;
+      } | null)
+    | ({
+        relationTo: 'team-turnover';
+        value: number | TeamTurnover;
+      } | null)
+    | ({
+        relationTo: 'partner-applications';
+        value: number | PartnerApplication;
+      } | null)
+    | ({
+        relationTo: 'referral-events';
+        value: number | ReferralEvent;
       } | null);
   globalSlug?: string | null;
   user:
@@ -1702,6 +1906,9 @@ export interface UsersSelect<T extends boolean = true> {
   inviteExpires?: T;
   updatedAt?: T;
   createdAt?: T;
+  enableAPIKey?: T;
+  apiKey?: T;
+  apiKeyIndex?: T;
   email?: T;
   resetPasswordToken?: T;
   resetPasswordExpiration?: T;
@@ -1722,6 +1929,7 @@ export interface UsersSelect<T extends boolean = true> {
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
+  folder?: T;
   alt?: T;
   caption?: T;
   prefix?: T;
@@ -1812,6 +2020,9 @@ export interface ProductsSelect<T extends boolean = true> {
   inStock?: T;
   featured?: T;
   status?: T;
+  partnerPriceOverride?: T;
+  partnerDiscountPercentOverride?: T;
+  excludeFromPartnerDiscount?: T;
   amoCrmId?: T;
   seo?:
     | T
@@ -1882,8 +2093,12 @@ export interface OrdersSelect<T extends boolean = true> {
   importedAt?: T;
   amoCrmDealId?: T;
   notes?: T;
-  referrer?: T;
-  referralPointsAwarded?: T;
+  referralPartner?: T;
+  promoCodeApplied?: T;
+  customerDiscountApplied?: T;
+  isPartnerPurchase?: T;
+  partnerDiscountApplied?: T;
+  referralCommissionsCreated?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1923,14 +2138,14 @@ export interface CustomersSelect<T extends boolean = true> {
   puzzleBotId?: T;
   importedAt?: T;
   emailVerified?: T;
-  referralCode?: T;
-  experiencePoints?: T;
-  referralLevel?: T;
-  referralDiscount?: T;
-  referredBy?: T;
-  totalReferrals?: T;
-  totalReferralOrders?: T;
-  totalReferralRevenue?: T;
+  attributedPartner?: T;
+  attributedAt?: T;
+  firstPurchaseCompleted?: T;
+  totalSpent6Months?: T;
+  lastMLMQualificationCheck?: T;
+  cooperativeAccountId?: T;
+  cooperativeMemberSince?: T;
+  cooperativeStatus?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -2184,47 +2399,6 @@ export interface InventoriesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "reviews_select".
- */
-export interface ReviewsSelect<T extends boolean = true> {
-  title?: T;
-  text?: T;
-  rating?: T;
-  customer?: T;
-  product?: T;
-  order?: T;
-  status?: T;
-  adminReply?: T;
-  source?: T;
-  featured?: T;
-  publishedAt?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "comments_select".
- */
-export interface CommentsSelect<T extends boolean = true> {
-  text?: T;
-  author?:
-    | T
-    | {
-        customer?: T;
-        user?: T;
-        displayName?: T;
-      };
-  contentType?: T;
-  post?: T;
-  recipe?: T;
-  parent?: T;
-  status?: T;
-  likes?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "infoproducts_select".
  */
 export interface InfoproductsSelect<T extends boolean = true> {
@@ -2439,19 +2613,180 @@ export interface MessagesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "referrals_select".
+ * via the `definition` "referral-partners_select".
  */
-export interface ReferralsSelect<T extends boolean = true> {
-  referrer?: T;
-  referred?: T;
-  order?: T;
-  product?: T;
+export interface ReferralPartnersSelect<T extends boolean = true> {
+  customer?: T;
+  type?: T;
   status?: T;
-  pointsAwarded?: T;
-  orderTotal?: T;
+  promoCode?: T;
+  balance?: T;
+  totalEarned?: T;
+  totalPaid?: T;
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
+  avgViews?: T;
+  paidPerVideo?: T;
+  platform?: T;
+  marketingFundEligible?: T;
+  requirements?: T;
+  sponsor?: T;
+  invitationSource?: T;
+  invitationCode?: T;
+  entryType?: T;
+  entryOrder?: T;
+  joinedMLMAt?: T;
+  partnerPriceEnabled?: T;
+  cachedLevel1Count?: T;
+  cachedLevel2Count?: T;
+  cachedLevel3Count?: T;
+  cooperativeMemberRole?: T;
+  cooperativeAgreementId?: T;
+  cooperativeCPPLinks?:
+    | T
+    | {
+        cppName?: T;
+        cppId?: T;
+        joinedAt?: T;
+        id?: T;
+      };
+  adminNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commissions_select".
+ */
+export interface CommissionsSelect<T extends boolean = true> {
+  recipient?: T;
+  recipientCustomer?: T;
+  order?: T;
+  buyer?: T;
+  type?: T;
+  percent?: T;
+  baseAmount?: T;
+  amount?: T;
+  status?: T;
+  month?: T;
+  payout?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referral-payouts_select".
+ */
+export interface ReferralPayoutsSelect<T extends boolean = true> {
+  partner?: T;
+  partnerCustomer?: T;
+  amount?: T;
+  method?: T;
+  status?: T;
+  paymentDetails?:
+    | T
+    | {
+        cardNumber?: T;
+        bankName?: T;
+        phone?: T;
+        recipientFullName?: T;
+        inn?: T;
+      };
+  requestedAt?: T;
+  approvedAt?: T;
+  paidAt?: T;
+  externalTxId?: T;
+  includedCommissions?: T;
+  rejectReason?: T;
+  adminNotes?: T;
+  cooperativeDocumentId?: T;
+  cooperativeBlockchainHash?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "mlm-invitations_select".
+ */
+export interface MlmInvitationsSelect<T extends boolean = true> {
+  code?: T;
+  issuedBy?: T;
+  issuedByCustomer?: T;
+  status?: T;
+  usedBy?: T;
+  usedAt?: T;
+  expiresAt?: T;
+  note?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "team-turnover_select".
+ */
+export interface TeamTurnoverSelect<T extends boolean = true> {
+  partner?: T;
+  partnerCustomer?: T;
+  month?: T;
+  personalSales?: T;
+  level1Turnover?: T;
+  level2Turnover?: T;
+  level3Turnover?: T;
+  totalTeamTurnover?: T;
+  teamBonusAwarded?: T;
+  teamBonusAmount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "partner-applications_select".
+ */
+export interface PartnerApplicationsSelect<T extends boolean = true> {
+  applicationType?: T;
+  status?: T;
+  customer?: T;
+  createdPartner?: T;
+  contactName?: T;
+  contactEmail?: T;
+  contactPhone?: T;
+  contactTelegram?: T;
+  socialLinks?:
+    | T
+    | {
+        url?: T;
+        description?: T;
+        id?: T;
+      };
+  avgViews?: T;
+  audienceTopic?: T;
+  invitationCode?: T;
+  message?: T;
+  adminNotes?: T;
+  rejectReason?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referral-events_select".
+ */
+export interface ReferralEventsSelect<T extends boolean = true> {
+  partner?: T;
+  eventType?: T;
+  customer?: T;
+  order?: T;
+  promoCode?: T;
   source?: T;
   ipAddress?: T;
   userAgent?: T;
+  referer?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2727,6 +3062,17 @@ export interface ShopSetting {
    * Имя бота для Telegram Login Widget, например: etra_auth_bot
    */
   telegramBotUsername?: string | null;
+  /**
+   * Разрешить оплату картой онлайн при оформлении заказа
+   */
+  paymentOnlineEnabled?: boolean | null;
+  /**
+   * Разрешить оплату наличными курьеру при получении
+   */
+  paymentCashEnabled?: boolean | null;
+  /**
+   * Включить интеграцию с Т-Банк или ЮKassa для приёма онлайн-платежей
+   */
   paymentEnabled?: boolean | null;
   paymentProvider?: ('tinkoff' | 'yokassa') | null;
   /**
@@ -2773,42 +3119,61 @@ export interface ShopSetting {
 export interface ReferralSetting {
   id: number;
   enabled?: boolean | null;
-  /**
-   * Базовое количество очков за каждый оплаченный заказ по реферальной ссылке
-   */
-  pointsPerOrder?: number | null;
-  /**
-   * Дополнительные очки = X% от суммы заказа (0 = отключено)
-   */
-  pointsPercentOfOrder?: number | null;
-  /**
-   * Настройка уровней и скидок. Уровни должны идти по возрастанию очков.
-   */
-  levels?:
-    | {
-        name: string;
-        minPoints: number;
-        discountPercent: number;
-        /**
-         * Цвет для отображения уровня, например #FFD700
-         */
-        color?: string | null;
-        icon?: (number | null) | Media;
-        id?: string | null;
-      }[]
-    | null;
-  shareTitle?: string | null;
-  shareText?: string | null;
-  enabledSources?: ('telegram' | 'vk' | 'whatsapp' | 'copy')[] | null;
-  /**
-   * Сколько дней после клика по ссылке учитывается реферал
-   */
-  cookieLifetimeDays?: number | null;
+  promoCodePattern?: ('uppercase_name' | 'random_6' | 'custom') | null;
+  commissionFirstPurchase?: number | null;
+  commissionRepeatPurchase?: number | null;
+  customerDiscountFirstPurchase?: number | null;
+  attributionLifetime?: ('lifetime' | 'days') | null;
+  attributionDays?: number | null;
+  awardOnOrderStatus?: ('paid' | 'delivered' | 'completed') | null;
   /**
    * 0 = без ограничений
    */
-  minOrderAmountForPoints?: number | null;
-  awardOnStatus?: ('paid' | 'delivered' | 'completed') | null;
+  minOrderAmountForCommission?: number | null;
+  mlmEnabled?: boolean | null;
+  level1Commission?: number | null;
+  level2Commission?: number | null;
+  level3Commission?: number | null;
+  teamBonusEnabled?: boolean | null;
+  teamBonusPercent?: number | null;
+  teamBonusThreshold?: number | null;
+  /**
+   * Скидка от розницы для МЛМ-партнёров. Можно переопределить на уровне товара.
+   */
+  partnerDiscountPercent?: number | null;
+  /**
+   * Автоматически давать статус МЛМ-партнёра клиентам с большими закупками
+   */
+  autoQualifyEnabled?: boolean | null;
+  autoQualifyThreshold?: number | null;
+  autoQualifyPeriodMonths?: number | null;
+  /**
+   * Какие товары считаются "партнёрским стартовым набором"
+   */
+  starterKitProducts?: (number | Product)[] | null;
+  minOrderForMLMEntry?: number | null;
+  invitationExpiryDays?: number | null;
+  marketingFundEnabled?: boolean | null;
+  marketingFundPercent?: number | null;
+  marketingFundMinTurnover?: number | null;
+  minPayoutAmount?: number | null;
+  payoutMethods?: ('bank_card' | 'sbp' | 'self_employed_service' | 'cooperative_payout' | 'balance_credit')[] | null;
+  /**
+   * 0 = без задержки
+   */
+  payoutRequestCooldownDays?: number | null;
+  shareTitle?: string | null;
+  shareText?: string | null;
+  enabledSources?: ('telegram' | 'vk' | 'whatsapp' | 'copy')[] | null;
+  cooperativeEnabled?: boolean | null;
+  cooperativeId?: string | null;
+  cooperativeProviderUrl?: string | null;
+  /**
+   * Хранится в глобале для удобства; в проде лучше в env
+   */
+  cooperativeApiKey?: string | null;
+  cooperativeCPPReferralId?: string | null;
+  cooperativeCPPMLMId?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2949,6 +3314,8 @@ export interface LandingSettingsSelect<T extends boolean = true> {
 export interface ShopSettingsSelect<T extends boolean = true> {
   telegramBotToken?: T;
   telegramBotUsername?: T;
+  paymentOnlineEnabled?: T;
+  paymentCashEnabled?: T;
   paymentEnabled?: T;
   paymentProvider?: T;
   tbankTerminalKey?: T;
@@ -2971,24 +3338,43 @@ export interface ShopSettingsSelect<T extends boolean = true> {
  */
 export interface ReferralSettingsSelect<T extends boolean = true> {
   enabled?: T;
-  pointsPerOrder?: T;
-  pointsPercentOfOrder?: T;
-  levels?:
-    | T
-    | {
-        name?: T;
-        minPoints?: T;
-        discountPercent?: T;
-        color?: T;
-        icon?: T;
-        id?: T;
-      };
+  promoCodePattern?: T;
+  commissionFirstPurchase?: T;
+  commissionRepeatPurchase?: T;
+  customerDiscountFirstPurchase?: T;
+  attributionLifetime?: T;
+  attributionDays?: T;
+  awardOnOrderStatus?: T;
+  minOrderAmountForCommission?: T;
+  mlmEnabled?: T;
+  level1Commission?: T;
+  level2Commission?: T;
+  level3Commission?: T;
+  teamBonusEnabled?: T;
+  teamBonusPercent?: T;
+  teamBonusThreshold?: T;
+  partnerDiscountPercent?: T;
+  autoQualifyEnabled?: T;
+  autoQualifyThreshold?: T;
+  autoQualifyPeriodMonths?: T;
+  starterKitProducts?: T;
+  minOrderForMLMEntry?: T;
+  invitationExpiryDays?: T;
+  marketingFundEnabled?: T;
+  marketingFundPercent?: T;
+  marketingFundMinTurnover?: T;
+  minPayoutAmount?: T;
+  payoutMethods?: T;
+  payoutRequestCooldownDays?: T;
   shareTitle?: T;
   shareText?: T;
   enabledSources?: T;
-  cookieLifetimeDays?: T;
-  minOrderAmountForPoints?: T;
-  awardOnStatus?: T;
+  cooperativeEnabled?: T;
+  cooperativeId?: T;
+  cooperativeProviderUrl?: T;
+  cooperativeApiKey?: T;
+  cooperativeCPPReferralId?: T;
+  cooperativeCPPMLMId?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

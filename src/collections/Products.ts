@@ -199,6 +199,44 @@ export const Products: CollectionConfig = {
       },
     },
     {
+      type: 'collapsible',
+      label: 'Партнёрская цена (МЛМ)',
+      admin: {
+        initCollapsed: true,
+        description: 'Настройки партнёрской цены для МЛМ-партнёров',
+      },
+      fields: [
+        {
+          name: 'partnerPriceOverride',
+          type: 'number',
+          min: 0,
+          label: 'Партнёрская цена (₽)',
+          admin: {
+            description: 'Если задано — используется вместо глобального % скидки. Оставьте пустым для расчёта по глобальному %',
+          },
+        },
+        {
+          name: 'partnerDiscountPercentOverride',
+          type: 'number',
+          min: 0,
+          max: 100,
+          label: 'Индивидуальный % партнёрской скидки',
+          admin: {
+            description: 'Переопределение глобального % партнёрской скидки для этого товара',
+          },
+        },
+        {
+          name: 'excludeFromPartnerDiscount',
+          type: 'checkbox',
+          defaultValue: false,
+          label: 'Исключить из партнёрской скидки',
+          admin: {
+            description: 'Товар всегда продаётся по розничной цене даже партнёрам',
+          },
+        },
+      ],
+    },
+    {
       name: 'amoCrmId',
       type: 'number',
       label: 'ID в amoCRM',

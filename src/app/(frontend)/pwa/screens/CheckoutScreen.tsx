@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCart } from '../../cart/CartProvider'
 import { useAuth } from '../../auth/AuthProvider'
-import { CreditCard, Banknote, Loader2, Tag, Gift, MapPin, X } from 'lucide-react'
+import { CreditCard, Banknote, Loader2, Tag, MapPin, X } from 'lucide-react'
 
 type DeliveryMethod = 'cdek' | 'pickup'
 type DeliveryType = 'pvz' | 'door'
@@ -85,8 +85,8 @@ export function CheckoutScreen() {
   const [promoError, setPromoError] = useState('')
   const [showPromoInput, setShowPromoInput] = useState(false)
 
-  // Referral discount from customer
-  const referralDiscount = customer?.referralDiscount || 0
+  // Реферальная скидка теперь применяется через промокод партнёра на сервере в хуке
+  // при создании заказа (customerAfterOrderCreate), не на этапе чекаута.
 
   // Load settings from admin
   useEffect(() => {
@@ -306,11 +306,7 @@ export function CheckoutScreen() {
       : appliedPromo.discountValue
     : 0
   
-  const referralDiscountAmount = referralDiscount > 0 
-    ? Math.round((totalPrice - promoDiscount) * referralDiscount / 100)
-    : 0
-
-  const totalDiscount = promoDiscount + referralDiscountAmount
+  const totalDiscount = promoDiscount
   
   // Delivery is NOT included in payment - customer pays on receipt
   const orderTotal = totalPrice - totalDiscount
@@ -365,7 +361,7 @@ export function CheckoutScreen() {
           estimatedDeliveryCost: estimatedDeliveryCost, // For reference
           discount: totalDiscount,
           promoCode: appliedPromo?.code || undefined,
-          referralDiscount: referralDiscountAmount,
+          promoCodeApplied: appliedPromo?.code || undefined,
           total: orderTotal, 
           status: 'new',
           delivery: { 
@@ -620,18 +616,6 @@ export function CheckoutScreen() {
             <span className="checkout-sec__title">Скидки</span>
           </div>
 
-          {/* Referral discount */}
-          {referralDiscount > 0 && (
-            <div className="discount-badge" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, background: 'rgba(16, 185, 129, 0.1)', borderRadius: 'var(--r-sm)', marginBottom: 12 }}>
-              <Gift size={20} style={{ color: 'var(--c-success)' }} />
-              <div style={{ flex: 1 }}>
-                <div className="t-caption" style={{ fontWeight: 600 }}>Реферальная скидка</div>
-                <div className="t-small t-muted">Ваш уровень: {customer?.referralLevel || 'Новичок'}</div>
-              </div>
-              <div className="t-caption" style={{ fontWeight: 700, color: 'var(--c-success)' }}>−{referralDiscount}%</div>
-            </div>
-          )}
-
           {/* Applied promo code */}
           {appliedPromo && (
             <div className="discount-badge" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, background: 'rgba(139, 92, 246, 0.1)', borderRadius: 'var(--r-sm)', marginBottom: 12 }}>
@@ -757,12 +741,6 @@ export function CheckoutScreen() {
             </div>
           )}
           
-          {referralDiscountAmount > 0 && (
-            <div className="summary__row" style={{ color: 'var(--c-success)' }}>
-              <span className="summary__label">Реферальная скидка ({referralDiscount}%)</span>
-              <span>−{referralDiscountAmount.toLocaleString('ru-RU')} ₽</span>
-            </div>
-          )}
           
           <div className="summary__row">
             <span className="summary__label">Доставка</span>

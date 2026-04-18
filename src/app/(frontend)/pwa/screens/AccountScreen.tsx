@@ -771,17 +771,7 @@ export function AccountScreen() {
 
         {/* Referrals Tab */}
         {activeTab === 'referrals' && (
-          <ReferralSection 
-            customer={customer ? {
-              referralCode: customer.referralCode || '',
-              experiencePoints: customer.experiencePoints || 0,
-              referralLevel: customer.referralLevel || 'Новичок',
-              referralDiscount: customer.referralDiscount || 0,
-              totalReferrals: customer.totalReferrals || 0,
-              totalReferralOrders: customer.totalReferralOrders || 0,
-              totalReferralRevenue: customer.totalReferralRevenue || 0,
-            } : null}
-          />
+          <ReferralSection token={token} />
         )}
       </div>
     </div>

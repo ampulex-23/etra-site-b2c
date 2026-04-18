@@ -15,44 +15,44 @@ interface ShareSettings {
   shareTitle: string
   shareText: string
   enabledSources: string[]
+  commissionFirstPurchase?: number
+  customerDiscountFirstPurchase?: number
 }
 
-interface CustomerReferral {
-  referralCode: string
-  experiencePoints: number
-  referralLevel: string
-  referralDiscount: number
+interface PartnerInfo {
+  promoCode: string
+  balance: number
 }
 
 export function ShareButton({ productSlug, productName, productImage, className = '' }: ShareButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [settings, setSettings] = useState<ShareSettings | null>(null)
-  const [customer, setCustomer] = useState<CustomerReferral | null>(null)
+  const [partner, setPartner] = useState<PartnerInfo | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [settingsRes, customerRes] = await Promise.all([
-          fetch('/api/referral/settings'),
-          fetch('/api/customers/me'),
-        ])
-
+        const settingsRes = await fetch('/api/referral/settings')
         if (settingsRes.ok) {
           const data = await settingsRes.json()
           setSettings(data)
         }
 
-        if (customerRes.ok) {
-          const data = await customerRes.json()
-          if (data.user?.referralCode) {
-            setCustomer({
-              referralCode: data.user.referralCode,
-              experiencePoints: data.user.experiencePoints || 0,
-              referralLevel: data.user.referralLevel || 'Новичок',
-              referralDiscount: data.user.referralDiscount || 0,
-            })
+        const token = typeof window !== 'undefined' ? localStorage.getItem('etra-customer-token') : null
+        if (token) {
+          const meRes = await fetch('/api/referral/me', {
+            headers: { Authorization: `JWT ${token}` },
+          })
+          if (meRes.ok) {
+            const data = await meRes.json()
+            if (data.partner) {
+              setPartner({
+                promoCode: data.partner.promoCode,
+                balance: data.partner.balance || 0,
+              })
+            }
           }
         }
       } catch (error) {
@@ -65,13 +65,13 @@ export function ShareButton({ productSlug, productName, productImage, className 
     fetchData()
   }, [])
 
-  if (loading || !settings?.enabled || !customer) {
+  if (loading || !settings?.enabled || !partner) {
     return null
   }
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-  const referralUrl = `${baseUrl}/api/referral/track?ref=${customer.referralCode}&product=${productSlug}&redirect=/products/${productSlug}`
-  const shareText = settings.shareText.replace('{product}', productName)
+  const referralUrl = `${baseUrl}/api/referral/track?ref=${partner.promoCode}&source=share&redirect=/products/${productSlug}`
+  const shareText = (settings.shareText || 'Рекомендую ЭТРА 🌿').replace('{product}', productName)
 
   const shareLinks = {
     telegram: `https://t.me/share/url?url=${encodeURIComponent(referralUrl)}&text=${encodeURIComponent(shareText)}`,
@@ -189,16 +189,15 @@ export function ShareButton({ productSlug, productName, productImage, className 
 
               <div className="share-modal__info">
                 <p>
-                  Ваш уровень: <strong>{customer.referralLevel}</strong>
+                  Ваш промокод: <strong>{partner.promoCode}</strong>
                 </p>
                 <p>
-                  Очков опыта: <strong>{customer.experiencePoints}</strong>
+                  Ваш баланс: <strong>{partner.balance.toLocaleString('ru-RU')} ₽</strong>
                 </p>
-                {customer.referralDiscount > 0 && (
-                  <p>
-                    Ваша скидка: <strong>{customer.referralDiscount}%</strong>
-                  </p>
-                )}
+                <p className="share-modal__info-desc">
+                  Друг получит скидку {settings.customerDiscountFirstPurchase || 10}% на первую покупку,
+                  а вам начислится {settings.commissionFirstPurchase || 10}% с его заказа.
+                </p>
               </div>
             </div>
           </div>

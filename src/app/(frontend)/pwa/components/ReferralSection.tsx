@@ -1,58 +1,66 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Copy, Check, Share2, Users, TrendingUp, Gift } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Copy, Check, Users, TrendingUp, Gift, ExternalLink, Wallet } from 'lucide-react'
 
-interface ReferralData {
-  referralCode: string
-  experiencePoints: number
-  referralLevel: string
-  referralDiscount: number
-  totalReferrals: number
-  totalReferralOrders: number
-  totalReferralRevenue: number
+interface PartnerInfo {
+  id: string | number
+  promoCode: string
+  type: string
+  status: string
+  balance: number
+  totalEarned: number
+  totalPaid: number
+  isMLM: boolean
+  partnerPriceEnabled: boolean
 }
 
-interface ReferralLevel {
-  name: string
-  minPoints: number
-  discountPercent: number
-  color: string
+interface PartnerSettings {
+  commissionFirstPurchase: number
+  commissionRepeatPurchase: number
+  customerDiscountFirstPurchase: number
+  minPayoutAmount: number
+  mlmEnabled: boolean
 }
 
-interface ReferralSettings {
+interface MeResponse {
   enabled: boolean
-  levels: ReferralLevel[]
-  shareTitle: string
-  shareText: string
-  enabledSources: string[]
+  partner: PartnerInfo | null
+  settings?: PartnerSettings
 }
 
 interface ReferralSectionProps {
-  customer: ReferralData | null
+  token: string | null
 }
 
-export function ReferralSection({ customer }: ReferralSectionProps) {
-  const [settings, setSettings] = useState<ReferralSettings | null>(null)
-  const [copied, setCopied] = useState(false)
+export function ReferralSection({ token }: ReferralSectionProps) {
+  const [data, setData] = useState<MeResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const [copied, setCopied] = useState(false)
+
+  const fetchMe = useCallback(async () => {
+    if (!token) {
+      setLoading(false)
+      return
+    }
+    try {
+      const res = await fetch('/api/referral/me', {
+        headers: { Authorization: `JWT ${token}` },
+      })
+      if (res.ok) {
+        const d = await res.json()
+        setData(d)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }, [token])
 
   useEffect(() => {
-    async function fetchSettings() {
-      try {
-        const res = await fetch('/api/referral/settings')
-        if (res.ok) {
-          const data = await res.json()
-          setSettings(data)
-        }
-      } catch (error) {
-        console.error('Error fetching referral settings:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchSettings()
-  }, [])
+    fetchMe()
+  }, [fetchMe])
 
   if (loading) {
     return (
@@ -64,7 +72,7 @@ export function ReferralSection({ customer }: ReferralSectionProps) {
     )
   }
 
-  if (!settings?.enabled) {
+  if (!data?.enabled) {
     return (
       <div className="referral-section">
         <div className="empty-state glass">
@@ -75,445 +83,157 @@ export function ReferralSection({ customer }: ReferralSectionProps) {
     )
   }
 
-  if (!customer?.referralCode) {
+  const partner = data.partner
+  if (!partner) {
     return (
       <div className="referral-section">
         <div className="empty-state glass">
           <Gift size={48} strokeWidth={1.5} />
-          <p>Ваш реферальный код генерируется...</p>
-          <p style={{ fontSize: 13, color: '#666', marginTop: 8 }}>
-            Обновите страницу через несколько секунд
-          </p>
+          <p>Войдите, чтобы участвовать в реферальной программе</p>
         </div>
       </div>
     )
   }
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-  const referralLink = `${baseUrl}/api/referral/track?ref=${customer.referralCode}&redirect=/`
+  const referralLink = `${baseUrl}/?promo=${partner.promoCode}`
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(referralLink)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-    } catch (error) {
-      console.error('Failed to copy:', error)
+    } catch {
+      /* ignore */
     }
   }
 
-  const currentLevel = settings.levels.find(
-    (level) => customer.experiencePoints >= level.minPoints
-  ) || settings.levels[0]
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(partner.promoCode)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      /* ignore */
+    }
+  }
 
-  const nextLevel = settings.levels.find(
-    (level) => level.minPoints > customer.experiencePoints
-  )
-
-  const progressToNext = nextLevel
-    ? Math.min(100, ((customer.experiencePoints - (currentLevel?.minPoints || 0)) / 
-        (nextLevel.minPoints - (currentLevel?.minPoints || 0))) * 100)
-    : 100
-
+  const shareText = `Рекомендую ЭТРА 🌿 Скидка ${data.settings?.customerDiscountFirstPurchase || 10}% по промокоду ${partner.promoCode}`
   const shareLinks = {
-    telegram: `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(settings.shareText)}`,
-    vk: `https://vk.com/share.php?url=${encodeURIComponent(referralLink)}&title=${encodeURIComponent(settings.shareText)}`,
-    whatsapp: `https://wa.me/?text=${encodeURIComponent(settings.shareText + ' ' + referralLink)}`,
+    telegram: `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(shareText)}`,
+    vk: `https://vk.com/share.php?url=${encodeURIComponent(referralLink)}&title=${encodeURIComponent(shareText)}`,
+    whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + referralLink)}`,
   }
 
   return (
     <div className="referral-section">
-      {/* Level Card */}
-      <div className="referral-level-card glass">
-        <div className="referral-level-card__header">
-          <div 
-            className="referral-level-badge"
-            style={{ backgroundColor: currentLevel?.color || '#9CA3AF' }}
-          >
-            {currentLevel?.name || 'Новичок'}
-          </div>
-          {customer.referralDiscount > 0 && (
-            <div className="referral-discount">
-              Скидка {customer.referralDiscount}%
-            </div>
-          )}
+      {/* Промокод */}
+      <div className="referral-promo-card glass">
+        <div className="referral-promo-card__label">Ваш промокод</div>
+        <div className="referral-promo-code" onClick={handleCopyCode} title="Нажмите чтобы скопировать">
+          {partner.promoCode}
+          {copied ? <Check size={20} /> : <Copy size={20} />}
         </div>
-
-        <div className="referral-points">
-          <TrendingUp size={20} />
-          <span className="referral-points__value">{customer.experiencePoints}</span>
-          <span className="referral-points__label">очков опыта</span>
+        <div className="referral-promo-card__desc">
+          При использовании промокода ваши друзья получают скидку{' '}
+          <strong>{data.settings?.customerDiscountFirstPurchase || 10}%</strong> на первую покупку.
+          <br />
+          Вам начисляется {data.settings?.commissionFirstPurchase || 10}% с первой покупки
+          и {data.settings?.commissionRepeatPurchase || 9}% со всех повторных — пожизненно.
         </div>
-
-        {nextLevel && (
-          <div className="referral-progress">
-            <div className="referral-progress__bar">
-              <div 
-                className="referral-progress__fill"
-                style={{ 
-                  width: `${progressToNext}%`,
-                  backgroundColor: nextLevel.color 
-                }}
-              />
-            </div>
-            <div className="referral-progress__text">
-              До уровня <strong>{nextLevel.name}</strong>: {nextLevel.minPoints - customer.experiencePoints} очков
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Stats */}
+      {/* Баланс и статистика */}
       <div className="referral-stats">
         <div className="referral-stat glass">
-          <Users size={24} />
-          <div className="referral-stat__value">{customer.totalReferrals}</div>
-          <div className="referral-stat__label">Рефералов</div>
-        </div>
-        <div className="referral-stat glass">
-          <Gift size={24} />
-          <div className="referral-stat__value">{customer.totalReferralOrders}</div>
-          <div className="referral-stat__label">Заказов</div>
+          <Wallet size={24} />
+          <div className="referral-stat__value">{partner.balance.toLocaleString('ru-RU')} ₽</div>
+          <div className="referral-stat__label">Баланс к выплате</div>
         </div>
         <div className="referral-stat glass">
           <TrendingUp size={24} />
-          <div className="referral-stat__value">{customer.totalReferralRevenue.toLocaleString('ru-RU')} ₽</div>
-          <div className="referral-stat__label">Сумма</div>
+          <div className="referral-stat__value">{partner.totalEarned.toLocaleString('ru-RU')} ₽</div>
+          <div className="referral-stat__label">Всего заработано</div>
+        </div>
+        <div className="referral-stat glass">
+          <Users size={24} />
+          <div className="referral-stat__value">{partner.totalPaid.toLocaleString('ru-RU')} ₽</div>
+          <div className="referral-stat__label">Выплачено</div>
         </div>
       </div>
 
-      {/* Referral Link */}
+      {/* Ссылка и шеринг */}
       <div className="referral-link-card glass">
         <h4>Ваша реферальная ссылка</h4>
-        <p className="referral-link-card__desc">
-          Делитесь ссылкой с друзьями и получайте очки за их покупки
-        </p>
-        
         <div className="referral-link-input">
-          <input
-            type="text"
-            value={referralLink}
-            readOnly
-            className="input"
-          />
-          <button
-            type="button"
-            className="btn btn--primary"
-            onClick={handleCopy}
-          >
+          <input type="text" value={referralLink} readOnly className="input" />
+          <button type="button" className="btn btn--primary" onClick={handleCopy}>
             {copied ? <Check size={18} /> : <Copy size={18} />}
             {copied ? 'Скопировано' : 'Копировать'}
           </button>
         </div>
-
         <div className="referral-share-buttons">
-          {settings.enabledSources.includes('telegram') && (
-            <a
-              href={shareLinks.telegram}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="referral-share-btn referral-share-btn--telegram"
-            >
-              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-              </svg>
-              Telegram
-            </a>
-          )}
-          {settings.enabledSources.includes('vk') && (
-            <a
-              href={shareLinks.vk}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="referral-share-btn referral-share-btn--vk"
-            >
-              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                <path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.408 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.864-.525-2.05-1.727-1.033-1-1.49-1.135-1.744-1.135-.356 0-.458.102-.458.593v1.575c0 .424-.135.678-1.253.678-1.846 0-3.896-1.118-5.335-3.202C4.624 10.857 4 8.57 4 8.096c0-.254.102-.491.593-.491h1.744c.44 0 .61.203.78.678.847 2.49 2.27 4.675 2.853 4.675.22 0 .322-.102.322-.66V9.721c-.068-1.186-.695-1.287-.695-1.71 0-.203.17-.407.44-.407h2.744c.373 0 .508.203.508.643v3.473c0 .372.17.508.271.508.22 0 .407-.136.813-.542 1.254-1.406 2.151-3.574 2.151-3.574.119-.254.322-.491.763-.491h1.744c.525 0 .644.27.525.643-.22 1.017-2.354 4.031-2.354 4.031-.186.305-.254.44 0 .78.186.254.796.779 1.203 1.253.745.847 1.32 1.558 1.473 2.05.17.49-.085.744-.576.744z"/>
-              </svg>
-              ВКонтакте
-            </a>
-          )}
-          {settings.enabledSources.includes('whatsapp') && (
-            <a
-              href={shareLinks.whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="referral-share-btn referral-share-btn--whatsapp"
-            >
-              <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-              </svg>
-              WhatsApp
-            </a>
-          )}
+          <a href={shareLinks.telegram} target="_blank" rel="noopener noreferrer" className="referral-share-btn" style={{ background: '#0088cc' }}>
+            Telegram
+          </a>
+          <a href={shareLinks.vk} target="_blank" rel="noopener noreferrer" className="referral-share-btn" style={{ background: '#4a76a8' }}>
+            ВКонтакте
+          </a>
+          <a href={shareLinks.whatsapp} target="_blank" rel="noopener noreferrer" className="referral-share-btn" style={{ background: '#25d366' }}>
+            WhatsApp
+          </a>
         </div>
       </div>
 
-      {/* Levels Info */}
-      <div className="referral-levels glass">
-        <h4>Уровни программы</h4>
-        <div className="referral-levels__list">
-          {settings.levels.map((level, idx) => (
-            <div 
-              key={idx} 
-              className={`referral-level-item ${customer.experiencePoints >= level.minPoints ? 'referral-level-item--achieved' : ''}`}
-            >
-              <div 
-                className="referral-level-item__badge"
-                style={{ backgroundColor: level.color }}
-              >
-                {level.name}
-              </div>
-              <div className="referral-level-item__info">
-                <span>от {level.minPoints} очков</span>
-                <span className="referral-level-item__discount">
-                  {level.discountPercent > 0 ? `${level.discountPercent}% скидка` : 'без скидки'}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* CTA — открыть полный ЛК */}
+      <a href="/partner" className="btn btn--secondary referral-open-dashboard">
+        <ExternalLink size={18} />
+        Открыть полный кабинет партнёра
+      </a>
 
       <style jsx>{`
-        .referral-section {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-
-        .referral-level-card {
-          padding: 20px;
-          border-radius: 16px;
-        }
-
-        .referral-level-card__header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 16px;
-        }
-
-        .referral-level-badge {
-          padding: 6px 16px;
-          border-radius: 20px;
-          color: white;
-          font-weight: 600;
-          font-size: 14px;
-        }
-
-        .referral-discount {
-          background: var(--c-primary, #4A7C59);
-          color: white;
-          padding: 6px 12px;
-          border-radius: 8px;
-          font-size: 13px;
-          font-weight: 500;
-        }
-
-        .referral-points {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 16px;
+        .referral-section { display: flex; flex-direction: column; gap: 16px; }
+        .referral-promo-card { padding: 24px; border-radius: 16px; text-align: center; }
+        .referral-promo-card__label { font-size: 14px; color: #666; margin-bottom: 8px; }
+        .referral-promo-code {
+          font-size: 28px; font-weight: 700; letter-spacing: 2px;
           color: var(--c-primary, #4A7C59);
-        }
-
-        .referral-points__value {
-          font-size: 28px;
-          font-weight: 700;
-        }
-
-        .referral-points__label {
-          color: #666;
-          font-size: 14px;
-        }
-
-        .referral-progress__bar {
-          height: 8px;
-          background: #e5e5e5;
-          border-radius: 4px;
-          overflow: hidden;
-          margin-bottom: 8px;
-        }
-
-        .referral-progress__fill {
-          height: 100%;
-          border-radius: 4px;
-          transition: width 0.3s ease;
-        }
-
-        .referral-progress__text {
-          font-size: 13px;
-          color: #666;
-        }
-
-        .referral-stats {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 12px;
-        }
-
-        .referral-stat {
           padding: 16px;
+          border: 2px dashed var(--c-primary, #4A7C59);
           border-radius: 12px;
-          text-align: center;
+          display: inline-flex; align-items: center; gap: 12px;
+          cursor: pointer; transition: background 0.2s;
+          margin-bottom: 12px;
         }
-
-        .referral-stat svg {
-          color: var(--c-primary, #4A7C59);
-          margin-bottom: 8px;
-        }
-
-        .referral-stat__value {
-          font-size: 18px;
-          font-weight: 700;
-          color: #333;
-        }
-
-        .referral-stat__label {
-          font-size: 12px;
-          color: #666;
-          margin-top: 4px;
-        }
-
-        .referral-link-card {
-          padding: 20px;
-          border-radius: 16px;
-        }
-
-        .referral-link-card h4 {
-          margin: 0 0 8px;
-          font-size: 16px;
-        }
-
-        .referral-link-card__desc {
-          color: #666;
-          font-size: 13px;
-          margin: 0 0 16px;
-        }
-
-        .referral-link-input {
-          display: flex;
-          gap: 8px;
-          margin-bottom: 16px;
-        }
-
-        .referral-link-input .input {
-          flex: 1;
-          font-size: 12px;
-        }
-
-        .referral-link-input .btn {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          white-space: nowrap;
-        }
-
-        .referral-share-buttons {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-        }
-
+        .referral-promo-code:hover { background: rgba(74,124,89,0.05); }
+        .referral-promo-card__desc { font-size: 13px; color: #666; line-height: 1.5; }
+        .referral-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .referral-stat { padding: 16px; border-radius: 12px; text-align: center; }
+        .referral-stat svg { color: var(--c-primary, #4A7C59); margin-bottom: 8px; }
+        .referral-stat__value { font-size: 16px; font-weight: 700; color: #333; }
+        .referral-stat__label { font-size: 11px; color: #666; margin-top: 4px; }
+        .referral-link-card { padding: 20px; border-radius: 16px; }
+        .referral-link-card h4 { margin: 0 0 12px; font-size: 16px; }
+        .referral-link-input { display: flex; gap: 8px; margin-bottom: 12px; }
+        .referral-link-input .input { flex: 1; font-size: 12px; }
+        .referral-link-input .btn { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .referral-share-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
         .referral-share-btn {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 10px 16px;
-          border-radius: 10px;
-          font-size: 13px;
-          font-weight: 500;
-          text-decoration: none;
-          color: white;
+          flex: 1;
+          display: flex; align-items: center; justify-content: center;
+          padding: 10px 16px; border-radius: 10px;
+          font-size: 13px; font-weight: 500;
+          color: white; text-decoration: none;
           transition: opacity 0.2s;
         }
-
-        .referral-share-btn:hover {
-          opacity: 0.9;
+        .referral-share-btn:hover { opacity: 0.9; }
+        .referral-open-dashboard {
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          text-decoration: none; padding: 12px;
         }
-
-        .referral-share-btn--telegram {
-          background: #0088cc;
-        }
-
-        .referral-share-btn--vk {
-          background: #4a76a8;
-        }
-
-        .referral-share-btn--whatsapp {
-          background: #25d366;
-        }
-
-        .referral-levels {
-          padding: 20px;
-          border-radius: 16px;
-        }
-
-        .referral-levels h4 {
-          margin: 0 0 16px;
-          font-size: 16px;
-        }
-
-        .referral-levels__list {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .referral-level-item {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 12px;
-          background: #f5f5f5;
-          border-radius: 10px;
-          opacity: 0.6;
-        }
-
-        .referral-level-item--achieved {
-          opacity: 1;
-          background: #e8f5e9;
-        }
-
-        .referral-level-item__badge {
-          padding: 4px 12px;
-          border-radius: 12px;
-          color: white;
-          font-size: 12px;
-          font-weight: 600;
-        }
-
-        .referral-level-item__info {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          font-size: 13px;
-          color: #666;
-        }
-
-        .referral-level-item__discount {
-          font-weight: 500;
-          color: var(--c-primary, #4A7C59);
-        }
-
         @media (max-width: 480px) {
-          .referral-stats {
-            grid-template-columns: 1fr;
-          }
-
-          .referral-link-input {
-            flex-direction: column;
-          }
-
-          .referral-share-buttons {
-            flex-direction: column;
-          }
-
-          .referral-share-btn {
-            justify-content: center;
-          }
+          .referral-stats { grid-template-columns: 1fr; }
+          .referral-link-input { flex-direction: column; }
         }
       `}</style>
     </div>

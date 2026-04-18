@@ -947,6 +947,60 @@ try {
     console.log('[migrate] Created messages_attachments table')
   }
 
+  // ==========================================
+  // REFERRAL PROGRAM v2 MIGRATION
+  // Удаление старых колонок/таблиц очков-уровней
+  // ==========================================
+
+  async function dropColumnIfExists(table, column) {
+    const exists = await pool.query(
+      'SELECT 1 FROM information_schema.columns WHERE table_name = $1 AND column_name = $2',
+      [table, column],
+    )
+    if (exists.rows.length > 0) {
+      await pool.query(`ALTER TABLE "${table}" DROP COLUMN "${column}"`)
+      console.log(`[migrate] Dropped ${table}.${column}`)
+    }
+  }
+
+  // Старая таблица referrals больше не нужна — заменяется на referral_events / commissions / referral_partners
+  if (await tableExists('referrals')) {
+    await pool.query('DROP TABLE IF EXISTS "referrals" CASCADE')
+    console.log('[migrate] Dropped old referrals table')
+  }
+
+  // Удаляем старые колонки очков/уровней из customers
+  if (await tableExists('customers')) {
+    await dropColumnIfExists('customers', 'experience_points')
+    await dropColumnIfExists('customers', 'referral_level')
+    await dropColumnIfExists('customers', 'referral_discount')
+    await dropColumnIfExists('customers', 'total_referrals')
+    await dropColumnIfExists('customers', 'total_referral_orders')
+    await dropColumnIfExists('customers', 'total_referral_revenue')
+    await dropColumnIfExists('customers', 'referral_code')
+    await dropColumnIfExists('customers', 'referred_by_id')
+  }
+
+  // Удаляем старые реферальные колонки из orders
+  if (await tableExists('orders')) {
+    await dropColumnIfExists('orders', 'referrer_id')
+    await dropColumnIfExists('orders', 'referral_points_awarded')
+    await dropColumnIfExists('orders', 'referral_discount')
+  }
+
+  // Удаляем старые глобалы, которые не соответствуют новой схеме
+  // (Payload мигрирует оставшиеся поля автоматически при push:true)
+  if (await tableExists('referral_settings')) {
+    await dropColumnIfExists('referral_settings', 'points_per_order')
+    await dropColumnIfExists('referral_settings', 'points_percent_of_order')
+    await dropColumnIfExists('referral_settings', 'cookie_lifetime_days')
+    await dropColumnIfExists('referral_settings', 'min_order_amount_for_points')
+  }
+  if (await tableExists('referral_settings_levels')) {
+    await pool.query('DROP TABLE IF EXISTS "referral_settings_levels" CASCADE')
+    console.log('[migrate] Dropped old referral_settings_levels table')
+  }
+
   console.log('[migrate] Done')
 } catch (err) {
   console.error('[migrate] Error:', err.message)

@@ -27,14 +27,9 @@ export interface CustomerUser {
     photoUrl?: string
   }
   avatar?: { url?: string } | string
-  // Referral fields
-  referralCode?: string
-  experiencePoints?: number
-  referralLevel?: string
-  referralDiscount?: number
-  totalReferrals?: number
-  totalReferralOrders?: number
-  totalReferralRevenue?: number
+  // Referral
+  attributedPartner?: string | number | null
+  firstPurchaseCompleted?: boolean
 }
 
 interface AuthContextValue {
@@ -81,14 +76,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         favorites: data.favorites,
         telegram: data.telegram,
         avatar: data.avatar,
-        // Referral fields
-        referralCode: data.referralCode,
-        experiencePoints: data.experiencePoints,
-        referralLevel: data.referralLevel,
-        referralDiscount: data.referralDiscount,
-        totalReferrals: data.totalReferrals,
-        totalReferralOrders: data.totalReferralOrders,
-        totalReferralRevenue: data.totalReferralRevenue,
+        attributedPartner: data.attributedPartner ?? null,
+        firstPurchaseCompleted: Boolean(data.firstPurchaseCompleted),
       })
       return true
     } catch {

@@ -1,7 +1,8 @@
 import type { CollectionConfig } from 'payload'
 import { orderAfterChange } from '../hooks/orderAfterChange'
 import { orderBeforeChange } from '../hooks/orderBeforeChange'
-import { referralAfterOrderChange } from '../hooks/referralAfterOrderChange'
+import { referralAfterOrderPaid } from '../hooks/referralAfterOrderPaid'
+import { customerAfterOrderCreate } from '../hooks/customerAfterOrderCreate'
 
 export const Orders: CollectionConfig = {
   slug: 'orders',
@@ -11,7 +12,7 @@ export const Orders: CollectionConfig = {
   },
   hooks: {
     beforeChange: [orderBeforeChange],
-    afterChange: [orderAfterChange, referralAfterOrderChange],
+    afterChange: [orderAfterChange, customerAfterOrderCreate, referralAfterOrderPaid],
   },
   admin: {
     useAsTitle: 'orderNumber',
@@ -301,25 +302,65 @@ export const Orders: CollectionConfig = {
       label: 'Комментарий',
     },
     {
-      name: 'referrer',
+      name: 'referralPartner',
       type: 'relationship',
-      relationTo: 'customers',
-      label: 'Реферер',
+      relationTo: 'referral-partners',
+      label: 'Партнёр (получатель комиссии)',
       admin: {
         position: 'sidebar',
-        readOnly: true,
-        description: 'Клиент, по чьей ссылке оформлен заказ',
+        description: 'Партнёр, к которому привязан клиент',
       },
     },
     {
-      name: 'referralPointsAwarded',
-      type: 'checkbox',
-      defaultValue: false,
-      label: 'Очки начислены',
+      name: 'promoCodeApplied',
+      type: 'text',
+      label: 'Применённый промокод',
       admin: {
         position: 'sidebar',
         readOnly: true,
-        description: 'Очки реферу уже начислены',
+      },
+    },
+    {
+      name: 'customerDiscountApplied',
+      type: 'number',
+      defaultValue: 0,
+      min: 0,
+      label: 'Скидка клиенту по рефералке (₽)',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'isPartnerPurchase',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Партнёрская закупка',
+      admin: {
+        position: 'sidebar',
+        description: 'Заказ по партнёрской цене (для последующей перепродажи)',
+      },
+    },
+    {
+      name: 'partnerDiscountApplied',
+      type: 'number',
+      defaultValue: 0,
+      min: 0,
+      label: 'Партнёрская скидка (₽)',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'referralCommissionsCreated',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Комиссии созданы',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Комиссии уже рассчитаны по этому заказу',
       },
     },
   ],

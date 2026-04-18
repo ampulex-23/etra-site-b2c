@@ -40,7 +40,13 @@ import { DeliverySettings } from './globals/DeliverySettings'
 import { LandingSettings } from './globals/LandingSettings'
 import { ShopSettings } from './globals/ShopSettings'
 import { ReferralSettings } from './globals/ReferralSettings'
-import { Referrals } from './collections/Referrals'
+import { ReferralEvents } from './collections/ReferralEvents'
+import { ReferralPartners } from './collections/ReferralPartners'
+import { Commissions } from './collections/Commissions'
+import { ReferralPayouts } from './collections/ReferralPayouts'
+import { MLMInvitations } from './collections/MLMInvitations'
+import { TeamTurnover } from './collections/TeamTurnover'
+import { PartnerApplications } from './collections/PartnerApplications'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -88,9 +94,9 @@ export default buildConfig({
             title: 'Дашборд инфопродуктов',
           },
         },
-        referralProgram: {
-          Component: '@/app/(payload)/admin/referral-program/page',
-          path: '/referral-program',
+        referralDashboard: {
+          Component: '@/app/(payload)/admin/referral-dashboard/page',
+          path: '/referral-dashboard',
           meta: {
             title: 'Реферальная программа',
           },
@@ -125,7 +131,13 @@ export default buildConfig({
     CourseResults,
     ChatRooms,
     Messages,
-    Referrals,
+    ReferralPartners,
+    Commissions,
+    ReferralPayouts,
+    MLMInvitations,
+    TeamTurnover,
+    PartnerApplications,
+    ReferralEvents,
   ],
   globals: [
     AISettings,
