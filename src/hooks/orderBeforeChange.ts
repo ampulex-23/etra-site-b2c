@@ -16,6 +16,11 @@ export const orderBeforeChange: CollectionBeforeChangeHook = async ({ data, req,
     const productId = typeof item.product === 'object' ? item.product.id : item.product
     if (!productId) continue
 
+    // Фиксируем цену только при создании заказа или для новых позиций без цены.
+    // При обновлении существующих позиций цена НЕ перезаписывается — сохраняем
+    // ту, по которой клиент фактически оформил заказ (важно для возвратов и отчётности).
+    const shouldSetPrice = item.price === undefined || item.price === null
+
     try {
       const product = await payload.findByID({
         collection: 'products',
@@ -28,18 +33,23 @@ export const orderBeforeChange: CollectionBeforeChangeHook = async ({ data, req,
 
       const variants = (product.variants as { name: string; price: number }[]) || []
 
-      if (item.variantName && variants.length > 0) {
-        const variant = variants.find((v) => v.name === item.variantName)
-        if (variant) {
-          item.price = variant.price
+      if (shouldSetPrice) {
+        if (item.variantName && variants.length > 0) {
+          const variant = variants.find((v) => v.name === item.variantName)
+          if (variant) {
+            item.price = variant.price
+          } else {
+            item.price = product.price as number
+          }
+        } else if (variants.length === 1) {
+          item.variantName = variants[0].name
+          item.price = variants[0].price
         } else {
           item.price = product.price as number
         }
-      } else if (variants.length === 1) {
+      } else if (!item.variantName && variants.length === 1) {
+        // Автоподстановка названия варианта для старых записей, если оно отсутствует
         item.variantName = variants[0].name
-        item.price = variants[0].price
-      } else {
-        item.price = product.price as number
       }
 
       // Check stock availability (warn only, don't block)

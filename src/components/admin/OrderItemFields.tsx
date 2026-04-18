@@ -79,29 +79,43 @@ const OrderItemFields: React.FC = () => {
           const productId = typeof item.product === 'object' ? item.product?.id : item.product
           if (!productId) continue
 
+          // Если цена уже зафиксирована (существующая позиция заказа) —
+          // НЕ перетягиваем её из товара. Сохраняем историческую цену заказа.
+          const priceAlreadySet = item.price !== undefined && item.price !== null
+
           const product = await fetchProduct(String(productId))
-          if (!product) continue
+          if (!product) {
+            if (priceAlreadySet) {
+              items[i] = { ...item, quantity: item.quantity || 1 }
+            }
+            continue
+          }
 
           const variants = product.variants || []
-          let newPrice = product.price
+          let newPrice = priceAlreadySet ? (item.price as number) : product.price
           let newVariant = item.variantName
 
-          if (variants.length === 0) {
-            newVariant = ''
-          } else if (variants.length === 1) {
-            newVariant = variants[0].name
-            newPrice = variants[0].price
-          } else if (newVariant && variants.length > 1) {
-            const match = variants.find((v) => v.name === newVariant)
-            if (match) {
-              newPrice = match.price
-            } else {
+          if (!priceAlreadySet) {
+            if (variants.length === 0) {
+              newVariant = ''
+            } else if (variants.length === 1) {
+              newVariant = variants[0].name
+              newPrice = variants[0].price
+            } else if (newVariant && variants.length > 1) {
+              const match = variants.find((v) => v.name === newVariant)
+              if (match) {
+                newPrice = match.price
+              } else {
+                newVariant = variants[0].name
+                newPrice = variants[0].price
+              }
+            } else if (variants.length > 1) {
               newVariant = variants[0].name
               newPrice = variants[0].price
             }
-          } else if (variants.length > 1) {
+          } else if (!newVariant && variants.length === 1) {
+            // Подставим имя варианта для старых записей, но цену не трогаем
             newVariant = variants[0].name
-            newPrice = variants[0].price
           }
 
           if (item.variantName !== newVariant) {
