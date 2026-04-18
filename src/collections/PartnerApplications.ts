@@ -9,7 +9,7 @@ export const PartnerApplications: CollectionConfig = {
   admin: {
     useAsTitle: 'contactName',
     defaultColumns: ['contactName', 'applicationType', 'status', 'createdAt'],
-    group: 'Реферальная программа',
+    group: 'Рефералка',
     description: 'Заявки от блогеров / клиентов на вступление в реферальную программу',
   },
   access: {

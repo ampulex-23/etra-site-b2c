@@ -12,6 +12,7 @@ const groupIconMap: Record<string, string> = {
   'Система': 'settings',
   'Настройки': 'tune',
   'Сайт': 'language',
+  'Рефералка': 'redeem',
 }
 
 function ensureFontLoaded() {

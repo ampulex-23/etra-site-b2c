@@ -9,7 +9,7 @@ export const ReferralPartners: CollectionConfig = {
   admin: {
     useAsTitle: 'promoCode',
     defaultColumns: ['promoCode', 'customer', 'type', 'status', 'balance', 'totalEarned'],
-    group: 'Реферальная программа',
+    group: 'Рефералка',
   },
   access: {
     read: ({ req: { user } }) => {

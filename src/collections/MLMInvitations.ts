@@ -9,7 +9,7 @@ export const MLMInvitations: CollectionConfig = {
   admin: {
     useAsTitle: 'code',
     defaultColumns: ['code', 'issuedBy', 'status', 'usedBy', 'expiresAt'],
-    group: 'Реферальная программа',
+    group: 'Рефералка',
   },
   access: {
     read: ({ req: { user } }) => {

@@ -9,7 +9,7 @@ export const ReferralEvents: CollectionConfig = {
   admin: {
     useAsTitle: 'id',
     defaultColumns: ['partner', 'eventType', 'customer', 'order', 'createdAt'],
-    group: 'Реферальная программа',
+    group: 'Рефералка',
     description: 'Журнал событий: клики, регистрации, использование промокодов',
   },
   access: {

@@ -9,7 +9,7 @@ export const TeamTurnover: CollectionConfig = {
   admin: {
     useAsTitle: 'id',
     defaultColumns: ['partner', 'month', 'totalTeamTurnover', 'teamBonusAwarded'],
-    group: 'Реферальная программа',
+    group: 'Рефералка',
     description: 'Агрегация оборота команды по месяцам (для командного бонуса)',
   },
   access: {

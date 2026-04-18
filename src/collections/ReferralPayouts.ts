@@ -9,7 +9,7 @@ export const ReferralPayouts: CollectionConfig = {
   admin: {
     useAsTitle: 'id',
     defaultColumns: ['partner', 'amount', 'method', 'status', 'requestedAt', 'paidAt'],
-    group: 'Реферальная программа',
+    group: 'Рефералка',
   },
   access: {
     read: ({ req: { user } }) => {

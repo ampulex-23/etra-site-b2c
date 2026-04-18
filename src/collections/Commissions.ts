@@ -9,7 +9,7 @@ export const Commissions: CollectionConfig = {
   admin: {
     useAsTitle: 'id',
     defaultColumns: ['recipient', 'type', 'amount', 'status', 'month', 'createdAt'],
-    group: 'Реферальная программа',
+    group: 'Рефералка',
     description: 'Все комиссии партнёров (рефералка + МЛМ)',
   },
   access: {
