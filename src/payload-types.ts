@@ -1472,12 +1472,24 @@ export interface CourseResult {
  */
 export interface ChatRoom {
   id: number;
-  cohort: number | CourseCohort;
+  cohort?: (number | null) | CourseCohort;
   /**
    * Например: «Общий чат», «Поддержка», «Эфиры»
    */
   title: string;
   type?: ('general' | 'support' | 'broadcast') | null;
+  /**
+   * Владелец support-обращения
+   */
+  customer?: (number | null) | Customer;
+  assignee?: (number | null) | User;
+  status?: ('open' | 'closed') | null;
+  closedAt?: string | null;
+  lastMessageText?: string | null;
+  lastMessageAt?: string | null;
+  lastMessageSenderType?: string | null;
+  unreadByStaff?: number | null;
+  unreadByCustomer?: number | null;
   isActive?: boolean | null;
   updatedAt: string;
   createdAt: string;
@@ -1499,6 +1511,10 @@ export interface Message {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Когда другая сторона прочитала сообщение
+   */
+  readAt?: string | null;
   isDeleted?: boolean | null;
   updatedAt: string;
   createdAt: string;
@@ -2587,6 +2603,15 @@ export interface ChatRoomsSelect<T extends boolean = true> {
   cohort?: T;
   title?: T;
   type?: T;
+  customer?: T;
+  assignee?: T;
+  status?: T;
+  closedAt?: T;
+  lastMessageText?: T;
+  lastMessageAt?: T;
+  lastMessageSenderType?: T;
+  unreadByStaff?: T;
+  unreadByCustomer?: T;
   isActive?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2607,6 +2632,7 @@ export interface MessagesSelect<T extends boolean = true> {
         file?: T;
         id?: T;
       };
+  readAt?: T;
   isDeleted?: T;
   updatedAt?: T;
   createdAt?: T;
