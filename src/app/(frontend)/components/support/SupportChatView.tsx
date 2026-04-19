@@ -115,13 +115,14 @@ export function SupportChatView({ mode, active = true, onClose }: Props) {
           <Link href="/account" className="chat-header__back">← Назад</Link>
         )}
         <div className="chat-header__info">
-          <div className="chat-header__title">💬 Поддержка</div>
-          <div className="chat-header__status">
-            {chat.status === 'loading' && '🔄 Подключение...'}
-            {chat.status === 'connected' && '🟢 На связи'}
-            {chat.status === 'disconnected' && '🟡 Автообновление'}
-            {chat.status === 'error' && '🔴 Ошибка'}
-            {chat.status === 'idle' && '⚪ Готово'}
+          <div className="chat-header__title">Поддержка ЭТРА</div>
+          <div className={`chat-header__status chat-header__status--${chat.status}`}>
+            <span className="chat-header__dot" aria-hidden />
+            {chat.status === 'loading' && 'Подключение…'}
+            {chat.status === 'connected' && 'Онлайн'}
+            {chat.status === 'disconnected' && 'Отвечаем в течение дня'}
+            {chat.status === 'error' && 'Нет связи'}
+            {chat.status === 'idle' && 'Готово'}
           </div>
         </div>
         {mode === 'panel' && onClose && (
@@ -136,7 +137,22 @@ export function SupportChatView({ mode, active = true, onClose }: Props) {
       <div className="chat-messages">
         {emptyState && (
           <div className="support-view__welcome">
-            <p className="t-body">Напишите нам — обычно отвечаем в течение дня.</p>
+            <div className="support-view__welcome-icon" aria-hidden>
+              <svg viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 10h32a2 2 0 0 1 2 2v22a2 2 0 0 1-2 2H18l-8 7v-7H8a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2z" />
+                <line x1="14" y1="20" x2="34" y2="20" />
+                <line x1="14" y1="26" x2="28" y2="26" />
+              </svg>
+            </div>
+            <h3 className="support-view__welcome-title">Чем можем помочь?</h3>
+            <p className="support-view__welcome-sub">
+              Напишите нам — обычно отвечаем в течение рабочего дня.
+            </p>
+            <div className="support-view__hints">
+              <button type="button" className="support-hint-chip" onClick={() => setInputText('Когда приедет мой заказ?')}>Где мой заказ?</button>
+              <button type="button" className="support-hint-chip" onClick={() => setInputText('Подскажите, какой напиток выбрать?')}>Какой напиток выбрать?</button>
+              <button type="button" className="support-hint-chip" onClick={() => setInputText('Хочу стать партнёром ЭТРА')}>Стать партнёром</button>
+            </div>
           </div>
         )}
 
