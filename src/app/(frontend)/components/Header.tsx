@@ -8,9 +8,11 @@ import { useAuth } from '@/app/(frontend)/auth/AuthProvider'
 
 const navLinks = [
   { href: '/catalog', label: 'Каталог' },
-  { href: '/#science', label: 'Технология' },
-  { href: '/#process', label: 'Производство' },
+  { href: '/#how', label: 'С чего начать' },
+  { href: '/#science', label: 'Наука' },
+  { href: '/#courses', label: 'Курсы' },
   { href: '/#reviews', label: 'Отзывы' },
+  { href: '/#partner', label: 'Партнёрам' },
 ]
 
 export function Header() {

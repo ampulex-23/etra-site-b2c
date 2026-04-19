@@ -15,18 +15,6 @@ const arcLinks = [
 export function Hero() {
   return (
     <section className="hero-section" id="hero">
-      {/* Background */}
-      <div className="hero-section__bg">
-        <Image
-          src="https://etraproject.ru/api/media/file/bg-aloe.webp"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="hero-section__bg-img"
-        />
-      </div>
-
       <div className="hero-section__container">
         <div className="hero-section__content">
           {/* Logo with float animation */}
@@ -69,6 +57,28 @@ export function Hero() {
               </Link>
             ))}
           </motion.nav>
+
+          {/* Slogan + primary/secondary CTA */}
+          <motion.div
+            className="hero-section__pitch"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6, ease: 'easeOut' }}
+          >
+            <h1 className="hero-section__slogan">
+              Живые ферментированные напитки.
+              <br />
+              <span>Здоровье, которое ты чувствуешь.</span>
+            </h1>
+            <div className="hero-section__actions">
+              <Link href="/catalog" className="btn btn--primary btn--lg">
+                Купить напитки
+              </Link>
+              <Link href="#how" className="btn btn--outline btn--lg">
+                С чего начать
+              </Link>
+            </div>
+          </motion.div>
         </div>
 
         {/* Scroll indicator */}
