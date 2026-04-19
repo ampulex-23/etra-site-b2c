@@ -9,26 +9,24 @@ export async function getAuthenticatedCustomer(
   req: { headers: Headers | { get(name: string): string | null } },
 ): Promise<any | null> {
   try {
-    const authHeader =
-      typeof (req.headers as Headers).get === 'function'
-        ? (req.headers as Headers).get('authorization')
-        : (req.headers as any).authorization
+    const src = req.headers as any
+    const getHdr = (name: string): string | null =>
+      typeof src.get === 'function' ? src.get(name) : (src[name] ?? src[name.toLowerCase()] ?? null)
 
-    if (!authHeader) return null
+    // Forward the original headers (including Cookie) so Payload reads either
+    // the `Authorization: JWT …` header OR the httpOnly `payload-token` cookie.
+    const fwd = new Headers()
+    const auth = getHdr('authorization')
+    if (auth) fwd.set('authorization', auth)
+    const cookie = getHdr('cookie')
+    if (cookie) fwd.set('cookie', cookie)
+    if (!auth && !cookie) return null
 
-    // Формат: "JWT <token>" или "Bearer <token>"
-    const token = authHeader.replace(/^(JWT|Bearer)\s+/i, '').trim()
-    if (!token) return null
-
-    // Payload имеет метод auth для проверки токена
-    const result = await (payload as any).auth({
-      headers: new Headers({ authorization: `JWT ${token}` }),
-    })
-
+    const result = await (payload as any).auth({ headers: fwd })
     const user = result?.user
     if (!user) return null
 
-    // Убеждаемся что это клиент, а не админ
+    // Only customers — admin users go through a different path.
     if (user.collection !== 'customers') return null
 
     return user
