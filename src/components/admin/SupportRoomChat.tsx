@@ -13,9 +13,13 @@ interface Msg {
   readAt?: string | null
 }
 
-const WS_URL = process.env.NEXT_PUBLIC_CHAT_WS_URL || 'ws://localhost:3001'
+const WS_URL = process.env.NEXT_PUBLIC_CHAT_WS_URL || ''
 const RECONNECT_DELAY = 3_000
 const POLL_INTERVAL = 5_000
+const MAX_WS_ATTEMPTS = 3
+// Optional WebSocket (progressive enhancement). If no endpoint is configured
+// or the server is unreachable, we fall back to polling silently.
+const WS_ENABLED = Boolean(WS_URL) && /^wss?:\/\//i.test(WS_URL)
 
 const SupportRoomChat: React.FC = () => {
   const doc = useDocumentInfo()
@@ -34,6 +38,8 @@ const SupportRoomChat: React.FC = () => {
   const endRef = useRef<HTMLDivElement>(null)
   const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const wsAttemptsRef = useRef(0)
+  const wsGiveUpRef = useRef(false)
 
   const scrollToEnd = useCallback(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -98,18 +104,24 @@ const SupportRoomChat: React.FC = () => {
 
   const connectWs = useCallback(async () => {
     if (!roomId) return
-    setStatus('connecting')
-    setError(null)
+    if (!WS_ENABLED || wsGiveUpRef.current) {
+      // No WS endpoint configured — polling-only mode.
+      startPolling()
+      return
+    }
+    if (wsAttemptsRef.current === 0) setStatus('connecting')
+    wsAttemptsRef.current += 1
     try {
       const r = await fetch('/api/support/ws-ticket', {
         method: 'POST',
         credentials: 'include',
       })
-      if (!r.ok) throw new Error('Не удалось получить WS-тикет')
+      if (!r.ok) throw new Error('ws-ticket unavailable')
       const { token } = await r.json()
       const ws = new WebSocket(WS_URL)
       wsRef.current = ws
       ws.onopen = () => {
+        wsAttemptsRef.current = 0
         ws.send(JSON.stringify({ type: 'join', token, chatRoomId: roomId }))
         stopPolling()
       }
@@ -134,22 +146,25 @@ const SupportRoomChat: React.FC = () => {
             break
           }
           case 'error':
+            // App-level WS error — show, but keep polling as backup.
             setError(msg.error || 'WS ошибка')
-            setStatus('error')
             break
         }
       }
       ws.onclose = () => {
         if (wsRef.current === ws) wsRef.current = null
         if (reconnectRef.current) clearTimeout(reconnectRef.current)
-        reconnectRef.current = setTimeout(() => connectWs(), RECONNECT_DELAY)
         startPolling()
+        if (wsAttemptsRef.current >= MAX_WS_ATTEMPTS) {
+          wsGiveUpRef.current = true
+          return
+        }
+        reconnectRef.current = setTimeout(() => connectWs(), RECONNECT_DELAY)
       }
-      ws.onerror = () => {
-        setStatus('error')
-      }
-    } catch (e: any) {
-      setError(e?.message || 'WS недоступен')
+      // Silent — onclose handles fallback; avoid flashing "Ошибка" banner.
+      ws.onerror = () => { /* noop */ }
+    } catch {
+      wsGiveUpRef.current = true
       startPolling()
     }
   }, [roomId, startPolling, stopPolling])

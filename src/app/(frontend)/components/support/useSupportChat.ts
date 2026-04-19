@@ -3,9 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../auth/AuthProvider'
 
-const WS_URL = process.env.NEXT_PUBLIC_CHAT_WS_URL || 'ws://localhost:3001'
+const WS_URL = process.env.NEXT_PUBLIC_CHAT_WS_URL || ''
 const POLL_INTERVAL = 10_000
 const RECONNECT_DELAY = 3_000
+const MAX_WS_ATTEMPTS = 3
+// WS is a progressive enhancement on top of polling.
+// If the WS endpoint is unavailable we fall back to polling silently
+// instead of spamming the user with "connection error" toasts.
+const WS_ENABLED = Boolean(WS_URL) && /^wss?:\/\//i.test(WS_URL)
 
 export interface SupportMessage {
   id: string
@@ -47,6 +52,8 @@ export function useSupportChat({ active }: Options) {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const lastTypingSentRef = useRef(0)
   const typingClearRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const wsAttemptsRef = useRef(0)
+  const wsGiveUpRef = useRef(false)
   const hasAuth = Boolean(customer && token)
 
   const clearReconnect = () => {
@@ -94,15 +101,25 @@ export function useSupportChat({ active }: Options) {
   const connectWs = useCallback(
     (roomId: string) => {
       if (!token || !roomId) return
+      if (!WS_ENABLED || wsGiveUpRef.current) {
+        // No WS endpoint (or we already gave up) — polling-only mode.
+        setStatus('disconnected')
+        startPolling()
+        return
+      }
       if (wsRef.current && wsRef.current.readyState <= WebSocket.OPEN) return
 
-      setStatus('loading')
-      setError(null)
+      // Only show "loading" on the very first attempt, otherwise keep
+      // showing polling-based "disconnected" status to avoid UI flicker.
+      if (wsAttemptsRef.current === 0) setStatus('loading')
+      wsAttemptsRef.current += 1
+
       try {
         const ws = new WebSocket(WS_URL)
         wsRef.current = ws
 
         ws.onopen = () => {
+          wsAttemptsRef.current = 0
           ws.send(JSON.stringify({ type: 'join', token, chatRoomId: roomId }))
           stopPolling()
         }
@@ -142,8 +159,9 @@ export function useSupportChat({ active }: Options) {
               }
               break
             case 'error':
+              // App-level WS error — show it, but do not mark chat as dead:
+              // polling keeps working in the background.
               setError(msg.error || 'Ошибка WS')
-              setStatus('error')
               break
             case 'pong':
             case 'joined':
@@ -153,20 +171,26 @@ export function useSupportChat({ active }: Options) {
         }
 
         ws.onclose = () => {
-          setStatus('disconnected')
           if (wsRef.current === ws) wsRef.current = null
           clearReconnect()
-          reconnectRef.current = setTimeout(() => connectWs(roomId), RECONNECT_DELAY)
           startPolling()
+          if (wsAttemptsRef.current >= MAX_WS_ATTEMPTS) {
+            // Give up on WS — polling will drive updates from now on.
+            wsGiveUpRef.current = true
+            setStatus('disconnected')
+            return
+          }
+          setStatus('disconnected')
+          reconnectRef.current = setTimeout(() => connectWs(roomId), RECONNECT_DELAY)
         }
 
-        ws.onerror = () => {
-          setError('Ошибка подключения к чату')
-          setStatus('error')
-        }
+        // Silent on errors — onclose will handle the fallback path.
+        // Browsers often fire onerror for every failed handshake; we don't
+        // want to flash a red banner in the UI while polling is healthy.
+        ws.onerror = () => { /* silent; onclose handles fallback */ }
       } catch {
-        setStatus('error')
-        setError('Не удалось подключиться')
+        wsGiveUpRef.current = true
+        setStatus('disconnected')
         startPolling()
       }
     },
