@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { getAuthenticatedCustomer } from '@/utils/auth/getAuthenticatedCustomer'
 import { getAuthenticatedStaff } from '@/utils/auth/getAuthenticatedStaff'
+import { markRoomRead } from '@/hooks/supportRoomSql'
 
 /**
  * POST /api/support/read
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Resolve upTo timestamp
-    let upToAt: string | null = null
+    let upToAt: string = ''
     if (upToId) {
       const msg: any = await payload
         .findByID({ collection: 'messages' as any, id: upToId, depth: 0, overrideAccess: true })
@@ -56,48 +57,15 @@ export async function POST(req: NextRequest) {
     if (!upToAt) upToAt = room.lastMessageAt || new Date().toISOString()
 
     const mySide: 'customer' | 'staff' = staff ? 'staff' : 'customer'
-    const otherSide = mySide === 'staff' ? 'customer' : 'staff'
 
-    // Reset unread counter
-    const patch: Record<string, any> = {}
-    if (mySide === 'staff') patch.unreadByStaff = 0
-    else patch.unreadByCustomer = 0
-
-    await payload.update({
-      collection: 'chat-rooms' as any,
-      id: room.id,
-      data: patch,
-      overrideAccess: true,
-      context: { skipSupportHooks: true },
+    // Single-round-trip: stamp readAt on peer messages + reset unread counter.
+    const count = await markRoomRead(payload, {
+      roomId: room.id,
+      mySide,
+      upToAt,
     })
 
-    // Stamp readAt on peer's unread messages up to upToAt
-    const readAt = new Date().toISOString()
-    const unread = await payload.find({
-      collection: 'messages' as any,
-      where: {
-        chatRoom: { equals: room.id },
-        senderType: { equals: otherSide },
-        readAt: { exists: false },
-        createdAt: { less_than_equal: upToAt },
-      },
-      limit: 500,
-      depth: 0,
-      overrideAccess: true,
-    })
-
-    await Promise.all(
-      unread.docs.map((m: any) =>
-        payload.update({
-          collection: 'messages' as any,
-          id: m.id,
-          data: { readAt } as any,
-          overrideAccess: true,
-        }),
-      ),
-    )
-
-    return NextResponse.json({ ok: true, readAt, count: unread.docs.length })
+    return NextResponse.json({ ok: true, readAt: new Date().toISOString(), count })
   } catch (error: any) {
     console.error('[api/support/read] error:', error)
     return NextResponse.json({ error: error?.message || 'Ошибка сервера' }, { status: 500 })

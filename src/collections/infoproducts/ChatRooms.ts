@@ -8,10 +8,10 @@ const staffRole = (user: any): string | undefined => (isStaff(user) ? user?.role
  * Support rooms visibility for customers:
  * - staff: full read
  * - customer: rooms where type !== 'support' OR they are the owner
- * - anonymous: no (true kept for server-side unauthenticated ops if any)
+ * - anonymous: denied (server-side jobs use overrideAccess:true)
  */
 const readAccess: Access = ({ req: { user } }) => {
-  if (!user) return true
+  if (!user) return false
   if (isStaff(user)) return true
   if (isCustomer(user)) {
     return {
@@ -19,7 +19,7 @@ const readAccess: Access = ({ req: { user } }) => {
         { type: { not_equals: 'support' } },
         { customer: { equals: (user as any).id } },
       ],
-    }
+    } as any
   }
   return false
 }
@@ -92,6 +92,25 @@ export const ChatRooms: CollectionConfig = {
           data.customer = user.id
           data.cohort = null
           if (operation === 'create') data.status = data.status || 'open'
+        }
+        // Auto-generate title for support rooms if not provided (customer has no UI to set it)
+        if (operation === 'create' && (data.type === 'support' || !data.type) && !data.title) {
+          const customerId = data.customer
+          let label = 'Клиент'
+          if (customerId) {
+            try {
+              const c: any = await req.payload.findByID({
+                collection: 'customers',
+                id: customerId,
+                depth: 0,
+                req,
+              })
+              label = [c?.firstName, c?.lastName].filter(Boolean).join(' ') || c?.email || c?.phone || `#${customerId}`
+            } catch {
+              label = `#${customerId}`
+            }
+          }
+          data.title = `Обращение от ${label}`
         }
         // Maintain closedAt when status toggles (any actor)
         if (operation === 'update') {
@@ -168,6 +187,25 @@ export const ChatRooms: CollectionConfig = {
       admin: {
         position: 'sidebar',
         condition: (data: any) => data?.type === 'support',
+      },
+      validate: async (value: any, { req }: any) => {
+        if (!value) return true
+        try {
+          const id = typeof value === 'object' ? value?.id : value
+          const u: any = await req.payload.findByID({
+            collection: 'users',
+            id,
+            depth: 0,
+            req,
+          })
+          if (!u) return 'Пользователь не найден'
+          if (u.role !== 'admin' && u.role !== 'manager') {
+            return 'Менеджером чата может быть только admin или manager'
+          }
+        } catch {
+          return 'Не удалось проверить пользователя'
+        }
+        return true
       },
     },
     {

@@ -32,6 +32,12 @@ export async function POST(req: NextRequest) {
       overrideAccess: true,
     }).catch(() => null)
     if (!room) return NextResponse.json({ error: 'Комната не найдена' }, { status: 404 })
+    if (room.type !== 'support') {
+      return NextResponse.json(
+        { error: 'Этот эндпоинт предназначен только для support-комнат' },
+        { status: 400 },
+      )
+    }
 
     const message = await payload.create({
       collection: 'messages' as any,

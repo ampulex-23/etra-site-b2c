@@ -16,10 +16,10 @@ export const Messages: CollectionConfig = {
   },
   access: {
     read: ({ req: { user } }) => {
-      if (!user) return true
-      if (user && user.collection === 'users') return true
+      if (!user) return false
+      if (user.collection === 'users') return true
       // Customers can read messages (filtered by chatRoom/cohort in API)
-      if (user && user.collection === 'customers') return true
+      if (user.collection === 'customers') return true
       return false
     },
     create: ({ req: { user } }) => {

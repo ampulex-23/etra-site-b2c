@@ -1,13 +1,17 @@
 import type { CollectionAfterChangeHook } from 'payload'
+import { applyMessageToRoom } from './supportRoomSql'
 
 /**
  * afterChange hook for `messages` collection.
  *
- * Denormalises last-message info onto the parent `chat-rooms` document and
- * maintains `unreadByStaff` / `unreadByCustomer` counters. For support rooms,
+ * Atomically denormalises last-message info onto the parent `chat-rooms`
+ * document and increments `unreadByStaff` / `unreadByCustomer` counters via
+ * a single SQL UPDATE (no read-modify-write race). For support rooms,
  * re-opens a closed conversation when the customer sends a new message.
  *
- * All nested operations pass `req` to stay within the same transaction.
+ * NOTE: the external WebSocket server (chat-server) performs the same
+ * update when it persists messages directly; keep the two implementations
+ * in sync (see chat-server/src/index.ts → applyMessageToRoom).
  */
 export const messageAfterChange: CollectionAfterChangeHook = async ({
   doc,
@@ -26,38 +30,11 @@ export const messageAfterChange: CollectionAfterChangeHook = async ({
   if (!roomId) return doc
 
   try {
-    const room: any = await req.payload.findByID({
-      collection: 'chat-rooms' as any,
-      id: roomId,
-      depth: 0,
-      req,
-    })
-    if (!room) return doc
-
-    const patch: Record<string, any> = {
-      lastMessageText: String(doc.text || '').slice(0, 200),
-      lastMessageAt: doc.createdAt,
-      lastMessageSenderType: doc.senderType,
-    }
-
-    if (room.type === 'support') {
-      if (doc.senderType === 'customer') {
-        patch.unreadByStaff = (room.unreadByStaff ?? 0) + 1
-        if (room.status === 'closed') {
-          patch.status = 'open'
-          patch.closedAt = null
-        }
-      } else if (doc.senderType === 'staff') {
-        patch.unreadByCustomer = (room.unreadByCustomer ?? 0) + 1
-      }
-    }
-
-    await req.payload.update({
-      collection: 'chat-rooms' as any,
-      id: roomId,
-      data: patch,
-      req,
-      context: { skipSupportHooks: true },
+    await applyMessageToRoom(req.payload, {
+      roomId,
+      senderType: doc.senderType,
+      text: String(doc.text || ''),
+      createdAt: doc.createdAt,
     })
   } catch (err) {
     req.payload.logger?.error?.({ err, msg: '[messageAfterChange] failed to update room' })
