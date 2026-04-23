@@ -102,7 +102,7 @@ export const StockMovements: CollectionConfig = {
           data?.operationType === 'sent_to_logistics' ||
           data?.operationType === 'return_to_stock',
         components: {
-          Cell: '@/components/admin/EmptyCell#EmptyCell',
+          Cell: '@/components/admin/WarehouseNameCell',
         },
       },
     },

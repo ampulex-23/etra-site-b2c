@@ -1,6 +1,7 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
+import { useRelationshipTitles } from './useRelationshipTitles'
 
 type Item = {
   product?: any
@@ -8,12 +9,17 @@ type Item = {
   actualQty?: number
 }
 
-const productLabel = (p: Item['product']): string => {
-  if (!p) return '—'
-  if (typeof p === 'object') {
-    return p.title || p.name || p.slug || p.id || '—'
-  }
+const productId = (p: Item['product']): string | null => {
+  if (!p) return null
+  if (typeof p === 'object') return p.id !== undefined ? String(p.id) : null
   return String(p)
+}
+
+const productLabelFromObject = (p: Item['product']): string | null => {
+  if (p && typeof p === 'object') {
+    return p.title || p.name || p.slug || null
+  }
+  return null
 }
 
 const itemQty = (it: Item): number => {
@@ -24,6 +30,11 @@ const itemQty = (it: Item): number => {
 
 const ItemsBreakdownCell: React.FC<{ cellData?: Item[] | null }> = ({ cellData }) => {
   const items = Array.isArray(cellData) ? cellData : []
+  const ids = useMemo(
+    () => items.map((it) => productId(it.product)).filter((x): x is string => Boolean(x)),
+    [items],
+  )
+  const titles = useRelationshipTitles('products', ids)
   if (items.length === 0) {
     return <span style={{ color: 'var(--theme-elevation-400, #999)' }}>—</span>
   }
@@ -41,22 +52,31 @@ const ItemsBreakdownCell: React.FC<{ cellData?: Item[] | null }> = ({ cellData }
         gap: 2,
       }}
     >
-      {items.map((it, idx) => (
-        <li
-          key={idx}
-          style={{
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            maxWidth: 320,
-          }}
-          title={`${productLabel(it.product)} — ${itemQty(it)}`}
-        >
-          <span>{productLabel(it.product)}</span>
-          <span style={{ color: 'var(--theme-elevation-500, #666)' }}> — </span>
-          <strong>{itemQty(it)}</strong>
-        </li>
-      ))}
+      {items.map((it, idx) => {
+        const id = productId(it.product)
+        const label =
+          productLabelFromObject(it.product) ||
+          (id ? titles[id] : '') ||
+          id ||
+          '—'
+        const qty = itemQty(it)
+        return (
+          <li
+            key={idx}
+            style={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: 320,
+            }}
+            title={`${label} — ${qty}`}
+          >
+            <span>{label}</span>
+            <span style={{ color: 'var(--theme-elevation-500, #666)' }}> — </span>
+            <strong>{qty}</strong>
+          </li>
+        )
+      })}
     </ul>
   )
 }
