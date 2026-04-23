@@ -48,11 +48,9 @@ export const Customers: CollectionConfig = {
       name: 'name',
       type: 'text',
       label: 'Имя',
-      admin: {
-        components: {
-          Cell: '@/components/admin/EmptyCell#EmptyCell',
-        },
-      },
+      // Do NOT override the Cell here: `name` is `useAsTitle`, and Payload
+      // relies on its default Cell to render the primary clickable link
+      // that opens the customer's edit page from the list view.
     },
     {
       name: 'phone',

@@ -60,6 +60,24 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       ADD COLUMN IF NOT EXISTS "order_count"     numeric DEFAULT 0,
       ADD COLUMN IF NOT EXISTS "order_total_sum" numeric DEFAULT 0;
   `)
+
+  // Orders columns that were missing on prod DB (push:true never created them
+  // because the build failed during the previous deploys).
+  await db.execute(sql`
+    ALTER TABLE "orders"
+      ADD COLUMN IF NOT EXISTS "allow_top_up"   boolean DEFAULT true,
+      ADD COLUMN IF NOT EXISTS "merged_into_id" integer;
+  `)
+  await db.execute(sql`
+    DO $$ BEGIN
+      ALTER TABLE "orders"
+        ADD CONSTRAINT "orders_merged_into_id_fk"
+        FOREIGN KEY ("merged_into_id") REFERENCES "orders"("id") ON DELETE SET NULL;
+    EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+  `)
+
+  // The merge feature requires a 'merged' status; add it to the enum if missing.
+  await db.execute(sql`ALTER TYPE enum_orders_status ADD VALUE IF NOT EXISTS 'merged'`)
 }
 
 export async function down({ db }: MigrateDownArgs): Promise<void> {
