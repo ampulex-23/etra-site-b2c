@@ -66,6 +66,9 @@ export const Customers: CollectionConfig = {
     // `updateCustomerOrderStatsAfterChange` on the orders collection.
     // Exposed as read-only columns in the Клиенты list view and as
     // clickable lookup links that open the filtered orders list.
+    // Denormalised stats — shown as columns in the list view via the custom
+    // Cell components, but hidden from the edit form (the CustomerOrdersPanel
+    // widget below already displays the same info in a nicer layout).
     {
       name: 'orderCount',
       type: 'number',
@@ -74,10 +77,9 @@ export const Customers: CollectionConfig = {
       label: 'Заказов',
       admin: {
         readOnly: true,
-        position: 'sidebar',
-        description: 'Количество заказов клиента (без учёта объединённых)',
         components: {
           Cell: '@/components/admin/CustomerStatCell#CustomerOrderCountCell',
+          Field: '@/components/admin/HiddenField#default',
         },
       },
     },
@@ -89,10 +91,9 @@ export const Customers: CollectionConfig = {
       label: 'Сумма заказов (₽)',
       admin: {
         readOnly: true,
-        position: 'sidebar',
-        description: 'Суммарная стоимость всех заказов клиента',
         components: {
           Cell: '@/components/admin/CustomerStatCell#CustomerOrderTotalSumCell',
+          Field: '@/components/admin/HiddenField#default',
         },
       },
     },

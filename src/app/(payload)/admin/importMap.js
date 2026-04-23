@@ -28,13 +28,12 @@ import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { default as default_ab92cbecd7fc0006a9985b8c52f43081 } from '@/components/admin/OrderItemFields'
 import { default as default_f5c7ed49f0e9592f40dda7a6e4d90848 } from '@/components/admin/OrderMergeButton'
 import { default as default_4685ddaff6d0ce7790fb4000994ff2a2 } from '@/components/admin/AddressAutocomplete'
+import { EmptyCell as EmptyCell_a222b0efe828066678efb944f71d44df } from '@/components/admin/EmptyCell'
+import { CustomerOrderCountCell as CustomerOrderCountCell_b38344885d9cdfdba787a05c6e216116 } from '@/components/admin/CustomerStatCell'
+import { default as default_8c4f6f85a9bf82296a3aa6195efe4e55 } from '@/components/admin/HiddenField'
+import { CustomerOrderTotalSumCell as CustomerOrderTotalSumCell_b38344885d9cdfdba787a05c6e216116 } from '@/components/admin/CustomerStatCell'
+import { default as default_fada0a810b2053883933bbcdcb7d219b } from '@/components/admin/CustomerOrdersPanel'
 import { NumberCell as NumberCell_450f1677c94c9ba8e19ba1dbd230f119 } from '@/components/admin/NumberCell'
-import { EmptyCell as EmptyCell_customers_list_cell } from '@/components/admin/EmptyCell'
-import {
-  CustomerOrderCountCell as CustomerOrderCountCell_customers_list,
-  CustomerOrderTotalSumCell as CustomerOrderTotalSumCell_customers_list,
-} from '@/components/admin/CustomerStatCell'
-import { default as CustomerOrdersPanel_customers_edit } from '@/components/admin/CustomerOrdersPanel'
 import { default as default_5f302d1c9614d3c9263e5e5305ecaeae } from '@/components/admin/SupportRoomChat'
 import { PaymentTestStand as PaymentTestStand_fad5393e2d9439d897b4c4cb00bcd384 } from '../../../components/admin/PaymentTestStand'
 import { default as default_534076e2c753ea5d539a54b05f456b1b } from '@/components/admin/Icon'
@@ -78,11 +77,12 @@ export const importMap = {
   "@/components/admin/OrderItemFields#default": default_ab92cbecd7fc0006a9985b8c52f43081,
   "@/components/admin/OrderMergeButton#default": default_f5c7ed49f0e9592f40dda7a6e4d90848,
   "@/components/admin/AddressAutocomplete#default": default_4685ddaff6d0ce7790fb4000994ff2a2,
+  "@/components/admin/EmptyCell#EmptyCell": EmptyCell_a222b0efe828066678efb944f71d44df,
+  "@/components/admin/CustomerStatCell#CustomerOrderCountCell": CustomerOrderCountCell_b38344885d9cdfdba787a05c6e216116,
+  "@/components/admin/HiddenField#default": default_8c4f6f85a9bf82296a3aa6195efe4e55,
+  "@/components/admin/CustomerStatCell#CustomerOrderTotalSumCell": CustomerOrderTotalSumCell_b38344885d9cdfdba787a05c6e216116,
+  "@/components/admin/CustomerOrdersPanel#default": default_fada0a810b2053883933bbcdcb7d219b,
   "@/components/admin/NumberCell#NumberCell": NumberCell_450f1677c94c9ba8e19ba1dbd230f119,
-  "@/components/admin/EmptyCell#EmptyCell": EmptyCell_customers_list_cell,
-  "@/components/admin/CustomerStatCell#CustomerOrderCountCell": CustomerOrderCountCell_customers_list,
-  "@/components/admin/CustomerStatCell#CustomerOrderTotalSumCell": CustomerOrderTotalSumCell_customers_list,
-  "@/components/admin/CustomerOrdersPanel#default": CustomerOrdersPanel_customers_edit,
   "@/components/admin/SupportRoomChat#default": default_5f302d1c9614d3c9263e5e5305ecaeae,
   "/components/admin/PaymentTestStand#PaymentTestStand": PaymentTestStand_fad5393e2d9439d897b4c4cb00bcd384,
   "@/components/admin/Icon#default": default_534076e2c753ea5d539a54b05f456b1b,
