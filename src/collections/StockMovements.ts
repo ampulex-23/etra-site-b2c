@@ -59,6 +59,9 @@ export const StockMovements: CollectionConfig = {
       labels: { singular: 'Позиция', plural: 'Позиции' },
       admin: {
         description: 'Товары и количество для этой операции. Наборы раскладываются автоматически.',
+        components: {
+          Cell: '@/components/admin/ItemsBreakdownCell',
+        },
       },
       fields: [
         {

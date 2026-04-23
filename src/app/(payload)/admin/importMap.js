@@ -41,6 +41,7 @@ import { default as default_a44df17d0fc3dcd873dae43dc3bf66bd } from '@/component
 import { default as default_2f4e9f17f67b8b6f11b774f711f563f5 } from '@/components/admin/NavIcons'
 import { default as default_b17af65241567dbdca9ebd308f8303a8 } from '@/components/admin/SidebarPersistence'
 import { default as default_ae80b4a6bb3bb3d31af4e99c25ef3648 } from '@/components/admin/SupportInboxBadge'
+import { default as default_itemsbreakdowncell } from '@/components/admin/ItemsBreakdownCell'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { default as default_74bba8b01d61ace1a841a3ac317270b5 } from '@/components/admin/InfproductsDashboard'
 import { default as default_d086c48c8a1bae08e5058bad48e2c060 } from '@/app/(payload)/admin/referral-dashboard/page'
@@ -90,6 +91,7 @@ export const importMap = {
   "@/components/admin/NavIcons#default": default_2f4e9f17f67b8b6f11b774f711f563f5,
   "@/components/admin/SidebarPersistence#default": default_b17af65241567dbdca9ebd308f8303a8,
   "@/components/admin/SupportInboxBadge#default": default_ae80b4a6bb3bb3d31af4e99c25ef3648,
+  "@/components/admin/ItemsBreakdownCell#default": default_itemsbreakdowncell,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "@/components/admin/InfproductsDashboard#default": default_74bba8b01d61ace1a841a3ac317270b5,
   "@/app/(payload)/admin/referral-dashboard/page#default": default_d086c48c8a1bae08e5058bad48e2c060,

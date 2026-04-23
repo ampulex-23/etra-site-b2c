@@ -81,6 +81,11 @@ export const Inventories: CollectionConfig = {
       type: 'array',
       required: true,
       label: 'Позиции',
+      admin: {
+        components: {
+          Cell: '@/components/admin/ItemsBreakdownCell',
+        },
+      },
       fields: [
         {
           name: 'product',
