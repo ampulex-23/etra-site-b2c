@@ -17,7 +17,24 @@ type CdekPvz = {
   location: { address: string; address_full: string; latitude: number; longitude: number }
   work_time: string; type: string
 }
-type CdekCalcResult = { delivery_sum: number; period_min: number; period_max: number; error?: string }
+type CdekCalcResult = {
+  delivery_sum: number
+  total_sum?: number
+  period_min: number
+  period_max: number
+  tariff_code?: number
+  fell_back?: boolean
+  box?: {
+    label: string
+    weightKg: number
+    lengthCm: number
+    widthCm: number
+    heightCm: number
+    cdekCartonCode: string | null
+  }
+  services?: Array<{ code: string; sum?: number; total_sum?: number }>
+  error?: string
+}
 
 interface PromoCode {
   code: string
@@ -85,6 +102,18 @@ export function CheckoutScreen() {
   const [promoError, setPromoError] = useState('')
   const [showPromoInput, setShowPromoInput] = useState(false)
 
+  // Top-up state (add items to an existing unshipped order)
+  interface TopUpTarget {
+    id: string | number
+    orderNumber: string
+    total: number
+    createdAt: string
+    itemsCount: number
+    delivery: { method: string; address: string }
+  }
+  const [topupTarget, setTopupTarget] = useState<TopUpTarget | null>(null)
+  const [useTopup, setUseTopup] = useState(false)
+
   // Реферальная скидка теперь применяется через промокод партнёра на сервере в хуке
   // при создании заказа (customerAfterOrderCreate), не на этапе чекаута.
 
@@ -115,6 +144,40 @@ export function CheckoutScreen() {
       setProfileLoaded(true)
     }
   }, [customer, profileLoaded])
+
+  // Load eligible top-up target (an existing unshipped order to append to)
+  useEffect(() => {
+    if (!customer || !token) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch('/api/shop-orders/eligible-top-up-target', {
+          headers: { Authorization: `JWT ${token}` },
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        if (cancelled) return
+        if (data?.target) {
+          setTopupTarget(data.target)
+          // Auto-enable if the user arrived via ?topup=<id> OR via sessionStorage
+          if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search)
+            const queryTopup = params.get('topup')
+            const storedTopup = sessionStorage.getItem('checkout_topup_order_id')
+            const intendedTopup = queryTopup || storedTopup
+            if (intendedTopup && String(intendedTopup) === String(data.target.id)) {
+              setUseTopup(true)
+            }
+          }
+        }
+      } catch {
+        /* ignore — optional feature */
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [customer, token])
 
   // City search
   useEffect(() => {
@@ -156,13 +219,25 @@ export function CheckoutScreen() {
     setCalcLoading(true)
     setCalcError('')
     try {
-      const totalWeight = items.reduce((sum, i) => sum + 500 * i.quantity, 0)
+      // Each cart item line = one bottle SKU. Bottle count drives the box
+      // selection in /api/cdek/calculate per src/lib/cdek-packaging.ts.
+      const bottleCount = items.reduce((sum, i) => sum + i.quantity, 0)
+      // Declared value for insurance = subtotal minus current discount.
+      // (Computed inline to avoid depending on `promoDiscount` which is
+      // derived further down in the component.)
+      const promoAmount = appliedPromo
+        ? appliedPromo.discountType === 'percent'
+          ? Math.round(totalPrice * appliedPromo.discountValue / 100)
+          : appliedPromo.discountValue
+        : 0
+      const declaredValue = Math.max(0, totalPrice - promoAmount)
       const res = await fetch('/api/cdek/calculate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           cityCode: String(selectedCity.code), 
-          weight: totalWeight || 500,
-          deliveryType: deliveryType
+          bottleCount,
+          declaredValue,
+          destination: deliveryType === 'door' ? 'courier' : 'pickup',
         }),
       })
       const data = await res.json()
@@ -176,7 +251,7 @@ export function CheckoutScreen() {
       setCdekCalc(null)
       setCalcError('Ошибка расчёта доставки') 
     } finally { setCalcLoading(false) }
-  }, [selectedCity, deliveryMethod, deliveryType, items])
+  }, [selectedCity, deliveryMethod, deliveryType, items, totalPrice, appliedPromo])
 
   useEffect(() => { calculateDelivery() }, [calculateDelivery])
 
@@ -333,6 +408,83 @@ export function CheckoutScreen() {
     e.preventDefault()
     setError('')
     if (!customer || !token) { router.push('/auth?redirect=/checkout'); return }
+
+    // --- Top-up branch: add items to the existing open order ---
+    if (useTopup && topupTarget) {
+      setLoading(true)
+      try {
+        const orderItems = items.map((i) => ({
+          product: i.productId,
+          variantName: i.variantName || undefined,
+          quantity: i.quantity,
+          price: i.price,
+        }))
+        const res = await fetch('/api/shop-orders/topup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `JWT ${token}` },
+          body: JSON.stringify({
+            targetOrderId: topupTarget.id,
+            items: orderItems,
+            deltaDiscount: totalDiscount,
+            promoCodeApplied: appliedPromo?.code || undefined,
+            paymentMethod: paymentMethod === 'online' ? 'tinkoff' : 'cash',
+          }),
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          throw new Error(data?.errors?.[0]?.message || 'Не удалось докомплектовать заказ')
+        }
+        const deltaAmount = Number(data?.delta?.total || orderTotal)
+
+        // Clear the persisted top-up intent once it has been consumed
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('checkout_topup_order_id')
+        }
+
+        if (paymentMethod === 'online') {
+          setPaymentLoading(true)
+          try {
+            const paymentRes = await fetch('/api/payments/init', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                amount: deltaAmount,
+                orderId: `TOPUP-${topupTarget.orderNumber}-${Date.now()}`,
+                paymentId: data.paymentId,
+                description: `Докомплектация заказа ${topupTarget.orderNumber}`,
+                customerEmail: email,
+                customerPhone: phone,
+                items: items.map((i) => ({
+                  name: i.title,
+                  price: Math.round(i.price * (1 - (totalDiscount / Math.max(1, totalPrice)))),
+                  quantity: i.quantity,
+                  tax: 'none',
+                })),
+              }),
+            })
+            const paymentData = await paymentRes.json()
+            if (paymentData.error) throw new Error(paymentData.message || 'Ошибка инициализации платежа')
+            clearCart()
+            window.location.href = paymentData.paymentUrl
+            return
+          } catch (payErr) {
+            setPaymentLoading(false)
+            setError(payErr instanceof Error ? payErr.message : 'Ошибка оплаты')
+            return
+          }
+        }
+
+        clearCart()
+        router.push(`/account?order=${topupTarget.orderNumber}&topup=1`)
+        return
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Не удалось докомплектовать заказ')
+        return
+      } finally {
+        setLoading(false)
+      }
+    }
+
     if (deliveryMethod === 'cdek' && !selectedCity) { setError('Выберите город доставки'); return }
     if (deliveryMethod === 'cdek' && deliveryType === 'pvz' && !selectedPvz) { setError('Выберите пункт выдачи'); return }
     if (deliveryMethod === 'cdek' && deliveryType === 'door' && !address) { setError('Укажите адрес доставки'); return }
@@ -430,12 +582,67 @@ export function CheckoutScreen() {
 
   return (
     <div className="pwa-screen animate-in">
-      <h1 className="t-h2 mb-16">Оформление заказа</h1>
+      <h1 className="t-h2 mb-16">{useTopup ? 'Докомплектация заказа' : 'Оформление заказа'}</h1>
 
       {!customer && (
         <div className="glass" style={{ padding: 16, textAlign: 'center', marginBottom: 16 }}>
           <p className="t-caption t-sec mb-12">Войдите, чтобы оформить заказ</p>
           <Link href="/auth?redirect=/checkout" className="btn btn--primary btn--sm">Войти</Link>
+        </div>
+      )}
+
+      {/* Top-up banner: offer to append items to an existing unshipped order */}
+      {customer && topupTarget && (
+        <div
+          className="glass"
+          style={{
+            padding: 14,
+            marginBottom: 16,
+            borderRadius: 'var(--r-md)',
+            border: useTopup ? '2px solid var(--c-primary)' : '1px solid var(--c-border)',
+            background: useTopup ? 'rgba(139, 92, 246, 0.08)' : undefined,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <div style={{ fontSize: 24, lineHeight: 1 }} aria-hidden>📦</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="t-caption" style={{ fontWeight: 600, marginBottom: 4 }}>
+                У вас есть заказ {topupTarget.orderNumber} на сборке
+              </div>
+              <div className="t-small t-muted" style={{ marginBottom: 8 }}>
+                Можно добавить товары к нему — доставка будет общая, оплатите только добавленное.
+              </div>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={useTopup}
+                  onChange={(e) => setUseTopup(e.target.checked)}
+                  style={{ width: 16, height: 16 }}
+                />
+                <span className="t-caption" style={{ fontWeight: useTopup ? 600 : 400 }}>
+                  {useTopup
+                    ? `Добавить к заказу ${topupTarget.orderNumber}`
+                    : `Добавить к заказу ${topupTarget.orderNumber}?`}
+                </span>
+              </label>
+              {useTopup && (
+                <div
+                  className="t-small"
+                  style={{
+                    marginTop: 8,
+                    padding: '6px 10px',
+                    background: 'rgba(0,0,0,0.15)',
+                    borderRadius: 'var(--r-xs)',
+                    opacity: 0.85,
+                  }}
+                >
+                  Адрес и способ доставки наследуются:{' '}
+                  <strong>{topupTarget.delivery.method === 'pickup' ? 'Самовывоз' : 'СДЭК'}</strong>
+                  {topupTarget.delivery.address ? ` · ${topupTarget.delivery.address}` : ''}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
@@ -464,7 +671,8 @@ export function CheckoutScreen() {
           </div>
         </div>
 
-        {/* 2. Delivery */}
+        {/* 2. Delivery (hidden when topping up — delivery inherits from target order) */}
+        {!useTopup && (
         <div className="checkout-sec">
           <div className="checkout-sec__head">
             <span className="checkout-sec__num">2</span>
@@ -479,7 +687,13 @@ export function CheckoutScreen() {
                 <div className="del-option__desc">{cdekCalc ? `${cdekCalc.period_min}–${cdekCalc.period_max} дн.` : 'Курьером или в ПВЗ'}</div>
               </div>
               <div className="del-option__price">
-                {calcLoading ? '...' : cdekCalc ? `≈ ${Math.round(cdekCalc.delivery_sum).toLocaleString('ru-RU')} ₽` : calcError ? '—' : 'Рассчитать'}
+                {calcLoading
+                  ? '...'
+                  : cdekCalc
+                    ? `≈ ${Math.round(cdekCalc.total_sum ?? cdekCalc.delivery_sum).toLocaleString('ru-RU')} ₽`
+                    : calcError
+                      ? '—'
+                      : 'Рассчитать'}
               </div>
             </button>
           )}
@@ -599,15 +813,26 @@ export function CheckoutScreen() {
               {/* Delivery info notice */}
               {selectedCity && cdekCalc && (
                 <div className="glass" style={{ padding: 12, background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-                  <p className="t-small" style={{ color: 'var(--c-primary)', margin: 0 }}>
-                    ℹ️ Стоимость доставки ≈ {Math.round(cdekCalc.delivery_sum).toLocaleString('ru-RU')} ₽ — оплачивается при получении. 
-                    Точная сумма будет известна после формирования отправления на складе СДЭК.
+                  <p className="t-small" style={{ color: 'var(--c-primary)', margin: 0, marginBottom: 4 }}>
+                    ℹ️ Стоимость доставки ≈{' '}
+                    <strong>
+                      {Math.round(cdekCalc.total_sum ?? cdekCalc.delivery_sum).toLocaleString('ru-RU')} ₽
+                    </strong>{' '}
+                    (включая страхование) — оплачивается <strong>при получении</strong>.
                   </p>
+                  {cdekCalc.box && (
+                    <p className="t-small t-muted" style={{ margin: 0, opacity: 0.8 }}>
+                      Упаковка: коробка {cdekCalc.box.label}, {cdekCalc.box.weightKg} кг,{' '}
+                      {cdekCalc.box.lengthCm}×{cdekCalc.box.widthCm}×{cdekCalc.box.heightCm} см.
+                      Срок доставки: {cdekCalc.period_min}–{cdekCalc.period_max} дн.
+                    </p>
+                  )}
                 </div>
               )}
             </div>
           )}
         </div>
+        )}
 
         {/* 3. Discounts */}
         <div className="checkout-sec">
@@ -745,18 +970,20 @@ export function CheckoutScreen() {
           <div className="summary__row">
             <span className="summary__label">Доставка</span>
             <span className="t-muted">
-              {deliveryMethod === 'pickup' 
-                ? 'Бесплатно' 
-                : calcLoading 
-                  ? '...' 
-                  : cdekCalc 
-                    ? `≈ ${Math.round(cdekCalc.delivery_sum).toLocaleString('ru-RU')} ₽ (при получении)` 
-                    : '—'}
+              {useTopup
+                ? `Включена в заказ ${topupTarget?.orderNumber}`
+                : deliveryMethod === 'pickup'
+                  ? 'Бесплатно'
+                  : calcLoading
+                    ? '...'
+                    : cdekCalc
+                      ? `≈ ${Math.round(cdekCalc.total_sum ?? cdekCalc.delivery_sum).toLocaleString('ru-RU')} ₽ (при получении)`
+                      : '—'}
             </span>
           </div>
           
           <div className="summary__row summary__row--total">
-            <span>К оплате</span>
+            <span>{useTopup ? 'К доплате' : 'К оплате'}</span>
             <span>{orderTotal.toLocaleString('ru-RU')} ₽</span>
           </div>
         </div>
@@ -769,9 +996,13 @@ export function CheckoutScreen() {
           {(loading || paymentLoading) && <Loader2 size={20} className="btn__spinner" style={{ animation: 'spin 1s linear infinite' }} />}
           {paymentLoading 
             ? 'Переход к оплате...' 
-            : paymentMethod === 'online' 
-              ? `Оплатить ${orderTotal.toLocaleString('ru-RU')} ₽` 
-              : 'Оформить заказ'
+            : useTopup
+              ? paymentMethod === 'online'
+                ? `Доплатить ${orderTotal.toLocaleString('ru-RU')} ₽`
+                : `Добавить к заказу ${topupTarget?.orderNumber ?? ''}`
+              : paymentMethod === 'online' 
+                ? `Оплатить ${orderTotal.toLocaleString('ru-RU')} ₽` 
+                : 'Оформить заказ'
           }
         </button>
       </form>
