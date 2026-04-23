@@ -68,6 +68,11 @@ export const Orders: CollectionConfig = {
       type: 'array',
       required: true,
       label: 'Товары',
+      admin: {
+        components: {
+          Cell: '@/components/admin/ItemsBreakdownCell',
+        },
+      },
       fields: [
         {
           name: 'product',
