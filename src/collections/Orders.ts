@@ -3,6 +3,10 @@ import { orderAfterChange } from '../hooks/orderAfterChange'
 import { orderBeforeChange } from '../hooks/orderBeforeChange'
 import { referralAfterOrderPaid } from '../hooks/referralAfterOrderPaid'
 import { customerAfterOrderCreate } from '../hooks/customerAfterOrderCreate'
+import {
+  updateCustomerOrderStatsAfterChange,
+  updateCustomerOrderStatsAfterDelete,
+} from '../hooks/updateCustomerOrderStats'
 
 export const Orders: CollectionConfig = {
   slug: 'orders',
@@ -12,7 +16,13 @@ export const Orders: CollectionConfig = {
   },
   hooks: {
     beforeChange: [orderBeforeChange],
-    afterChange: [orderAfterChange, customerAfterOrderCreate, referralAfterOrderPaid],
+    afterChange: [
+      orderAfterChange,
+      customerAfterOrderCreate,
+      referralAfterOrderPaid,
+      updateCustomerOrderStatsAfterChange,
+    ],
+    afterDelete: [updateCustomerOrderStatsAfterDelete],
   },
   admin: {
     useAsTitle: 'orderNumber',
@@ -138,8 +148,52 @@ export const Orders: CollectionConfig = {
         { label: 'Доставлен', value: 'delivered' },
         { label: 'Завершён', value: 'completed' },
         { label: 'Отменён', value: 'cancelled' },
+        { label: 'Слит с другим заказом', value: 'merged' },
       ],
       admin: { position: 'sidebar' },
+    },
+    {
+      name: 'allowTopUp',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'Разрешить докомплектацию',
+      admin: {
+        position: 'sidebar',
+        description: 'Если выключено — клиент не сможет добавлять товары к этому заказу (например, уже упакован)',
+      },
+    },
+    {
+      name: 'mergedInto',
+      type: 'relationship',
+      relationTo: 'orders',
+      label: 'Слит в заказ',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Если этот заказ был объединён с другим — ссылка сюда',
+        condition: (data) => data?.status === 'merged' || Boolean(data?.mergedInto),
+      },
+    },
+    {
+      name: 'mergedFrom',
+      type: 'relationship',
+      relationTo: 'orders',
+      hasMany: true,
+      label: 'Объединённые заказы',
+      admin: {
+        readOnly: true,
+        description: 'Заказы, которые были слиты в текущий (докомплектация)',
+      },
+    },
+    {
+      name: 'orderMergeButton',
+      type: 'ui',
+      admin: {
+        position: 'sidebar',
+        components: {
+          Field: '@/components/admin/OrderMergeButton',
+        },
+      },
     },
     {
       name: 'payment',

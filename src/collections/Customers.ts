@@ -13,7 +13,14 @@ export const Customers: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'email', 'phone', 'role'],
+    defaultColumns: [
+      'name',
+      'email',
+      'phone',
+      'orderCount',
+      'orderTotalSum',
+      'role',
+    ],
     group: 'Магазин',
   },
   access: {
@@ -41,11 +48,65 @@ export const Customers: CollectionConfig = {
       name: 'name',
       type: 'text',
       label: 'Имя',
+      admin: {
+        components: {
+          Cell: '@/components/admin/EmptyCell#EmptyCell',
+        },
+      },
     },
     {
       name: 'phone',
       type: 'text',
       label: 'Телефон',
+      admin: {
+        components: {
+          Cell: '@/components/admin/EmptyCell#EmptyCell',
+        },
+      },
+    },
+    // Denormalised order statistics. Maintained by
+    // `updateCustomerOrderStatsAfterChange` on the orders collection.
+    // Exposed as read-only columns in the Клиенты list view and as
+    // clickable lookup links that open the filtered orders list.
+    {
+      name: 'orderCount',
+      type: 'number',
+      defaultValue: 0,
+      min: 0,
+      label: 'Заказов',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Количество заказов клиента (без учёта объединённых)',
+        components: {
+          Cell: '@/components/admin/CustomerStatCell#CustomerOrderCountCell',
+        },
+      },
+    },
+    {
+      name: 'orderTotalSum',
+      type: 'number',
+      defaultValue: 0,
+      min: 0,
+      label: 'Сумма заказов (₽)',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Суммарная стоимость всех заказов клиента',
+        components: {
+          Cell: '@/components/admin/CustomerStatCell#CustomerOrderTotalSumCell',
+        },
+      },
+    },
+    {
+      name: 'customerOrdersPanel',
+      type: 'ui',
+      admin: {
+        position: 'sidebar',
+        components: {
+          Field: '@/components/admin/CustomerOrdersPanel#default',
+        },
+      },
     },
     {
       name: 'avatar',
@@ -147,31 +208,46 @@ export const Customers: CollectionConfig = {
           name: 'username',
           type: 'text',
           label: 'Username',
-          admin: { readOnly: true },
+          admin: {
+            readOnly: true,
+            components: { Cell: '@/components/admin/EmptyCell#EmptyCell' },
+          },
         },
         {
           name: 'firstName',
           type: 'text',
           label: 'Имя в Telegram',
-          admin: { readOnly: true },
+          admin: {
+            readOnly: true,
+            components: { Cell: '@/components/admin/EmptyCell#EmptyCell' },
+          },
         },
         {
           name: 'lastName',
           type: 'text',
           label: 'Фамилия в Telegram',
-          admin: { readOnly: true },
+          admin: {
+            readOnly: true,
+            components: { Cell: '@/components/admin/EmptyCell#EmptyCell' },
+          },
         },
         {
           name: 'phone',
           type: 'text',
           label: 'Телефон из Telegram',
-          admin: { readOnly: true },
+          admin: {
+            readOnly: true,
+            components: { Cell: '@/components/admin/EmptyCell#EmptyCell' },
+          },
         },
         {
           name: 'photoUrl',
           type: 'text',
           label: 'Фото профиля (URL)',
-          admin: { readOnly: true },
+          admin: {
+            readOnly: true,
+            components: { Cell: '@/components/admin/EmptyCell#EmptyCell' },
+          },
         },
       ],
     },
