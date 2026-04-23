@@ -101,6 +101,9 @@ export const StockMovements: CollectionConfig = {
         condition: (data) =>
           data?.operationType === 'sent_to_logistics' ||
           data?.operationType === 'return_to_stock',
+        components: {
+          Cell: '@/components/admin/EmptyCell#EmptyCell',
+        },
       },
     },
     {
