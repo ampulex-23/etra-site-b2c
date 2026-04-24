@@ -211,5 +211,31 @@ export const ShopSettings: GlobalConfig = {
         },
       ],
     },
+    {
+      type: 'collapsible',
+      label: 'Докомплектация заказов',
+      fields: [
+        {
+          name: 'topUpEnabled',
+          type: 'checkbox',
+          defaultValue: true,
+          label: 'Разрешить клиентам докомплектовать заказы',
+          admin: {
+            description: 'Когда клиент оформляет новый заказ и у него уже есть неотправленный — предлагать добавить товары к существующему',
+          },
+        },
+        {
+          name: 'topUpWindowDays',
+          type: 'number',
+          defaultValue: 14,
+          min: 0,
+          label: 'Окно докомплектации (дней)',
+          admin: {
+            description: 'Сколько дней после создания заказа он остаётся доступен для докомплектации. 0 = без ограничения (пока не отправлен)',
+            condition: (data) => data?.topUpEnabled,
+          },
+        },
+      ],
+    },
   ],
 }

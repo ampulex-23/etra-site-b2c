@@ -68,7 +68,11 @@ const ORDER_STATUS: Record<string, { label: string; color: string }> = {
   delivered: { label: 'Доставлен', color: '#10b981' },
   completed: { label: 'Завершён', color: '#10b981' },
   cancelled: { label: 'Отменён', color: '#ef4444' },
+  merged: { label: 'Объединён', color: '#6b7280' },
 }
+
+// Orders in these statuses can still receive new items via the top-up flow.
+const TOP_UP_ELIGIBLE_STATUSES = new Set(['new', 'processing'])
 
 const DELIVERY_STATUS: Record<string, string> = {
   pending: 'Ожидает отправки',
@@ -594,6 +598,22 @@ export function AccountScreen() {
                               <span>{order.total?.toLocaleString('ru-RU')} ₽</span>
                             </div>
                           </div>
+
+                          {/* Top-up action: allow adding more items to this order */}
+                          {TOP_UP_ELIGIBLE_STATUSES.has(order.status) && (
+                            <div style={{ marginTop: 12 }}>
+                              <Link
+                                href={`/catalog?topup=${order.id}`}
+                                className="btn btn--primary btn--sm btn--full"
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                              >
+                                ➕ Добавить товары к этому заказу
+                              </Link>
+                              <p className="t-small t-muted" style={{ marginTop: 6, textAlign: 'center' }}>
+                                Доставка будет общая — оплатите только добавленное
+                              </p>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

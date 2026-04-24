@@ -1,12 +1,25 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '../../cart/CartProvider'
 
+const TOPUP_STORAGE_KEY = 'checkout_topup_order_id'
+
 export function CartScreen() {
   const { items, removeItem, updateQuantity, totalItems, totalPrice } = useCart()
+  const [topupOrderId, setTopupOrderId] = useState<string | null>(null)
+
+  // Read persisted top-up intent from the catalog flow
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    setTopupOrderId(sessionStorage.getItem(TOPUP_STORAGE_KEY))
+  }, [])
+
+  const checkoutHref = topupOrderId
+    ? `/checkout?topup=${encodeURIComponent(topupOrderId)}`
+    : '/checkout'
 
   if (items.length === 0) {
     return (
@@ -99,8 +112,23 @@ export function CartScreen() {
         </div>
       </div>
 
-      <Link href="/checkout" className="btn btn--primary btn--lg btn--full mb-12">
-        Оформить заказ
+      {topupOrderId && (
+        <div
+          className="glass"
+          style={{
+            padding: 10,
+            marginBottom: 12,
+            borderRadius: 'var(--r-md)',
+            border: '1px solid var(--c-primary)',
+            fontSize: '0.85em',
+            textAlign: 'center',
+          }}
+        >
+          ➕ Товары будут добавлены к незавершённому заказу
+        </div>
+      )}
+      <Link href={checkoutHref} className="btn btn--primary btn--lg btn--full mb-12">
+        {topupOrderId ? 'Докомплектовать заказ' : 'Оформить заказ'}
       </Link>
       <Link href="/catalog" className="btn btn--glass btn--full">
         Продолжить покупки

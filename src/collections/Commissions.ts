@@ -120,6 +120,17 @@ export const Commissions: CollectionConfig = {
       },
     },
     {
+      name: 'triggeringPayment',
+      type: 'relationship',
+      relationTo: 'payments',
+      label: 'Платёж-источник',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Конкретный платёж, при оплате которого создана эта комиссия (для заказов с несколькими платежами из-за докомплектации)',
+      },
+    },
+    {
       name: 'payout',
       type: 'relationship',
       relationTo: 'referral-payouts',
