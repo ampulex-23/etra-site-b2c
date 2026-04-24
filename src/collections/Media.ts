@@ -22,7 +22,14 @@ export const Media: CollectionConfig = {
     group: 'Система',
     defaultColumns: ['filename', 'folder', 'alt', 'updatedAt'],
     components: {
-      beforeList: ['@/components/admin/MediaFolderBrowser#MediaFolderBrowser'],
+      // Full-page file-explorer UI (breadcrumbs + folder sidebar + file grid).
+      // Replaces the default flat list, which was useless once folders were
+      // introduced.
+      views: {
+        list: {
+          Component: '@/components/admin/MediaExplorer/View#default',
+        },
+      },
     },
   },
   hooks: {
@@ -72,8 +79,12 @@ export const Media: CollectionConfig = {
     {
       name: 'alt',
       type: 'text',
-      required: true,
+      // Not required: the media library stores mixed binaries (PDFs, videos,
+      // documents) where an alt text is not meaningful.
       label: 'Alt текст',
+      admin: {
+        description: 'Используется для <img alt="…"> у изображений; для PDF/видео можно оставить пустым.',
+      },
     },
     {
       name: 'caption',
