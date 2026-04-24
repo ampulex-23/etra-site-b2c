@@ -503,7 +503,7 @@ const Styles: React.FC = () => (
 .media-explorer__header {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   padding-bottom: 1rem; border-bottom: 1px solid var(--theme-elevation-100, #e5e7eb);
-  flex-wrap: wrap;
+  flex-wrap: wrap; padding-top: 1rem;
 }
 .media-explorer__crumbs { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .media-explorer__sep { color: var(--theme-elevation-400, #9ca3af); }
