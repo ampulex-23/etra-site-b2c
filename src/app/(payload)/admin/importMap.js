@@ -25,6 +25,9 @@ import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93
 import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { default as default_7ba3a48292a35bdd248886fa9e842728 } from '@/components/admin/cells/ProductImageCell'
+import { default as default_649db2539f547da85487187ff0564f9c } from '@/components/admin/cells/BoolCheckCell'
+import { default as default_6650b00e813d83a7c58a835b922dddc2 } from '@/components/admin/ProductsViewToggle'
 import { default as default_22764c49af83c1dee90aeee6626185ae } from '@/components/admin/ItemsBreakdownCell'
 import { default as default_ab92cbecd7fc0006a9985b8c52f43081 } from '@/components/admin/OrderItemFields'
 import { default as default_f5c7ed49f0e9592f40dda7a6e4d90848 } from '@/components/admin/OrderMergeButton'
@@ -76,6 +79,9 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UnderlineFeatureClient": UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@/components/admin/cells/ProductImageCell#default": default_7ba3a48292a35bdd248886fa9e842728,
+  "@/components/admin/cells/BoolCheckCell#default": default_649db2539f547da85487187ff0564f9c,
+  "@/components/admin/ProductsViewToggle#default": default_6650b00e813d83a7c58a835b922dddc2,
   "@/components/admin/ItemsBreakdownCell#default": default_22764c49af83c1dee90aeee6626185ae,
   "@/components/admin/OrderItemFields#default": default_ab92cbecd7fc0006a9985b8c52f43081,
   "@/components/admin/OrderMergeButton#default": default_f5c7ed49f0e9592f40dda7a6e4d90848,

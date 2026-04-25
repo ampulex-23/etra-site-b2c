@@ -8,8 +8,11 @@ export const Products: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'price', 'category', 'status'],
+    defaultColumns: ['title', 'images', 'price', 'category', 'status', 'inStock', 'featured'],
     group: 'Каталог',
+    components: {
+      beforeList: ['@/components/admin/ProductsViewToggle'],
+    },
   },
   access: {
     read: () => true,
@@ -68,6 +71,11 @@ export const Products: CollectionConfig = {
       type: 'array',
       label: 'Изображения',
       minRows: 1,
+      admin: {
+        components: {
+          Cell: '@/components/admin/cells/ProductImageCell',
+        },
+      },
       fields: [
         {
           name: 'image',
@@ -138,6 +146,9 @@ export const Products: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: 'Набор автоматически раскладывается на базовые товары при списании',
+        components: {
+          Cell: '@/components/admin/cells/BoolCheckCell',
+        },
       },
     },
     {
@@ -173,6 +184,9 @@ export const Products: CollectionConfig = {
       label: 'В наличии',
       admin: {
         position: 'sidebar',
+        components: {
+          Cell: '@/components/admin/cells/BoolCheckCell',
+        },
       },
     },
     {
@@ -182,6 +196,9 @@ export const Products: CollectionConfig = {
       label: 'На главной',
       admin: {
         position: 'sidebar',
+        components: {
+          Cell: '@/components/admin/cells/BoolCheckCell',
+        },
       },
     },
     {
@@ -232,6 +249,9 @@ export const Products: CollectionConfig = {
           label: 'Исключить из партнёрской скидки',
           admin: {
             description: 'Товар всегда продаётся по розничной цене даже партнёрам',
+            components: {
+              Cell: '@/components/admin/cells/BoolCheckCell',
+            },
           },
         },
       ],
