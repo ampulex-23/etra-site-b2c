@@ -1,15 +1,16 @@
-import React, { cache } from 'react'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+'use client'
+
+import React, { useEffect, useMemo, useState } from 'react'
 
 /**
- * Server-rendered list-view Cell for the Products `images` array.
+ * Client list-view Cell for the Products `images` array.
  * Renders a thumbnail of the first image instead of Payload's default
  * "N Images" label.
  *
- * Payload's admin list query uses depth: 0, so `cellData` typically
- * contains just media IDs; we resolve the first one via `findByID`.
- * React's `cache()` dedupes lookups across cells in the same request.
+ * NOTE: must be a client component. Async server components in admin
+ * list cells break the row's title link wrapper, making the row
+ * non-clickable. Payload's list query uses depth: 0, so when the first
+ * image is just an ID we resolve it via REST.
  */
 
 type MediaDoc = {
@@ -17,50 +18,83 @@ type MediaDoc = {
   url?: string | null
   alt?: string | null
   filename?: string | null
-  mimeType?: string | null
   sizes?: {
     thumbnail?: { url?: string | null }
     card?: { url?: string | null }
   } | null
 }
 
-const loadMedia = cache(async (id: string | number): Promise<MediaDoc | null> => {
-  try {
-    const payload = await getPayload({ config })
-    const doc = await payload.findByID({
-      collection: 'media',
-      id,
-      depth: 0,
-      disableErrors: true,
-    })
-    return (doc as MediaDoc) || null
-  } catch {
-    return null
-  }
-})
+// Module-level cache shared across all cells in the page.
+const mediaCache = new Map<string, MediaDoc | null>()
+const inflight = new Map<string, Promise<MediaDoc | null>>()
 
-const ProductImageCell = async ({
-  cellData,
-  rowData,
-}: {
+const fetchMedia = (id: string): Promise<MediaDoc | null> => {
+  if (mediaCache.has(id)) return Promise.resolve(mediaCache.get(id) ?? null)
+  const existing = inflight.get(id)
+  if (existing) return existing
+  const p = (async () => {
+    try {
+      const res = await fetch(`/api/media/${id}?depth=0`, {
+        credentials: 'include',
+        cache: 'no-store',
+      })
+      if (!res.ok) {
+        mediaCache.set(id, null)
+        return null
+      }
+      const doc = (await res.json()) as MediaDoc
+      mediaCache.set(id, doc)
+      return doc
+    } catch {
+      mediaCache.set(id, null)
+      return null
+    } finally {
+      inflight.delete(id)
+    }
+  })()
+  inflight.set(id, p)
+  return p
+}
+
+const ProductImageCell: React.FC<{
   cellData?: unknown
   rowData?: { images?: Array<{ image?: unknown }> | null }
-}) => {
-  const items = Array.isArray(cellData)
-    ? (cellData as Array<{ image?: unknown }>)
-    : Array.isArray(rowData?.images)
-      ? rowData.images
-      : []
+}> = ({ cellData, rowData }) => {
+  const items = useMemo<Array<{ image?: unknown }>>(() => {
+    if (Array.isArray(cellData)) return cellData as Array<{ image?: unknown }>
+    if (Array.isArray(rowData?.images)) return rowData!.images!
+    return []
+  }, [cellData, rowData])
 
   const count = items.length
   const firstRaw = items[0]?.image
 
-  let media: MediaDoc | null = null
-  if (firstRaw && typeof firstRaw === 'object') {
-    media = firstRaw as MediaDoc
-  } else if (firstRaw != null && (typeof firstRaw === 'string' || typeof firstRaw === 'number')) {
-    media = await loadMedia(firstRaw)
-  }
+  // Initialize from populated object if available
+  const initialMedia: MediaDoc | null =
+    firstRaw && typeof firstRaw === 'object' ? (firstRaw as MediaDoc) : null
+
+  const [media, setMedia] = useState<MediaDoc | null>(initialMedia)
+
+  useEffect(() => {
+    if (initialMedia) {
+      setMedia(initialMedia)
+      return
+    }
+    if (firstRaw == null) {
+      setMedia(null)
+      return
+    }
+    if (typeof firstRaw === 'string' || typeof firstRaw === 'number') {
+      let cancelled = false
+      void fetchMedia(String(firstRaw)).then((doc) => {
+        if (!cancelled) setMedia(doc)
+      })
+      return () => {
+        cancelled = true
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firstRaw])
 
   const url = media?.sizes?.thumbnail?.url || media?.url || null
 
