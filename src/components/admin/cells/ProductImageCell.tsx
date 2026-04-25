@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 
 /**
  * Client list-view Cell for the Products `images` array.
@@ -58,7 +59,7 @@ const fetchMedia = (id: string): Promise<MediaDoc | null> => {
 
 const ProductImageCell: React.FC<{
   cellData?: unknown
-  rowData?: { images?: Array<{ image?: unknown }> | null }
+  rowData?: { id?: string | number; images?: Array<{ image?: unknown }> | null }
 }> = ({ cellData, rowData }) => {
   const items = useMemo<Array<{ image?: unknown }>>(() => {
     if (Array.isArray(cellData)) return cellData as Array<{ image?: unknown }>
@@ -97,17 +98,15 @@ const ProductImageCell: React.FC<{
   }, [firstRaw])
 
   const url = media?.sizes?.thumbnail?.url || media?.url || null
+  const id = rowData?.id
+  const editHref = id != null ? `/admin/collections/products/${id}` : null
 
-  if (!url) {
-    return (
-      <span style={{ color: '#9ca3af', fontSize: 12 }}>
-        {count > 0 ? `${count} изобр.` : '—'}
-      </span>
-    )
-  }
-
-  return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+  const inner = !url ? (
+    <span style={{ color: '#9ca3af', fontSize: 12 }}>
+      {count > 0 ? `${count} изобр.` : '—'}
+    </span>
+  ) : (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={url}
@@ -125,7 +124,24 @@ const ProductImageCell: React.FC<{
       {count > 1 ? (
         <span style={{ color: '#6b7280', fontSize: 12 }}>+{count - 1}</span>
       ) : null}
-    </div>
+    </span>
+  )
+
+  if (!editHref) return inner
+
+  return (
+    <Link
+      href={editHref}
+      prefetch={false}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        textDecoration: 'none',
+        color: 'inherit',
+      }}
+    >
+      {inner}
+    </Link>
   )
 }
 
