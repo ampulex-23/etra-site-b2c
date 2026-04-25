@@ -11,6 +11,7 @@ import sharp from 'sharp'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import { MediaFolders } from './collections/MediaFolders'
 import { Products } from './collections/Products'
 import { Categories } from './collections/Categories'
 import { Orders } from './collections/Orders'
@@ -111,6 +112,7 @@ export default buildConfig({
   collections: [
     Users,
     Media,
+    MediaFolders,
     Products,
     Categories,
     Orders,

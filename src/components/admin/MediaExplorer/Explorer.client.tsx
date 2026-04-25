@@ -154,7 +154,7 @@ const Explorer: React.FC = () => {
     }
   }
 
-  const createFolder = () => {
+  const createFolder = async () => {
     const raw = window.prompt(
       folder
         ? `Создать подпапку в «${folder}». Имя:`
@@ -164,6 +164,27 @@ const Explorer: React.FC = () => {
     const name = normalize(raw)
     if (!name) return
     const next = folder ? `${folder}/${name}` : name
+
+    try {
+      const res = await fetch('/api/media/folders', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ path: next }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data?.error || `HTTP ${res.status}`)
+      }
+    } catch (err) {
+      console.error('[MediaExplorer] createFolder failed', err)
+      window.alert(
+        `Не удалось создать папку: ${err instanceof Error ? err.message : 'неизвестная ошибка'}`,
+      )
+      return
+    }
+
+    await refreshFolders()
     navigateTo(next)
   }
 

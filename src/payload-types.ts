@@ -70,6 +70,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    'media-folders': MediaFolder;
     products: Product;
     categories: Category;
     orders: Order;
@@ -108,6 +109,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'media-folders': MediaFoldersSelect<false> | MediaFoldersSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
@@ -254,7 +256,10 @@ export interface Media {
    * Путь к папке в S3 (например: products/bottles или articles/covers)
    */
   folder?: string | null;
-  alt: string;
+  /**
+   * Используется для <img alt="…"> у изображений; для PDF/видео можно оставить пустым.
+   */
+  alt?: string | null;
   caption?: string | null;
   prefix?: string | null;
   updatedAt: string;
@@ -294,6 +299,16 @@ export interface Media {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media-folders".
+ */
+export interface MediaFolder {
+  id: number;
+  path: string;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -449,7 +464,19 @@ export interface Order {
    * Считается автоматически: сумма товаров − скидка + доставка
    */
   total: number;
-  status?: ('new' | 'processing' | 'shipped' | 'delivered' | 'completed' | 'cancelled') | null;
+  status?: ('new' | 'processing' | 'shipped' | 'delivered' | 'completed' | 'cancelled' | 'merged') | null;
+  /**
+   * Если выключено — клиент не сможет добавлять товары к этому заказу (например, уже упакован)
+   */
+  allowTopUp?: boolean | null;
+  /**
+   * Если этот заказ был объединён с другим — ссылка сюда
+   */
+  mergedInto?: (number | null) | Order;
+  /**
+   * Заказы, которые были слиты в текущий (докомплектация)
+   */
+  mergedFrom?: (number | Order)[] | null;
   payment?: {
     method?: ('yokassa' | 'tinkoff' | 'cash') | null;
     transactionId?: string | null;
@@ -511,6 +538,8 @@ export interface Customer {
   id: number;
   name?: string | null;
   phone?: string | null;
+  orderCount?: number | null;
+  orderTotalSum?: number | null;
   avatar?: (number | null) | Media;
   addresses?:
     | {
@@ -1554,6 +1583,10 @@ export interface Commission {
    */
   month: string;
   /**
+   * Конкретный платёж, при оплате которого создана эта комиссия (для заказов с несколькими платежами из-за докомплектации)
+   */
+  triggeringPayment?: (number | null) | Payment;
+  /**
    * Заполняется при включении в пакет выплаты
    */
   payout?: (number | null) | ReferralPayout;
@@ -1739,6 +1772,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'media-folders';
+        value: number | MediaFolder;
       } | null)
     | ({
         relationTo: 'products';
@@ -1997,6 +2034,15 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media-folders_select".
+ */
+export interface MediaFoldersSelect<T extends boolean = true> {
+  path?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
@@ -2085,6 +2131,9 @@ export interface OrdersSelect<T extends boolean = true> {
   deliveryCost?: T;
   total?: T;
   status?: T;
+  allowTopUp?: T;
+  mergedInto?: T;
+  mergedFrom?: T;
   payment?:
     | T
     | {
@@ -2125,6 +2174,8 @@ export interface OrdersSelect<T extends boolean = true> {
 export interface CustomersSelect<T extends boolean = true> {
   name?: T;
   phone?: T;
+  orderCount?: T;
+  orderTotalSum?: T;
   avatar?: T;
   addresses?:
     | T
@@ -2700,6 +2751,7 @@ export interface CommissionsSelect<T extends boolean = true> {
   amount?: T;
   status?: T;
   month?: T;
+  triggeringPayment?: T;
   payout?: T;
   notes?: T;
   updatedAt?: T;
@@ -3135,6 +3187,14 @@ export interface ShopSetting {
    * 0 = бесплатная доставка отключена
    */
   freeDeliveryThreshold?: number | null;
+  /**
+   * Когда клиент оформляет новый заказ и у него уже есть неотправленный — предлагать добавить товары к существующему
+   */
+  topUpEnabled?: boolean | null;
+  /**
+   * Сколько дней после создания заказа он остаётся доступен для докомплектации. 0 = без ограничения (пока не отправлен)
+   */
+  topUpWindowDays?: number | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3354,6 +3414,8 @@ export interface ShopSettingsSelect<T extends boolean = true> {
   tbankTaxation?: T;
   minOrderAmount?: T;
   freeDeliveryThreshold?: T;
+  topUpEnabled?: T;
+  topUpWindowDays?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
