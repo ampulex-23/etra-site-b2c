@@ -1,43 +1,70 @@
-'use client'
-
-import React from 'react'
+import React, { cache } from 'react'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 
 /**
- * List-view Cell for the Products `images` array. Replaces Payload's
- * default "N Images" text with a thumbnail of the first image so the
- * Products table is actually scannable.
+ * Server-rendered list-view Cell for the Products `images` array.
+ * Renders a thumbnail of the first image instead of Payload's default
+ * "N Images" label.
+ *
+ * Payload's admin list query uses depth: 0, so `cellData` typically
+ * contains just media IDs; we resolve the first one via `findByID`.
+ * React's `cache()` dedupes lookups across cells in the same request.
  */
-type ImagesCellData =
-  | Array<{
-      id?: string
-      image?:
-        | string
-        | number
-        | {
-            id?: string | number
-            url?: string | null
-            alt?: string | null
-            mimeType?: string | null
-            sizes?: { thumbnail?: { url?: string | null } }
-          }
-        | null
-    }>
-  | null
-  | undefined
 
-const ProductImageCell: React.FC<{ cellData?: ImagesCellData; rowData?: any }> = ({
+type MediaDoc = {
+  id?: string | number
+  url?: string | null
+  alt?: string | null
+  filename?: string | null
+  mimeType?: string | null
+  sizes?: {
+    thumbnail?: { url?: string | null }
+    card?: { url?: string | null }
+  } | null
+}
+
+const loadMedia = cache(async (id: string | number): Promise<MediaDoc | null> => {
+  try {
+    const payload = await getPayload({ config })
+    const doc = await payload.findByID({
+      collection: 'media',
+      id,
+      depth: 0,
+      disableErrors: true,
+    })
+    return (doc as MediaDoc) || null
+  } catch {
+    return null
+  }
+})
+
+const ProductImageCell = async ({
   cellData,
   rowData,
+}: {
+  cellData?: unknown
+  rowData?: { images?: Array<{ image?: unknown }> | null }
 }) => {
   const items = Array.isArray(cellData)
-    ? cellData
+    ? (cellData as Array<{ image?: unknown }>)
     : Array.isArray(rowData?.images)
       ? rowData.images
       : []
-  const first = items?.[0]?.image
-  const count = items?.length || 0
 
-  if (!first || typeof first !== 'object') {
+  const count = items.length
+  const firstRaw = items[0]?.image
+
+  let media: MediaDoc | null = null
+  if (firstRaw && typeof firstRaw === 'object') {
+    media = firstRaw as MediaDoc
+  } else if (firstRaw != null && (typeof firstRaw === 'string' || typeof firstRaw === 'number')) {
+    media = await loadMedia(firstRaw)
+  }
+
+  const url = media?.sizes?.thumbnail?.url || media?.url || null
+
+  if (!url) {
     return (
       <span style={{ color: '#9ca3af', fontSize: 12 }}>
         {count > 0 ? `${count} изобр.` : '—'}
@@ -45,17 +72,12 @@ const ProductImageCell: React.FC<{ cellData?: ImagesCellData; rowData?: any }> =
     )
   }
 
-  const url = first.sizes?.thumbnail?.url || first.url
-  if (!url) {
-    return <span style={{ color: '#9ca3af', fontSize: 12 }}>—</span>
-  }
-
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={url}
-        alt={first.alt || ''}
+        alt={media?.alt || media?.filename || ''}
         loading="lazy"
         style={{
           width: 40,

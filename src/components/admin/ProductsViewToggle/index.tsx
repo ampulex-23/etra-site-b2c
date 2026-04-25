@@ -270,7 +270,7 @@ const Styles: React.FC = () => (
     dangerouslySetInnerHTML={{
       __html: `
 .products-view-toggle__bar {
-  display: flex; align-items: center; gap: 0.75rem; margin: 0 0 1rem;
+  display: flex; align-items: center; gap: 0.75rem; margin: 1rem 1rem 1rem;
 }
 .products-view-toggle__group {
   display: inline-flex; border: 1px solid var(--theme-elevation-150, #e5e7eb);
@@ -286,12 +286,19 @@ const Styles: React.FC = () => (
   background: var(--theme-elevation-100, #e5e7eb); font-weight: 600;
 }
 
-/* Hide the default table when cards mode is active. */
-body.products-cards-mode .collection-list__wrap > .table,
-body.products-cards-mode .collection-list__wrap > .relationship-table,
-body.products-cards-mode .collection-list__wrap > div > .table,
+/* In cards mode: hide Payload built-in list toolbar/table/pagination. */
+body.products-cards-mode .list-controls,
+body.products-cards-mode .collection-list__wrap,
+body.products-cards-mode .collection-list table,
 body.products-cards-mode .collection-list__page-controls,
-body.products-cards-mode .collection-list table { display: none !important; }
+body.products-cards-mode .list-pagination,
+body.products-cards-mode .page-controls,
+body.products-cards-mode .no-results,
+body.products-cards-mode .relationship-table,
+body.products-cards-mode .table,
+body.products-cards-mode [class^="list-selection"],
+body.products-cards-mode [class*=" list-selection"],
+body.products-cards-mode .collection-list__sub-header { display: none !important; }
 
 /* Cards container */
 .products-view-cards {
