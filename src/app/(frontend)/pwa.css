@@ -2296,6 +2296,7 @@ textarea.inp {
   background-color: rgba(255, 255, 255, 0.35);
   backdrop-filter: blur(10px) saturate(1.15);
   -webkit-backdrop-filter: blur(10px) saturate(1.15);
+  border-radius: 2em;
 }
 
 .landing-section__label {
@@ -6403,6 +6404,10 @@ textarea.inp {
 
 /* Ensure hero arc siblings keep vertical rhythm */
 .home-screen .hero-section { min-height: auto; padding-bottom: 12px; }
+.home-screen {
+  max-width: 1080px;
+  padding-top: 6em;
+}
 
 /* ─── Desktop centering fix for landing sections ─── */
 @media (min-width: 768px) {
