@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCart } from '@/app/(frontend)/cart/CartProvider'
@@ -61,94 +61,149 @@ export function ProductDetailClient({ product }: Props) {
     setTimeout(() => setAdded(false), 1500)
   }
 
+  // Touch swipe support for gallery
+  const touchStartX = useRef<number | null>(null)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || product.images.length < 2) return
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    if (Math.abs(dx) > 50) {
+      if (dx < 0) setMainImage((mainImage + 1) % product.images.length)
+      else setMainImage((mainImage - 1 + product.images.length) % product.images.length)
+    }
+    touchStartX.current = null
+  }
+
   return (
-    <div className="pwa-screen animate-in">
+    <div className="pwa-screen animate-in product-detail">
       {/* Gallery */}
-      <div style={{ margin: '-16px -16px 16px', position: 'relative', aspectRatio: '1', background: 'rgba(0,0,0,0.2)', overflow: 'hidden' }}>
-        {product.images.length > 0 ? (
-          <Image src={product.images[mainImage].url} alt={product.title} fill sizes="100vw" style={{ objectFit: 'cover' }} priority />
-        ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.2">
-              <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" />
-            </svg>
-          </div>
-        )}
+      <div
+        className="product-gallery"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div
+          className="product-gallery__track"
+          style={{ transform: `translateX(-${mainImage * 100}%)` }}
+        >
+          {product.images.length > 0 ? product.images.map((img, i) => (
+            <div key={i} className="product-gallery__slide">
+              <Image
+                src={img.url}
+                alt={product.title}
+                fill
+                sizes="(min-width: 768px) 50vw, 100vw"
+                style={{ objectFit: 'contain' }}
+                priority={i === 0}
+              />
+            </div>
+          )) : (
+            <div className="product-gallery__slide product-gallery__slide--empty">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.2">
+                <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" />
+              </svg>
+            </div>
+          )}
+        </div>
+
         {product.images.length > 1 && (
-          <div style={{ position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 6 }}>
-            {product.images.map((_, i) => (
-              <button key={i} onClick={() => setMainImage(i)} style={{
-                width: mainImage === i ? 24 : 8, height: 8, borderRadius: 4, border: 'none', cursor: 'pointer',
-                background: mainImage === i ? 'var(--c-primary)' : 'rgba(255,255,255,0.4)', transition: 'all 0.2s',
-              }} />
-            ))}
-          </div>
+          <>
+            <button
+              type="button"
+              className="product-gallery__nav product-gallery__nav--prev"
+              onClick={() => setMainImage((mainImage - 1 + product.images.length) % product.images.length)}
+              aria-label="Предыдущее фото"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" /></svg>
+            </button>
+            <button
+              type="button"
+              className="product-gallery__nav product-gallery__nav--next"
+              onClick={() => setMainImage((mainImage + 1) % product.images.length)}
+              aria-label="Следующее фото"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
+            </button>
+            <div className="product-gallery__dots">
+              {product.images.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setMainImage(i)}
+                  className={'product-gallery__dot' + (mainImage === i ? ' product-gallery__dot--active' : '')}
+                  aria-label={`Фото ${i + 1}`}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
 
-      {product.category && (
-        <Link href="/catalog" className="t-small" style={{ color: 'var(--c-primary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          {product.category.title}
-        </Link>
-      )}
-      <h1 className="t-h2" style={{ margin: '4px 0 6px' }}>{product.title}</h1>
-      {product.sku && <span className="t-small t-muted">{'Артикул: ' + product.sku}</span>}
+      <div className="product-detail__main">
+        <section className="glass product-info">
+          {product.category && (
+            <Link href="/catalog" className="t-small" style={{ color: 'var(--c-primary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              {product.category.title}
+            </Link>
+          )}
+          <h1 className="t-h2" style={{ margin: '6px 0 8px' }}>{product.title}</h1>
+          {product.sku && <span className="t-small t-muted">{'Артикул: ' + product.sku}</span>}
 
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, margin: '16px 0' }}>
-        <span style={{ fontSize: 24, fontWeight: 800 }}>{currentPrice.toLocaleString('ru-RU') + ' \u20BD'}</span>
-        {product.oldPrice && <span className="t-caption t-muted" style={{ textDecoration: 'line-through' }}>{product.oldPrice.toLocaleString('ru-RU') + ' \u20BD'}</span>}
-        {discount > 0 && <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--c-danger)', background: 'rgba(255,107,107,0.15)', padding: '2px 8px', borderRadius: 'var(--r-full)' }}>{'-' + discount + '%'}</span>}
-      </div>
-
-      {product.variants.length > 0 && (
-        <div className="mb-12">
-          <span className="t-caption t-sec" style={{ display: 'block', marginBottom: 8 }}>{'Вариант:'}</span>
-          <div className="pill-toggle">
-            {product.variants.map((v, i) => (
-              <button key={i} className={'pill-toggle__item' + (selectedVariant === i ? ' pill-toggle__item--active' : '')}
-                onClick={() => setSelectedVariant(selectedVariant === i ? null : i)}>
-                {v.name + ' \u2014 ' + v.price.toLocaleString('ru-RU') + ' \u20BD'}
-              </button>
-            ))}
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, margin: '14px 0' }}>
+            <span style={{ fontSize: 26, fontWeight: 800 }}>{currentPrice.toLocaleString('ru-RU') + ' \u20BD'}</span>
+            {product.oldPrice && <span className="t-caption t-muted" style={{ textDecoration: 'line-through' }}>{product.oldPrice.toLocaleString('ru-RU') + ' \u20BD'}</span>}
+            {discount > 0 && <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--c-danger)', background: 'rgba(255,107,107,0.15)', padding: '2px 8px', borderRadius: 'var(--r-full)' }}>{'-' + discount + '%'}</span>}
           </div>
-        </div>
-      )}
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-        <span style={{ width: 8, height: 8, borderRadius: '50%', background: product.inStock ? 'var(--c-success)' : 'var(--c-danger)' }} />
-        <span className="t-caption" style={{ color: product.inStock ? 'var(--c-success)' : 'var(--c-danger)' }}>
-          {product.inStock ? 'В наличии' : 'Нет в наличии'}
-        </span>
-        {product.weight && <span className="t-caption t-muted" style={{ marginLeft: 8 }}>{product.weight + ' г'}</span>}
-      </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: product.inStock ? 'var(--c-success)' : 'var(--c-danger)' }} />
+            <span className="t-caption" style={{ color: product.inStock ? 'var(--c-success)' : 'var(--c-danger)', fontWeight: 600 }}>
+              {product.inStock ? 'В наличии' : 'Нет в наличии'}
+            </span>
+            {product.weight && <span className="t-caption t-muted" style={{ marginLeft: 8 }}>{product.weight + ' г'}</span>}
+          </div>
+        </section>
 
-      <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-        <div className="qty">
-          <button className="qty__btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
-            <svg viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
+        {product.variants.length > 0 && (
+          <div className="mb-12">
+            <span className="t-caption t-sec" style={{ display: 'block', marginBottom: 8 }}>{'Вариант:'}</span>
+            <div className="pill-toggle">
+              {product.variants.map((v, i) => (
+                <button key={i} className={'pill-toggle__item' + (selectedVariant === i ? ' pill-toggle__item--active' : '')}
+                  onClick={() => setSelectedVariant(selectedVariant === i ? null : i)}>
+                  {v.name + ' \u2014 ' + v.price.toLocaleString('ru-RU') + ' \u20BD'}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="product-actions">
+          <div className="qty">
+            <button className="qty__btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+              <svg viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
+            </button>
+            <span className="qty__val">{quantity}</span>
+            <button className="qty__btn" onClick={() => setQuantity(Math.min(99, quantity + 1))}>
+              <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+          </div>
+          <button className={'btn btn--primary product-actions__cart' + (!product.inStock ? ' btn--loading' : '')}
+            onClick={handleAddToCart} disabled={!product.inStock}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" />
+            </svg>
+            {added ? 'Добавлено!' : 'В корзину'}
           </button>
-          <span className="qty__val">{quantity}</span>
-          <button className="qty__btn" onClick={() => setQuantity(Math.min(99, quantity + 1))}>
-            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
-          </button>
+          <ShareButton
+            productSlug={product.slug}
+            productName={product.title}
+            productImage={product.images[0]?.url}
+            className="product-actions__share"
+          />
         </div>
-        <button className={'btn btn--primary' + (!product.inStock ? ' btn--loading' : '')} style={{ flex: 1 }}
-          onClick={handleAddToCart} disabled={!product.inStock}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" />
-          </svg>
-          {added ? 'Добавлено!' : 'В корзину'}
-        </button>
-      </div>
-
-      {/* Share Button */}
-      <div style={{ marginBottom: 20 }}>
-        <ShareButton 
-          productSlug={product.slug} 
-          productName={product.title}
-          productImage={product.images[0]?.url}
-        />
-      </div>
 
       <div className="pill-toggle mb-12">
         <button className={'pill-toggle__item' + (activeTab === 'description' ? ' pill-toggle__item--active' : '')} onClick={() => setActiveTab('description')}>{'Описание'}</button>
@@ -206,6 +261,7 @@ export function ProductDetailClient({ product }: Props) {
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   )

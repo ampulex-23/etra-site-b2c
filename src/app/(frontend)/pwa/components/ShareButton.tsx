@@ -205,7 +205,7 @@ export function ShareButton({ productSlug, productName, productImage, className 
       )}
 
       <style jsx>{`
-        .share-btn {
+        :where(.share-btn) {
           display: inline-flex;
           align-items: center;
           gap: 8px;
@@ -219,7 +219,7 @@ export function ShareButton({ productSlug, productName, productImage, className 
           font-weight: 500;
           transition: background 0.2s;
         }
-        .share-btn:hover {
+        :where(.share-btn:hover) {
           background: var(--color-primary-dark, #3d6649);
         }
 

@@ -6420,3 +6420,205 @@ textarea.inp {
     padding: 80px 32px;
   }
 }
+
+/* ============================================================
+   Product Detail Page
+   ============================================================ */
+.product-detail {
+  display: block;
+}
+
+.product-detail__main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Gallery */
+.product-gallery {
+  position: relative;
+  margin: -16px -16px 16px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 24px rgba(26, 58, 47, 0.08);
+}
+
+.product-gallery__track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.product-gallery__slide {
+  position: relative;
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+}
+
+.product-gallery__slide--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-gallery__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px) saturate(1.5);
+  -webkit-backdrop-filter: blur(12px) saturate(1.5);
+  color: var(--c-text);
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 2px 12px rgba(26, 58, 47, 0.1);
+  transition: background 0.2s;
+}
+
+.product-gallery__nav svg {
+  width: 22px;
+  height: 22px;
+}
+
+.product-gallery__nav:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.product-gallery__nav--prev { left: 14px; }
+.product-gallery__nav--next { right: 14px; }
+
+.product-gallery:hover .product-gallery__nav,
+.product-gallery__nav:focus-visible {
+  display: flex;
+}
+
+.product-gallery__dots {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+}
+
+.product-gallery__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  background: rgba(101, 163, 13, 0.3);
+  transition: all 0.2s;
+}
+
+.product-gallery__dot--active {
+  width: 24px;
+  background: var(--c-primary);
+}
+
+/* Info card (glass) */
+.product-info {
+  padding: 16px 18px;
+  display: block;
+}
+
+/* Action row: qty + cart + share inline */
+.product-actions {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: nowrap;
+}
+
+.product-actions .qty {
+  flex-shrink: 0;
+}
+
+.product-actions__cart {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Override ShareButton's internal style to behave like a glass icon button */
+.product-actions__share.share-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 18px;
+  min-height: 56px;
+  border-radius: var(--r-full);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  color: var(--c-text);
+  font-size: 15px;
+  font-weight: 600;
+  backdrop-filter: blur(16px) saturate(1.5);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  box-shadow:
+    0 4px 20px rgba(26, 58, 47, 0.08),
+    inset 2px 4px 12px rgba(255, 255, 255, 0.7),
+    inset -2px -4px 12px rgba(101, 163, 13, 0.12);
+  transition: all 0.2s ease;
+}
+
+.product-actions__share.share-btn:hover {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--c-primary);
+}
+
+/* On narrow screens hide the share label, show only icon */
+@media (max-width: 480px) {
+  .product-actions__share.share-btn {
+    padding: 0;
+    width: 56px;
+  }
+  .product-actions__share.share-btn span {
+    display: none;
+  }
+}
+
+/* Desktop: two-column layout — gallery left, UI right */
+@media (min-width: 768px) {
+  .product-detail {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+
+  .product-gallery {
+    margin: 0;
+    border-radius: var(--r-md);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    aspect-ratio: 1;
+    position: sticky;
+    top: calc(var(--topbar-h) + 16px);
+  }
+
+  .product-detail__main {
+    gap: 16px;
+  }
+
+  /* Always show nav arrows on desktop */
+  .product-gallery__nav {
+    display: flex;
+  }
+}
