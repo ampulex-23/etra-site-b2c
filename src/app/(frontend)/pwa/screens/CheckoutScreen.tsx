@@ -581,7 +581,7 @@ export function CheckoutScreen() {
   }
 
   return (
-    <div className="pwa-screen animate-in">
+    <div className="pwa-screen animate-in checkout-panel glass">
       <h1 className="t-h2 mb-16">{useTopup ? 'Докомплектация заказа' : 'Оформление заказа'}</h1>
 
       {!customer && (

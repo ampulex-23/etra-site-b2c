@@ -23,7 +23,7 @@ export function CartScreen() {
 
   if (items.length === 0) {
     return (
-      <div className="pwa-screen animate-in">
+      <div className="pwa-screen animate-in checkout-panel glass">
         <div className="empty">
           <div className="empty__icon">
             <svg viewBox="0 0 24 24">
