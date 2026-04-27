@@ -41,7 +41,7 @@ export function CartScreen() {
   }
 
   return (
-    <div className="pwa-screen animate-in">
+    <div className="pwa-screen animate-in checkout-panel glass">
       <h1 className="t-h2 mb-12">
         Корзина
         <span className="t-caption t-sec" style={{ marginLeft: 8, fontWeight: 400 }}>
