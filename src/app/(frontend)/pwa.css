@@ -1238,7 +1238,7 @@ textarea.inp {
   width: 100%;
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 12px 30px rgba(58, 124, 60, 0.18));
+  filter: hue-rotate(295deg) drop-shadow(0 0px 1px rgba(8,4,0,1));
 }
 
 @keyframes heroLogoFloat {
@@ -1435,7 +1435,7 @@ textarea.inp {
 .hero-arc {
   position: relative;
   width: min(640px, 92vw);
-  margin: 24px auto 0;
+  margin: 44px auto 80px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
@@ -1455,9 +1455,9 @@ textarea.inp {
 }
 
 /* Arc offsets: side items slightly up, center item slightly down → gentle concave arc below logo */
-.hero-arc__item--left { transform: translateY(-6%); }
-.hero-arc__item--right { transform: translateY(-6%); }
-.hero-arc__item--center { transform: translateY(14%); }
+.hero-arc__item--left { transform: translateY(-24%); }
+.hero-arc__item--right { transform: translateY(-24%); }
+.hero-arc__item--center { transform: translateY(30%); }
 
 .hero-arc__item:hover {
   transform: translateY(calc(var(--arc-y, 0px) - 4px)) scale(1.05);
