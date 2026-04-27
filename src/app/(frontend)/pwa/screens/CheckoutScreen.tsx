@@ -780,7 +780,7 @@ export function CheckoutScreen() {
                   )}
                   
                   {!selectedPvz && (
-                    <div className="pvz-list">
+                    <div className="pvz-list glass">
                       {pvzList.slice(0, 5).map((pvz) => (
                         <button key={pvz.code} type="button" className="pvz-item"
                           onClick={() => setSelectedPvz(pvz)}>
