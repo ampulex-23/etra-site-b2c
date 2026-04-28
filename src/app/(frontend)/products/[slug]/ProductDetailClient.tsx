@@ -142,37 +142,6 @@ export function ProductDetailClient({ product }: Props) {
             </>
           )}
         </div>
-
-        {/* Actions (qty / cart / share / favorite) — belongs to the left
-            sticky stack on desktop, visually flush under the gallery. */}
-        <div className="product-actions">
-          <div className="qty">
-            <button className="qty__btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
-              <svg viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
-            </button>
-            <span className="qty__val">{quantity}</span>
-            <button className="qty__btn" onClick={() => setQuantity(Math.min(99, quantity + 1))}>
-              <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
-            </button>
-          </div>
-          <button className={'btn btn--primary product-actions__cart' + (!product.inStock ? ' btn--loading' : '')}
-            onClick={handleAddToCart} disabled={!product.inStock}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" />
-            </svg>
-            {added ? 'Добавлено!' : 'В корзину'}
-          </button>
-          <ShareButton
-            productSlug={product.slug}
-            productName={product.title}
-            productImage={product.images[0]?.url}
-            className="product-actions__share"
-          />
-          <FavoriteButton
-            productId={product.id}
-            className="product-actions__favorite"
-          />
-        </div>
       </div>
 
       <div className="product-detail__info">
@@ -197,6 +166,36 @@ export function ProductDetailClient({ product }: Props) {
               {product.inStock ? 'В наличии' : 'Нет в наличии'}
             </span>
             {product.weight && <span className="t-caption t-muted" style={{ marginLeft: 8 }}>{product.weight + ' г'}</span>}
+          </div>
+
+          {/* Actions (qty / cart / share / favorite) inside the glass info card */}
+          <div className="product-actions">
+            <div className="qty">
+              <button className="qty__btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+                <svg viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
+              </button>
+              <span className="qty__val">{quantity}</span>
+              <button className="qty__btn" onClick={() => setQuantity(Math.min(99, quantity + 1))}>
+                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+              </button>
+            </div>
+            <button className={'btn btn--primary product-actions__cart' + (!product.inStock ? ' btn--loading' : '')}
+              onClick={handleAddToCart} disabled={!product.inStock}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" />
+              </svg>
+              {added ? 'Добавлено!' : 'В корзину'}
+            </button>
+            <ShareButton
+              productSlug={product.slug}
+              productName={product.title}
+              productImage={product.images[0]?.url}
+              className="product-actions__share"
+            />
+            <FavoriteButton
+              productId={product.id}
+              className="product-actions__favorite"
+            />
           </div>
         </section>
 

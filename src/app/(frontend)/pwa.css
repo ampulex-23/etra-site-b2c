@@ -6584,6 +6584,14 @@ textarea.inp {
   flex-wrap: nowrap;
 }
 
+/* When nested inside the glass info card — add top spacing and divider */
+.product-info .product-actions {
+  margin-top: 18px;
+  margin-bottom: 0;
+  padding-top: 16px;
+  border-top: 1px solid rgba(101, 163, 13, 0.12);
+}
+
 .product-actions .qty {
   flex-shrink: 0;
 }
