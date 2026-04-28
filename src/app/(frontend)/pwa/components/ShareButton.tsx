@@ -135,9 +135,9 @@ export function ShareButton({ productSlug, productName, productImage, className 
         className={`share-btn ${className}`}
         onClick={() => setIsOpen(true)}
         aria-label="Поделиться"
+        title="Поделиться"
       >
         <Share2 size={20} />
-        <span>Поделиться</span>
       </button>
 
       {isOpen && (

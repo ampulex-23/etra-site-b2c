@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useCart } from '@/app/(frontend)/cart/CartProvider'
 import { RichText } from '@/app/(frontend)/components/RichText'
 import { ShareButton } from '@/app/(frontend)/pwa/components/ShareButton'
+import { FavoriteButton } from '@/app/(frontend)/pwa/components/FavoriteButton'
 
 interface ProductImage { url: string }
 interface ProductVariant { name: string; price: number; sku?: string }
@@ -141,7 +142,7 @@ export function ProductDetailClient({ product }: Props) {
         )}
       </div>
 
-      <div className="product-detail__main">
+      <div className="product-detail__info">
         <section className="glass product-info">
           {product.category && (
             <Link href="/catalog" className="t-small" style={{ color: 'var(--c-primary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -179,89 +180,95 @@ export function ProductDetailClient({ product }: Props) {
             </div>
           </div>
         )}
+      </div>
 
-        <div className="product-actions">
-          <div className="qty">
-            <button className="qty__btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
-              <svg viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
-            </button>
-            <span className="qty__val">{quantity}</span>
-            <button className="qty__btn" onClick={() => setQuantity(Math.min(99, quantity + 1))}>
-              <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
-            </button>
-          </div>
-          <button className={'btn btn--primary product-actions__cart' + (!product.inStock ? ' btn--loading' : '')}
-            onClick={handleAddToCart} disabled={!product.inStock}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" />
-            </svg>
-            {added ? 'Добавлено!' : 'В корзину'}
+      <div className="product-actions">
+        <div className="qty">
+          <button className="qty__btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+            <svg viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
           </button>
-          <ShareButton
-            productSlug={product.slug}
-            productName={product.title}
-            productImage={product.images[0]?.url}
-            className="product-actions__share"
-          />
+          <span className="qty__val">{quantity}</span>
+          <button className="qty__btn" onClick={() => setQuantity(Math.min(99, quantity + 1))}>
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+          </button>
+        </div>
+        <button className={'btn btn--primary product-actions__cart' + (!product.inStock ? ' btn--loading' : '')}
+          onClick={handleAddToCart} disabled={!product.inStock}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" />
+          </svg>
+          {added ? 'Добавлено!' : 'В корзину'}
+        </button>
+        <ShareButton
+          productSlug={product.slug}
+          productName={product.title}
+          productImage={product.images[0]?.url}
+          className="product-actions__share"
+        />
+        <FavoriteButton
+          productId={product.id}
+          className="product-actions__favorite"
+        />
+      </div>
+
+      <div className="product-detail__tabs">
+        <div className="pill-toggle mb-12">
+          <button className={'pill-toggle__item' + (activeTab === 'description' ? ' pill-toggle__item--active' : '')} onClick={() => setActiveTab('description')}>{'Описание'}</button>
+          {product.composition && <button className={'pill-toggle__item' + (activeTab === 'composition' ? ' pill-toggle__item--active' : '')} onClick={() => setActiveTab('composition')}>{'Состав'}</button>}
+          {product.usage && <button className={'pill-toggle__item' + (activeTab === 'usage' ? ' pill-toggle__item--active' : '')} onClick={() => setActiveTab('usage')}>{'Применение'}</button>}
+          {product.isBundle && product.bundleItems && product.bundleItems.length > 0 && (
+            <button className={'pill-toggle__item' + (activeTab === 'bundle' ? ' pill-toggle__item--active' : '')} onClick={() => setActiveTab('bundle')}>{'Набор'}</button>
+          )}
         </div>
 
-      <div className="pill-toggle mb-12">
-        <button className={'pill-toggle__item' + (activeTab === 'description' ? ' pill-toggle__item--active' : '')} onClick={() => setActiveTab('description')}>{'Описание'}</button>
-        {product.composition && <button className={'pill-toggle__item' + (activeTab === 'composition' ? ' pill-toggle__item--active' : '')} onClick={() => setActiveTab('composition')}>{'Состав'}</button>}
-        {product.usage && <button className={'pill-toggle__item' + (activeTab === 'usage' ? ' pill-toggle__item--active' : '')} onClick={() => setActiveTab('usage')}>{'Применение'}</button>}
-        {product.isBundle && product.bundleItems && product.bundleItems.length > 0 && (
-          <button className={'pill-toggle__item' + (activeTab === 'bundle' ? ' pill-toggle__item--active' : '')} onClick={() => setActiveTab('bundle')}>{'Набор'}</button>
-        )}
-      </div>
-
-      <div className="glass" style={{ padding: 16 }}>
-        {activeTab === 'description' && (
-          <div className="t-body t-sec">
-            {product.description ? (
-              <RichText content={product.description} />
-            ) : product.shortDescription ? (
-              <p>{product.shortDescription}</p>
-            ) : (
-              <span className="t-muted">{'Описание скоро появится'}</span>
-            )}
-          </div>
-        )}
-        {activeTab === 'composition' && (
-          <div className="t-body t-sec">
-            {product.composition ? (
-              <RichText content={product.composition} />
-            ) : (
-              <span className="t-muted">{'Информация о составе скоро появится'}</span>
-            )}
-          </div>
-        )}
-        {activeTab === 'usage' && (
-          <div className="t-body t-sec">
-            {product.usage ? (
-              <RichText content={product.usage} />
-            ) : (
-              <span className="t-muted">{'Способ применения скоро появится'}</span>
-            )}
-          </div>
-        )}
-        {activeTab === 'bundle' && product.bundleItems && (
-          <div className="stack">
-            <p className="t-caption t-sec mb-12">{'В этот набор входят:'}</p>
-            {product.bundleItems.map((item, i) => item.product && (
-              <Link key={i} href={'/products/' + item.product.slug} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 10, background: 'var(--c-glass)', borderRadius: 'var(--r-sm)' }}>
-                <div style={{ width: 44, height: 44, borderRadius: 'var(--r-xs)', overflow: 'hidden', position: 'relative', flexShrink: 0, background: 'rgba(0,0,0,0.2)' }}>
-                  {item.product.images?.[0]?.url && <Image src={item.product.images[0].url} alt="" fill sizes="44px" style={{ objectFit: 'cover' }} />}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div className="t-caption" style={{ fontWeight: 600 }}>{item.product.title}</div>
-                  <div className="t-small t-muted">{item.product.price?.toLocaleString('ru-RU') + ' \u20BD'}</div>
-                </div>
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--c-primary)', background: 'var(--c-primary-glow)', padding: '2px 8px', borderRadius: 'var(--r-full)' }}>{'x' + item.quantity}</span>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
+        <div className="glass" style={{ padding: 16 }}>
+          {activeTab === 'description' && (
+            <div className="t-body t-sec">
+              {product.description ? (
+                <RichText content={product.description} />
+              ) : product.shortDescription ? (
+                <p>{product.shortDescription}</p>
+              ) : (
+                <span className="t-muted">{'Описание скоро появится'}</span>
+              )}
+            </div>
+          )}
+          {activeTab === 'composition' && (
+            <div className="t-body t-sec">
+              {product.composition ? (
+                <RichText content={product.composition} />
+              ) : (
+                <span className="t-muted">{'Информация о составе скоро появится'}</span>
+              )}
+            </div>
+          )}
+          {activeTab === 'usage' && (
+            <div className="t-body t-sec">
+              {product.usage ? (
+                <RichText content={product.usage} />
+              ) : (
+                <span className="t-muted">{'Способ применения скоро появится'}</span>
+              )}
+            </div>
+          )}
+          {activeTab === 'bundle' && product.bundleItems && (
+            <div className="stack">
+              <p className="t-caption t-sec mb-12">{'В этот набор входят:'}</p>
+              {product.bundleItems.map((item, i) => item.product && (
+                <Link key={i} href={'/products/' + item.product.slug} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 10, background: 'var(--c-glass)', borderRadius: 'var(--r-sm)' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 'var(--r-xs)', overflow: 'hidden', position: 'relative', flexShrink: 0, background: 'rgba(0,0,0,0.2)' }}>
+                    {item.product.images?.[0]?.url && <Image src={item.product.images[0].url} alt="" fill sizes="44px" style={{ objectFit: 'cover' }} />}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div className="t-caption" style={{ fontWeight: 600 }}>{item.product.title}</div>
+                    <div className="t-small t-muted">{item.product.price?.toLocaleString('ru-RU') + ' \u20BD'}</div>
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--c-primary)', background: 'var(--c-primary-glow)', padding: '2px 8px', borderRadius: 'var(--r-full)' }}>{'x' + item.quantity}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
