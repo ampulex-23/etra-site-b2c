@@ -79,67 +79,100 @@ export function ProductDetailClient({ product }: Props) {
 
   return (
     <div className="pwa-screen animate-in product-detail">
-      {/* Gallery */}
-      <div
-        className="product-gallery"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
+      <div className="product-detail__left">
+        {/* Gallery */}
         <div
-          className="product-gallery__track"
-          style={{ transform: `translateX(-${mainImage * 100}%)` }}
+          className="product-gallery"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
         >
-          {product.images.length > 0 ? product.images.map((img, i) => (
-            <div key={i} className="product-gallery__slide">
-              <Image
-                src={img.url}
-                alt={product.title}
-                fill
-                sizes="(min-width: 768px) 50vw, 100vw"
-                style={{ objectFit: 'contain' }}
-                priority={i === 0}
-              />
-            </div>
-          )) : (
-            <div className="product-gallery__slide product-gallery__slide--empty">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.2">
-                <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" />
-              </svg>
-            </div>
+          <div
+            className="product-gallery__track"
+            style={{ transform: `translateX(-${mainImage * 100}%)` }}
+          >
+            {product.images.length > 0 ? product.images.map((img, i) => (
+              <div key={i} className="product-gallery__slide">
+                <Image
+                  src={img.url}
+                  alt={product.title}
+                  fill
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  style={{ objectFit: 'contain' }}
+                  priority={i === 0}
+                />
+              </div>
+            )) : (
+              <div className="product-gallery__slide product-gallery__slide--empty">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" />
+                </svg>
+              </div>
+            )}
+          </div>
+
+          {product.images.length > 1 && (
+            <>
+              <button
+                type="button"
+                className="product-gallery__nav product-gallery__nav--prev"
+                onClick={() => setMainImage((mainImage - 1 + product.images.length) % product.images.length)}
+                aria-label="Предыдущее фото"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" /></svg>
+              </button>
+              <button
+                type="button"
+                className="product-gallery__nav product-gallery__nav--next"
+                onClick={() => setMainImage((mainImage + 1) % product.images.length)}
+                aria-label="Следующее фото"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
+              </button>
+              <div className="product-gallery__dots">
+                {product.images.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setMainImage(i)}
+                    className={'product-gallery__dot' + (mainImage === i ? ' product-gallery__dot--active' : '')}
+                    aria-label={`Фото ${i + 1}`}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
 
-        {product.images.length > 1 && (
-          <>
-            <button
-              type="button"
-              className="product-gallery__nav product-gallery__nav--prev"
-              onClick={() => setMainImage((mainImage - 1 + product.images.length) % product.images.length)}
-              aria-label="Предыдущее фото"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" /></svg>
+        {/* Actions (qty / cart / share / favorite) — belongs to the left
+            sticky stack on desktop, visually flush under the gallery. */}
+        <div className="product-actions">
+          <div className="qty">
+            <button className="qty__btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+              <svg viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
             </button>
-            <button
-              type="button"
-              className="product-gallery__nav product-gallery__nav--next"
-              onClick={() => setMainImage((mainImage + 1) % product.images.length)}
-              aria-label="Следующее фото"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
+            <span className="qty__val">{quantity}</span>
+            <button className="qty__btn" onClick={() => setQuantity(Math.min(99, quantity + 1))}>
+              <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
             </button>
-            <div className="product-gallery__dots">
-              {product.images.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setMainImage(i)}
-                  className={'product-gallery__dot' + (mainImage === i ? ' product-gallery__dot--active' : '')}
-                  aria-label={`Фото ${i + 1}`}
-                />
-              ))}
-            </div>
-          </>
-        )}
+          </div>
+          <button className={'btn btn--primary product-actions__cart' + (!product.inStock ? ' btn--loading' : '')}
+            onClick={handleAddToCart} disabled={!product.inStock}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" />
+            </svg>
+            {added ? 'Добавлено!' : 'В корзину'}
+          </button>
+          <ShareButton
+            productSlug={product.slug}
+            productName={product.title}
+            productImage={product.images[0]?.url}
+            className="product-actions__share"
+          />
+          <FavoriteButton
+            productId={product.id}
+            className="product-actions__favorite"
+          />
+        </div>
       </div>
 
       <div className="product-detail__info">
@@ -180,35 +213,6 @@ export function ProductDetailClient({ product }: Props) {
             </div>
           </div>
         )}
-      </div>
-
-      <div className="product-actions">
-        <div className="qty">
-          <button className="qty__btn" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
-            <svg viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
-          </button>
-          <span className="qty__val">{quantity}</span>
-          <button className="qty__btn" onClick={() => setQuantity(Math.min(99, quantity + 1))}>
-            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
-          </button>
-        </div>
-        <button className={'btn btn--primary product-actions__cart' + (!product.inStock ? ' btn--loading' : '')}
-          onClick={handleAddToCart} disabled={!product.inStock}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 01-8 0" />
-          </svg>
-          {added ? 'Добавлено!' : 'В корзину'}
-        </button>
-        <ShareButton
-          productSlug={product.slug}
-          productName={product.title}
-          productImage={product.images[0]?.url}
-          className="product-actions__share"
-        />
-        <FavoriteButton
-          productId={product.id}
-          className="product-actions__favorite"
-        />
       </div>
 
       <div className="product-detail__tabs">

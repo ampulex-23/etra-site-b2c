@@ -6447,6 +6447,19 @@ textarea.inp {
   gap: 12px;
 }
 
+/* On mobile the left wrapper is transparent to layout — its children
+   (gallery, actions) flow as direct children of .product-detail
+   alongside info and tabs. CSS `order` enforces the correct mobile
+   sequence: gallery -> info -> actions -> tabs. */
+.product-detail__left {
+  display: contents;
+}
+
+.product-gallery       { order: 1; }
+.product-detail__info  { order: 2; }
+.product-actions       { order: 3; }
+.product-detail__tabs  { order: 4; }
+
 .product-detail__info {
   display: flex;
   flex-direction: column;
@@ -6654,36 +6667,61 @@ textarea.inp {
   cursor: progress;
 }
 
-/* Desktop: two-column grid with named areas.
-   Gallery + actions stack in left column; info + tabs in right column. */
+/* Desktop: two-column grid.
+   Left column — sticky stack of gallery + actions (flush, no gap).
+   Right column — info (row 1) and tabs (row 2). */
 @media (min-width: 768px) {
   .product-detail {
     display: grid;
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
     grid-template-areas:
-      "gallery info"
-      "actions tabs";
+      "left info"
+      "left tabs";
     gap: 16px 32px;
     align-items: start;
   }
 
-  .product-gallery { grid-area: gallery; }
+  /* Re-enable the wrapper as a real grid item on desktop, overriding
+     the mobile display:contents. Both gallery and actions live inside
+     this sticky flex column with no gap between them. */
+  .product-detail__left {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    grid-area: left;
+    position: sticky;
+    top: calc(var(--topbar-h) + 16px);
+    align-self: start;
+  }
+
   .product-detail__info { grid-area: info; }
-  .product-actions { grid-area: actions; }
   .product-detail__tabs { grid-area: tabs; }
+
+  /* order is meaningless inside grid-areas, but reset anyway so the
+     left column's internal flex order stays natural */
+  .product-gallery,
+  .product-actions,
+  .product-detail__info,
+  .product-detail__tabs {
+    order: 0;
+  }
 
   .product-gallery {
     margin: 0;
     border-radius: var(--r-md);
     border: 1px solid rgba(255, 255, 255, 0.7);
     aspect-ratio: 1;
-    position: sticky;
-    top: calc(var(--topbar-h) + 16px);
+    position: static;
   }
 
   .product-detail__info,
   .product-detail__tabs {
     gap: 16px;
+  }
+
+  /* Keep qty always visible inside the actions row */
+  .product-actions .qty {
+    flex-shrink: 0;
   }
 
   /* Always show nav arrows on desktop */
