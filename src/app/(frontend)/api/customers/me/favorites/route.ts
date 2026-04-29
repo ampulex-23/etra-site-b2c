@@ -59,10 +59,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'productId is required' }, { status: 400 })
     }
 
-    const productId = String(body.productId)
+    // Postgres adapter uses numeric IDs for products. Coerce to number when
+    // possible; Payload's relationship validator will reject a string against
+    // a numeric PK with "Следующее поле недействительно".
+    const toId = (v: string | number): string | number => {
+      if (typeof v === 'number') return v
+      const n = Number(v)
+      return Number.isFinite(n) && String(n) === String(v) ? n : v
+    }
+
+    const productId = toId(body.productId)
     const action = body.action || 'toggle'
 
     const payload = await getPayload({ config })
+
+    // Validate that the product actually exists — otherwise the relationship
+    // validator would throw the same "field invalid" error.
+    try {
+      await payload.findByID({ collection: 'products', id: productId as any, depth: 0 })
+    } catch {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+    }
 
     const customer = await payload.findByID({
       collection: 'customers',
@@ -73,18 +90,23 @@ export async function POST(req: NextRequest) {
 
     if (!customer) return NextResponse.json({ error: 'Customer not found' }, { status: 404 })
 
-    const current = Array.isArray((customer as any).favorites)
-      ? ((customer as any).favorites as Array<string | number>).map((v) => String(v))
+    // Favorites may be an array of IDs or populated docs — normalise to IDs,
+    // preserving the native type (number for postgres, string for mongo).
+    const current: Array<string | number> = Array.isArray((customer as any).favorites)
+      ? ((customer as any).favorites as Array<string | number | { id: string | number }>).map(
+          (v) => (typeof v === 'object' && v !== null ? toId(v.id) : toId(v)),
+        )
       : []
 
-    const has = current.includes(productId)
-    let next: string[]
+    const key = String(productId)
+    const has = current.some((v) => String(v) === key)
+    let next: Array<string | number>
     if (action === 'add') {
       next = has ? current : [...current, productId]
     } else if (action === 'remove') {
-      next = current.filter((id) => id !== productId)
+      next = current.filter((v) => String(v) !== key)
     } else {
-      next = has ? current.filter((id) => id !== productId) : [...current, productId]
+      next = has ? current.filter((v) => String(v) !== key) : [...current, productId]
     }
 
     const updated = await payload.update({
@@ -96,12 +118,14 @@ export async function POST(req: NextRequest) {
     })
 
     const finalIds = Array.isArray((updated as any).favorites)
-      ? ((updated as any).favorites as Array<string | number>).map((v) => String(v))
+      ? ((updated as any).favorites as Array<string | number | { id: string | number }>).map((v) =>
+          typeof v === 'object' && v !== null ? String(v.id) : String(v),
+        )
       : []
 
     return NextResponse.json({
       favorites: finalIds,
-      isFavorite: finalIds.includes(productId),
+      isFavorite: finalIds.includes(key),
     })
   } catch (err) {
     console.error('[favorites toggle] error', err)
