@@ -29,10 +29,10 @@ export const Customers: CollectionConfig = {
       if (!user) return false
       return user.collection === 'users'
     },
-    create: ({ req: { user } }) => {
-      if (!user) return false
-      return true
-    },
+    // Public signup: allow anonymous POST /api/customers so new visitors
+    // can register by email+password. Per-field validation (unique email,
+    // required password) and `customerBeforeChange` still run.
+    create: () => true,
     update: ({ req: { user } }) => {
       if (!user) return false
       if (user.collection === 'users') return true
