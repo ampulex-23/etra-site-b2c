@@ -542,14 +542,21 @@ export function CheckoutScreen() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+              // Append a timestamp suffix so the OrderId sent to T-Bank is
+              // always unique across retries and previous checkout attempts.
+              // Our internal Order is tracked by `orderNumber` via description.
               amount: orderTotal,
-              orderId: orderNumber,
+              orderId: `${orderNumber}-${Date.now().toString(36)}`,
               description: `Заказ ${orderNumber}`,
               customerEmail: email,
               customerPhone: phone,
               items: items.map(i => ({
                 name: i.title,
-                price: Math.round(i.price * (1 - totalDiscount / totalPrice)),
+                // Guard against division-by-zero producing NaN (which would
+                // serialise as null and fail T-Bank Receipt validation).
+                price: Math.round(
+                  i.price * (totalPrice > 0 ? 1 - totalDiscount / totalPrice : 1),
+                ),
                 quantity: i.quantity,
                 tax: 'none'
               }))

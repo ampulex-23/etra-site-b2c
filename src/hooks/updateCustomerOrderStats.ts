@@ -76,9 +76,19 @@ export const updateCustomerOrderStatsAfterChange: CollectionAfterChangeHook = as
   if (newCustomerId) targets.add(newCustomerId)
   if (oldCustomerId && oldCustomerId !== newCustomerId) targets.add(oldCustomerId)
 
-  await Promise.all(
-    Array.from(targets).map((id) => recomputeStatsForCustomer(payload, id)),
-  )
+  // Fire-and-forget: we must NOT block the order create/update response on
+  // a full customer-order aggregation (it does a find with limit=10000
+  // followed by an update that can cascade through other hooks). Schedule
+  // the work after the current tick so the HTTP response returns promptly.
+  if (targets.size > 0) {
+    setImmediate(() => {
+      Promise.all(
+        Array.from(targets).map((id) => recomputeStatsForCustomer(payload, id)),
+      ).catch((err) =>
+        console.error('[updateCustomerOrderStatsAfterChange] async recompute failed:', err),
+      )
+    })
+  }
 
   return doc
 }
