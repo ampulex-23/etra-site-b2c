@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { Share2, Copy, Check, X } from 'lucide-react'
 
 interface ShareButtonProps {
@@ -24,12 +25,29 @@ interface PartnerInfo {
   balance: number
 }
 
-export function ShareButton({ productSlug, productName, productImage, className = '' }: ShareButtonProps) {
+export function ShareButton({ productSlug, productName, productImage: _productImage, className = '' }: ShareButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [settings, setSettings] = useState<ShareSettings | null>(null)
   const [partner, setPartner] = useState<PartnerInfo | null>(null)
   const [loading, setLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
+
+  // Required for SSR-safety with portals: only render on the client.
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Lock body scroll while the share modal is open. Using a portal alone
+  // does not prevent the underlying page from scrolling under the overlay.
+  useEffect(() => {
+    if (!isOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [isOpen])
 
   useEffect(() => {
     async function fetchData() {
@@ -140,7 +158,10 @@ export function ShareButton({ productSlug, productName, productImage, className 
         <Share2 size={20} />
       </button>
 
-      {isOpen && (
+      {/* Render via portal so the modal is not clipped by ancestors that
+          create a containing block (e.g. `.glass` with `backdrop-filter`,
+          or any `transform`/`filter`/`contain` on a parent). */}
+      {isOpen && mounted && createPortal(
         <div className="share-modal-overlay" onClick={() => setIsOpen(false)}>
           <div className="share-modal" onClick={(e) => e.stopPropagation()}>
             <div className="share-modal__header">
@@ -201,7 +222,8 @@ export function ShareButton({ productSlug, productName, productImage, className 
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
 
       <style jsx>{`

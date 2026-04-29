@@ -3241,10 +3241,10 @@ textarea.inp {
 }
 
 .favorite-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
+  position: relative;
+  display: block;
+  padding: 0;
+  overflow: hidden;
   transition: transform 0.2s;
 }
 
@@ -3252,32 +3252,84 @@ textarea.inp {
   transform: scale(0.98);
 }
 
+/* Internal Link wraps image + info — full clickable area, no underline */
+.favorite-card__link {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+}
+
+.favorite-card__img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
 .favorite-card__img {
-  width: 60px;
-  height: 60px;
-  border-radius: var(--r-sm);
-  object-fit: cover;
-  flex-shrink: 0;
+  border-radius: 0;
+}
+
+.favorite-card__img--placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(101,163,13,0.08), rgba(101,163,13,0.02));
 }
 
 .favorite-card__info {
-  flex: 1;
-  min-width: 0;
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .favorite-card__title {
   font-size: 13px;
   font-weight: 500;
-  margin-bottom: 4px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .favorite-card__price {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--c-primary);
+}
+
+/* Floating remove (X) button — top-right corner of the card */
+.favorite-card__remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--c-danger, #e54848);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.favorite-card__remove:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.05);
+}
+
+.favorite-card__remove:active {
+  transform: scale(0.92);
 }
 
 /* Desktop adjustments */

@@ -143,7 +143,9 @@ export function AccountScreen() {
     setLoadingFavorites(true)
     try {
       // Favorites are already populated if depth > 0
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const favs = customer.favorites
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((f: any) => typeof f === 'object' ? f : null)
         .filter(Boolean) as Product[]
       setFavorites(favs)
@@ -151,6 +153,33 @@ export function AccountScreen() {
       setLoadingFavorites(false)
     }
   }, [token, customer?.favorites])
+
+  const handleRemoveFavorite = useCallback(
+    async (productId: string) => {
+      if (!token) return
+      // Optimistic UI: drop the card immediately.
+      setFavorites((prev) => prev.filter((p) => String(p.id) !== String(productId)))
+      try {
+        const res = await fetch('/api/customers/me/favorites', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `JWT ${token}`,
+          },
+          body: JSON.stringify({ productId, action: 'remove' }),
+        })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        // Sync customer.favorites in the auth context so other parts of the
+        // UI (FavoriteButton on product pages) reflect the change.
+        await refreshUser()
+      } catch (e) {
+        console.error('[AccountScreen] removeFavorite failed', e)
+        // Rollback by re-deriving from the (still stale) customer state.
+        await refreshUser()
+      }
+    },
+    [token, refreshUser],
+  )
 
   const fetchEnrollments = useCallback(async () => {
     if (!token) return
@@ -374,16 +403,6 @@ export function AccountScreen() {
           </svg>
           Курсы
         </button>
-        <Link
-          href="/account/support"
-          className="account-tab"
-          prefetch={false}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-            <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V5a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
-          </svg>
-          Поддержка
-        </Link>
       </div>
 
       {/* Tab content */}
@@ -719,21 +738,52 @@ export function AccountScreen() {
             {!loadingFavorites && favorites.length > 0 && (
               <div className="favorites-grid">
                 {favorites.map((product) => (
-                  <Link key={product.id} href={`/products/${product.slug}`} className="favorite-card glass">
-                    {product.images?.[0]?.url && (
-                      <Image 
-                        src={product.images[0].url} 
-                        alt={product.title} 
-                        width={80} 
-                        height={80}
-                        className="favorite-card__img"
-                      />
-                    )}
-                    <div className="favorite-card__info">
-                      <div className="favorite-card__title">{product.title}</div>
-                      <div className="favorite-card__price">{product.price?.toLocaleString('ru-RU')} ₽</div>
-                    </div>
-                  </Link>
+                  <article key={product.id} className="favorite-card glass">
+                    <Link
+                      href={`/products/${product.slug}`}
+                      className="favorite-card__link"
+                      aria-label={product.title}
+                    >
+                      <div className="favorite-card__img-wrap">
+                        {product.images?.[0]?.url ? (
+                          <Image
+                            src={product.images[0].url}
+                            alt={product.title}
+                            fill
+                            sizes="(min-width: 1024px) 220px, (min-width: 768px) 30vw, 45vw"
+                            className="favorite-card__img"
+                            style={{ objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <div className="favorite-card__img favorite-card__img--placeholder" />
+                        )}
+                      </div>
+                      <div className="favorite-card__info">
+                        <div className="favorite-card__title">{product.title}</div>
+                        <div className="favorite-card__price">
+                          {product.price?.toLocaleString('ru-RU')} ₽
+                        </div>
+                      </div>
+                    </Link>
+                    <button
+                      type="button"
+                      className="favorite-card__remove"
+                      onClick={() => handleRemoveFavorite(String(product.id))}
+                      aria-label="Удалить из избранного"
+                      title="Удалить из избранного"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        width="18"
+                        height="18"
+                      >
+                        <path d="M18 6L6 18M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </article>
                 ))}
               </div>
             )}
