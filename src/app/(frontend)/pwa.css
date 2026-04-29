@@ -6689,6 +6689,7 @@ textarea.inp {
       "left tabs";
     gap: 16px 32px;
     align-items: start;
+    grid-template-rows: auto 1fr;
   }
 
   /* Re-enable the wrapper as a real grid item on desktop, overriding
