@@ -6599,6 +6599,8 @@ textarea.inp {
 .product-actions__cart {
   flex: 1 1 auto;
   min-width: 0;
+  white-space: nowrap;
+  font-size: small;
 }
 
 /* Override ShareButton's internal style to behave like a glass icon button */
